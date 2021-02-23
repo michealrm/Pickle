@@ -1,0 +1,4 @@
+To run use:
+* mvn install
+* mvn compile
+* mvn exec:java -Dexec.mainClass="main.java.pickle.Pickle" -Dexec.args="src/main/resources/p1Input.txt"

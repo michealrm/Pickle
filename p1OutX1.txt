@@ -1,0 +1,33 @@
+primClassif subClassif   tokenStr
+CONTROL     DECLARE      Int
+SEPARATOR   -             
+OPERAND     IDENTIFIER   x
+SEPARATOR   -            ;
+CONTROL     DECLARE      Float
+SEPARATOR   -             
+OPERAND     IDENTIFIER   pie
+SEPARATOR   -            ;
+CONTROL     DECLARE      String
+SEPARATOR   -             
+OPERAND     IDENTIFIER   yStr
+SEPARATOR   -            ;
+OPERAND     IDENTIFIER   x
+SEPARATOR   -             
+OPERATOR    -            =
+SEPARATOR   -
+OPERAND     IDENTIFIER   x
+SEPARATOR   -
+OPERATOR    -            +
+SEPARATOR   -
+OPERAND     INTEGER      1
+SEPARATOR   -            ;
+OPERAND     IDENTIFIER   pie
+SEPARATOR   -
+OPERATOR    -            =
+java.lang.NumberFormatException: Line 7 Col 6: Float contains more than one decimal
+	at main.java.pickle.exception.SyntaxExceptionHandler.tokenException(SyntaxExceptionHandler.java:22)
+	at main.java.pickle.Scanner.advanceTokenPos(Scanner.java:181)
+	at main.java.pickle.Scanner.getNext(Scanner.java:110)
+	at main.java.pickle.Pickle.main(Pickle.java:38)
+
+Process finished with exit code 0

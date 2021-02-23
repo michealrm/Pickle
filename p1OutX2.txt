@@ -1,0 +1,108 @@
+primClassif subClassif   tokenStr
+CONTROL     DECLARE      Int
+SEPARATOR   -             
+OPERAND     IDENTIFIER   x
+SEPARATOR   -            ;
+CONTROL     DECLARE      Float
+SEPARATOR   -             
+OPERAND     IDENTIFIER   pi
+SEPARATOR   -            ;
+CONTROL     DECLARE      String
+SEPARATOR   -             
+OPERAND     IDENTIFIER   yStr
+SEPARATOR   -            ;
+SEPARATOR   -             
+OPERAND     IDENTIFIER   x
+SEPARATOR   -             
+OPERATOR    -            =
+SEPARATOR   -
+OPERAND     IDENTIFIER   x
+SEPARATOR   -
+OPERATOR    -            +
+SEPARATOR   -
+OPERAND     INTEGER      1
+SEPARATOR   -            ;
+OPERAND     IDENTIFIER   pi
+SEPARATOR   -
+OPERATOR    -            =
+SEPARATOR   -
+OPERAND     FLOAT        3.14
+SEPARATOR   -            ;
+FUNCTION    VOID         print
+SEPARATOR   -
+SEPARATOR   -            (
+OPERAND     STRING       "x="
+SEPARATOR   -            ,
+SEPARATOR   -
+OPERAND     IDENTIFIER   x
+SEPARATOR   -            )
+SEPARATOR   -            ;
+FUNCTION    VOID         print
+SEPARATOR   -
+SEPARATOR   -            (
+OPERAND     STRING       "pi="
+SEPARATOR   -            ,
+SEPARATOR   -
+OPERAND     IDENTIFIER   pi
+SEPARATOR   -            )
+SEPARATOR   -            ;
+OPERAND     IDENTIFIER   yStr
+SEPARATOR   -
+OPERATOR    -            =
+SEPARATOR   -
+OPERAND     STRING       'Hello'
+SEPARATOR   -            ;
+FUNCTION    VOID         print
+SEPARATOR   -
+SEPARATOR   -            (
+OPERAND     STRING       "yStr="
+SEPARATOR   -            ,
+SEPARATOR   -
+OPERAND     IDENTIFIER   yStr
+SEPARATOR   -            )
+SEPARATOR   -            ;
+OPERAND     IDENTIFIER   yStr
+SEPARATOR   -
+OPERATOR    -            =
+SEPARATOR   -
+OPERAND     STRING       "Can't\" not me"
+SEPARATOR   -            ;
+FUNCTION    VOID         print
+SEPARATOR   -
+SEPARATOR   -            (
+OPERAND     STRING       "yStr="
+SEPARATOR   -            ,
+SEPARATOR   -
+OPERAND     IDENTIFIER   yStr
+SEPARATOR   -            )
+SEPARATOR   -            ;
+OPERAND     IDENTIFIER   x
+SEPARATOR   -
+OPERATOR    -            =
+SEPARATOR   -
+OPERAND     INTEGER      10
+OPERATOR    -            *
+OPERAND     INTEGER      3
+SEPARATOR   -
+OPERATOR    -            +
+SEPARATOR   -
+OPERAND     INTEGER      7
+SEPARATOR   -            ;
+CONTROL     FLOW         if
+SEPARATOR   -
+OPERAND     IDENTIFIER   x
+SEPARATOR   -
+OPERATOR    -            >
+SEPARATOR   -
+OPERAND     INTEGER      20
+OPERATOR    -            :
+SEPARATOR   -
+FUNCTION    VOID         print
+SEPARATOR   -
+java.lang.Exception: Line 19 Col 11: String literal "x=, x); was not closed
+	at main.java.pickle.exception.SyntaxExceptionHandler.tokenException(SyntaxExceptionHandler.java:34)
+	at main.java.pickle.Scanner.advanceTokenPos(Scanner.java:181)
+	at main.java.pickle.Scanner.getNext(Scanner.java:110)
+	at main.java.pickle.Pickle.main(Pickle.java:38)
+
+Process finished with exit code 0

@@ -1,0 +1,145 @@
+primClassif subClassif   tokenStr
+CONTROL     DECLARE      Int
+SEPARATOR   -
+OPERAND     IDENTIFIER   x
+SEPARATOR   -            ;
+CONTROL     DECLARE      Float
+SEPARATOR   -
+OPERAND     IDENTIFIER   pi
+SEPARATOR   -            ;
+CONTROL     DECLARE      String
+SEPARATOR   -
+OPERAND     IDENTIFIER   yStr
+SEPARATOR   -            ;
+OPERAND     IDENTIFIER   x
+SEPARATOR   -
+OPERATOR    -            =
+SEPARATOR   -
+OPERAND     INTEGER      11
+SEPARATOR   -            ;
+OPERAND     IDENTIFIER   x
+SEPARATOR   -
+OPERATOR    -            =
+SEPARATOR   -
+OPERAND     IDENTIFIER   x
+SEPARATOR   -
+OPERATOR    -            +
+SEPARATOR   -
+OPERAND     INTEGER      1
+SEPARATOR   -            ;
+OPERAND     IDENTIFIER   pi
+SEPARATOR   -
+OPERATOR    -            =
+SEPARATOR   -
+OPERAND     FLOAT        3.14
+SEPARATOR   -            ;
+FUNCTION    VOID         print
+SEPARATOR   -
+SEPARATOR   -            (
+OPERAND     STRING       "x="
+SEPARATOR   -            ,
+SEPARATOR   -
+OPERAND     IDENTIFIER   x
+SEPARATOR   -            )
+SEPARATOR   -            ;
+FUNCTION    VOID         print
+SEPARATOR   -
+SEPARATOR   -            (
+OPERAND     STRING       "pi="
+SEPARATOR   -            ,
+SEPARATOR   -
+OPERAND     IDENTIFIER   pi
+SEPARATOR   -            )
+SEPARATOR   -            ;
+OPERAND     IDENTIFIER   yStr
+SEPARATOR   -
+OPERATOR    -            =
+SEPARATOR   -
+OPERAND     STRING       'Hello'
+SEPARATOR   -            ;
+FUNCTION    VOID         print
+SEPARATOR   -
+SEPARATOR   -            (
+OPERAND     STRING       "yStr="
+SEPARATOR   -            ,
+SEPARATOR   -
+OPERAND     IDENTIFIER   yStr
+SEPARATOR   -            )
+SEPARATOR   -            ;
+OPERAND     IDENTIFIER   yStr
+SEPARATOR   -
+OPERATOR    -            =
+SEPARATOR   -
+OPERAND     STRING       "Can't"
+SEPARATOR   -            ;
+FUNCTION    VOID         print
+SEPARATOR   -
+SEPARATOR   -            (
+OPERAND     STRING       "yStr="
+SEPARATOR   -            ,
+SEPARATOR   -
+OPERAND     IDENTIFIER   yStr
+SEPARATOR   -            )
+SEPARATOR   -            ;
+OPERAND     IDENTIFIER   x
+SEPARATOR   -
+OPERATOR    -            =
+SEPARATOR   -
+OPERAND     INTEGER      10
+OPERATOR    -            *
+OPERAND     INTEGER      3
+SEPARATOR   -
+OPERATOR    -            +
+SEPARATOR   -
+OPERAND     INTEGER      7
+SEPARATOR   -            ;
+CONTROL     FLOW         if
+SEPARATOR   -
+OPERAND     IDENTIFIER   x
+SEPARATOR   -
+OPERATOR    -            >=
+SEPARATOR   -
+OPERAND     INTEGER      20
+OPERATOR    -            :
+SEPARATOR   -
+FUNCTION    VOID         print
+SEPARATOR   -
+SEPARATOR   -            (
+OPERAND     STRING       "x="
+SEPARATOR   -            ,
+SEPARATOR   -
+OPERAND     IDENTIFIER   x
+SEPARATOR   -            )
+SEPARATOR   -            ;
+SEPARATOR   -
+OPERAND     IDENTIFIER   yStr
+SEPARATOR   -
+OPERATOR    -            =
+SEPARATOR   -
+OPERAND     STRING       "yes"
+SEPARATOR   -            ;
+OPERAND     IDENTIFIER   else
+OPERATOR    -            :
+SEPARATOR   -
+FUNCTION    VOID         print
+SEPARATOR   -
+SEPARATOR   -            (
+OPERAND     STRING       "x is low"
+SEPARATOR   -            )
+SEPARATOR   -            ;
+CONTROL     END          endif
+SEPARATOR   -            ;
+OPERAND     IDENTIFIER   yStr
+SEPARATOR   -
+OPERATOR    -            =
+SEPARATOR   -
+OPERAND     STRING       'Can\'t wait'
+SEPARATOR   -            ;
+FUNCTION    VOID         print
+SEPARATOR   -
+SEPARATOR   -            (
+OPERAND     IDENTIFIER   yStr
+SEPARATOR   -            )
+SEPARATOR   -            ;
+
+Process finished with exit code 0
