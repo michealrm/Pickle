@@ -253,11 +253,11 @@ public class Scanner {
             // String
             token.primClassif = Classif.OPERAND;
             token.subClassif = SubClassif.STRING;
-        } else if(isInt(token)) {
+        } else if(PickleUtil.isInt(token.tokenStr)) {
             // Int
             token.primClassif = Classif.OPERAND;
             token.subClassif = SubClassif.INTEGER;
-        } else if(isFloat(token)) {
+        } else if(PickleUtil.isFloat(token.tokenStr)) {
             // Float
             token.primClassif = Classif.OPERAND;
             token.subClassif = SubClassif.FLOAT;
@@ -356,25 +356,6 @@ public class Scanner {
             if(!Character.isLetterOrDigit(token.tokenStr.charAt(i)))
                 alphaNumeric = false;
         return alphaNumeric;
-    }
-
-    private boolean isInt(Token token) {
-        boolean numeric = true;
-        for(int i = 0; i < token.tokenStr.length(); i++)
-            if(!Character.isDigit(token.tokenStr.charAt(i)))
-                numeric = false;
-        return numeric;
-    }
-
-    private boolean isFloat(Token token) {
-        boolean numeric = true;
-        for(int i = 0; i < token.tokenStr.length(); i++) {
-            char c = token.tokenStr.charAt(i);
-            if (!Character.isDigit(c) && c != '.')
-                numeric = false;
-        }
-
-        return numeric;
     }
 
     public boolean containsIn(String match, String... in) {
