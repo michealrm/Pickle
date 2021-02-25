@@ -1,4 +1,4 @@
-package main.java.pickle;
+package pickle;
 
 public class PickleUtil {
     public static boolean isInt(String tokenStr) {

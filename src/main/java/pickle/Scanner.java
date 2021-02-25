@@ -1,10 +1,10 @@
-package main.java.pickle;
+package pickle;
 
 import main.java.pickle.exception.SyntaxExceptionHandler;
-import main.java.pickle.st.STControl;
-import main.java.pickle.st.STEntry;
-import main.java.pickle.st.STFunction;
-import main.java.pickle.st.SymbolTable;
+import pickle.st.STControl;
+import pickle.st.STEntry;
+import pickle.st.STFunction;
+import pickle.st.SymbolTable;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

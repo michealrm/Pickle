@@ -26,8 +26,8 @@ SEPARATOR   -
 OPERATOR    -            =
 java.lang.NumberFormatException: Line 7 Col 6: Float contains more than one decimal
 	at main.java.pickle.exception.SyntaxExceptionHandler.tokenException(SyntaxExceptionHandler.java:22)
-	at main.java.pickle.Scanner.advanceTokenPos(Scanner.java:181)
-	at main.java.pickle.Scanner.getNext(Scanner.java:110)
+	at pickle.Scanner.advanceTokenPos(Scanner.java:181)
+	at pickle.Scanner.getNext(Scanner.java:110)
 	at main.java.pickle.Pickle.main(Pickle.java:38)
 
 Process finished with exit code 0

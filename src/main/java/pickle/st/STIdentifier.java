@@ -1,7 +1,7 @@
-package main.java.pickle.st;
+package pickle.st;
 
-import main.java.pickle.Classif;
-import main.java.pickle.SubClassif;
+import pickle.Classif;
+import pickle.SubClassif;
 
 public class STIdentifier extends STEntry {
     public STIdentifier(String symbol, Classif primClassif) {

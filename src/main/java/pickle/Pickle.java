@@ -15,9 +15,10 @@
          information about the exception and terminates.
       4. The token is printed using the Token::printToken() method.
  */
-package main.java.pickle;
+package pickle;
 
-import main.java.pickle.st.SymbolTable;
+import pickle.st.SymbolTable;
+import pickle.Scanner;
 
 public class Pickle
 {

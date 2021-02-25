@@ -1,4 +1,4 @@
-package main.java.pickle;
+package pickle;
 public enum Classif 
 {
     EMPTY,      // empty

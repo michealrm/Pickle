@@ -1,6 +1,6 @@
-package main.java.pickle.st;
+package pickle.st;
 
-import main.java.pickle.Token;
+import pickle.Token;
 
 import java.util.HashMap;
 
