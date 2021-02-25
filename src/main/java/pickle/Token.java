@@ -1,4 +1,4 @@
-package main.java.pickle;
+package pickle;
 
 /**
  * This class represents a token for the Scanner Class.  

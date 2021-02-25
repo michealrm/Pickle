@@ -1,7 +1,7 @@
-package main.java.pickle.st;
+package pickle.st;
 
-import main.java.pickle.Classif;
-import main.java.pickle.SubClassif;
+import pickle.Classif;
+import pickle.SubClassif;
 
 public class STControl extends STEntry {
 

@@ -1,8 +1,8 @@
-package main.java.pickle.st;
+package pickle.st;
 
-import main.java.pickle.Classif;
-import main.java.pickle.SubClassif;
-import main.java.pickle.Token;
+import pickle.Classif;
+import pickle.SubClassif;
+import pickle.Token;
 
 public class STEntry extends Token {
 
