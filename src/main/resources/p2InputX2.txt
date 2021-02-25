@@ -1,0 +1,61 @@
+Int i;
+Float pi;
+String day;
+   day 
+   = 
+   "Sunday";
+String name;
+name = "Anita Goodgrade";
+String weird;
+weird = "\tTX\tTexas\n";
+String loc;
+loc = "TX";
+
+// numeric stuff
+print(">>> Checking datatype results based on left operand");
+pi = 3.14;
+Float area;
+Float radius2;
+Int radius;
+radius = 8;
+radius2 = radius ^ 2;  // square the radius
+print("\t1. area all float");
+area = pi * radius2;
+print("\tradius="
+      ,  radius
+      ,  "radius2="
+      ,  radius2
+      ,  "area="
+      ,  area);
+Int irad2;
+irad2 = radius ^ 2;
+print("\t2. area using int radius as left operand");
+area = irad2 * pi;
+print("\tradius=", radius, "irad2=", irad2, "area=", area);
+Float circum;
+Float twoPi;
+print("\t3. circumference using twoPi as float * int");
+twoPi = pi * 2;
+circum = twoPi * radius;
+print("\tradius=", radius, "twoPi=", twoPi, "circum=", circum);
+print("\t4. circumference using twoPi as int * float");
+twoPi = 2 * pi;
+circum = twoPi * radius;
+print("\tradius=", radius, "twoPi=", twoPi, "circum=", circum);
+
+// Simple if
+i = 0;
+print(">>> First If");
+if loc == "TX": / /  not a comment and is not an error for the scanner
+    // It is TX
+    print("\tloc is", loc);
+    // it is ok to have this statement on multiple lines.  
+    // That is why we have a semicolon
+    i 
+       = 
+          i 
+          + 1;
+endif;
+print("\tDone with first if");
+
+        

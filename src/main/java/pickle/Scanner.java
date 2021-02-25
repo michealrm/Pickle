@@ -31,17 +31,35 @@ public class Scanner {
      */
     static {
         globalSymbolTable = new SymbolTable();
-        globalSymbolTable.put("def", new STControl("def", SubClassif.FLOW));
-        globalSymbolTable.put("enddef", new STControl("enddef", SubClassif.END));
-        globalSymbolTable.put("if", new STControl("if", SubClassif.FLOW));
-        globalSymbolTable.put("endif", new STControl("endif", SubClassif.END));
-        globalSymbolTable.put("Int", new STControl("Int", SubClassif.DECLARE));
-        globalSymbolTable.put("Float", new STControl("Float", SubClassif.DECLARE));
-        globalSymbolTable.put("Bool", new STControl("Bool", SubClassif.DECLARE));
-        globalSymbolTable.put("String", new STControl("String", SubClassif.DECLARE));
+
+        globalSymbolTable.put("def", new STControl("def", Classif.CONTROL, SubClassif.FLOW));
+        globalSymbolTable.put("enddef", new STControl("enddef", Classif.CONTROL, SubClassif.END));
+
+        globalSymbolTable.put("if", new STControl("if", Classif.CONTROL, SubClassif.FLOW));
+        globalSymbolTable.put("endif", new STControl("endif", Classif.CONTROL, SubClassif.END));
+        globalSymbolTable.put("else", new STControl("else", Classif.CONTROL, SubClassif.END));
+
+        globalSymbolTable.put("for", new STControl("for", Classif.CONTROL, SubClassif.FLOW));
+        globalSymbolTable.put("endfor", new STControl("endfor", Classif.CONTROL, SubClassif.END));
+
+        globalSymbolTable.put("while", new STControl("while", Classif.CONTROL, SubClassif.FLOW));
+        globalSymbolTable.put("endwhile", new STControl("endwhile", Classif.CONTROL, SubClassif.END));
+
+        globalSymbolTable.put("print", new STFunction("print", Classif.FUNCTION, SubClassif.VAR_ARGS, SubClassif.VOID, SubClassif.BUILTIN));
+
+
+        globalSymbolTable.put("Int", new STControl("Int", Classif.CONTROL, SubClassif.DECLARE));
+        globalSymbolTable.put("Float", new STControl("Float", Classif.CONTROL, SubClassif.DECLARE));
+        globalSymbolTable.put("String", new STControl("String", Classif.CONTROL, SubClassif.DECLARE));
+        globalSymbolTable.put("Bool", new STControl("Bool", Classif.CONTROL, SubClassif.DECLARE));
+        globalSymbolTable.put("Date", new STControl("Date", Classif.CONTROL, SubClassif.DECLARE));
+
         globalSymbolTable.put("and", new STEntry("and", Classif.OPERATOR));
         globalSymbolTable.put("or", new STEntry("or", Classif.OPERATOR));
-        globalSymbolTable.put("print", new STFunction("print", SubClassif.VOID, SubClassif.BUILTIN));
+        globalSymbolTable.put("not", new STEntry("not", Classif.OPERATOR));
+        globalSymbolTable.put("in", new STEntry("in", Classif.OPERATOR));
+        globalSymbolTable.put("notin", new STEntry("notin", Classif.OPERATOR));
+
     }
 
     public Scanner(String fileNm, SymbolTable symbolTable) {
@@ -126,7 +144,7 @@ public class Scanner {
             // Clear tokenStr in case this is a re-read
             t.tokenStr = "";
             t.primClassif = Classif.EMPTY;
-            t.subClassif = SubClassif.EMPTY;
+            t.dclType = SubClassif.EMPTY;
             char[] textCharM = sourceLineM.get(iLineNumber).toCharArray();
 
             do {
@@ -244,30 +262,30 @@ public class Scanner {
         } else if((stEntry = globalSymbolTable.get(tokenStr)) != null) {
             // Found in global symbol table
             token.primClassif = stEntry.primClassif;
-            token.subClassif = stEntry.subClassif;
+            token.dclType = stEntry.dclType;
         } else if((stEntry = symbolTable.get(tokenStr)) != null) {
             // Found in local symbol table
             token.primClassif = stEntry.primClassif;
-            token.subClassif = stEntry.subClassif;
+            token.dclType = stEntry.dclType;
         } else if(token.tokenStr.charAt(0) == '"' || token.tokenStr.charAt(0) == '\'') {
             // String
             token.primClassif = Classif.OPERAND;
-            token.subClassif = SubClassif.STRING;
+            token.dclType = SubClassif.STRING;
         } else if(isInt(token)) {
             // Int
             token.primClassif = Classif.OPERAND;
-            token.subClassif = SubClassif.INTEGER;
+            token.dclType = SubClassif.INTEGER;
         } else if(isFloat(token)) {
             // Float
             token.primClassif = Classif.OPERAND;
-            token.subClassif = SubClassif.FLOAT;
+            token.dclType = SubClassif.FLOAT;
         } else if(isOperator(token)) {
             token.primClassif = Classif.OPERATOR;
         }
         else if(isValidIdentifier(token)) {
             // Identifier
             token.primClassif = Classif.OPERAND;
-            token.subClassif = SubClassif.IDENTIFIER;
+            token.dclType = SubClassif.IDENTIFIER;
         }
     }
 
@@ -287,7 +305,7 @@ public class Scanner {
             default:
                 return false;
             case OPERAND:
-                switch (token.subClassif) {
+                switch (token.dclType) {
                     case INTEGER: // Numerics
                     case FLOAT:
                         return Character.isDigit(c) || c == '.';
@@ -314,7 +332,7 @@ public class Scanner {
                 return isTokenWhitespace(token) && isCharWhitespace(c);
             // Other separators are only one character
             case FUNCTION:
-                switch (token.subClassif) {
+                switch (token.dclType) {
                     case BUILTIN:
                         return containsIn(token.tokenStr + c, globalSymbolTable.hm);
                     case USER:

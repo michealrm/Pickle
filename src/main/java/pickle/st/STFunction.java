@@ -3,16 +3,29 @@ package main.java.pickle.st;
 import main.java.pickle.Classif;
 import main.java.pickle.SubClassif;
 
+import java.util.ArrayList;
+
 public class STFunction extends STEntry {
 
-    public SubClassif definedBy;
+    SubClassif returnType = SubClassif.EMPTY;
+    SubClassif definedBy = SubClassif.EMPTY;
+    ArrayList<String> parmList = new ArrayList<String>();
+    SubClassif varArgs = SubClassif.EMPTY;
+    Integer numArgs;
+    SymbolTable symbolTable;
 
-    public STFunction(String symbol) {
-        super(symbol, Classif.FUNCTION);
+    public STFunction(String symbol, Classif primClassif, Object numArgs, SubClassif returnType) {
+        super(symbol, primClassif);
+        this.returnType = returnType;
     }
 
-    public STFunction(String symbol, SubClassif subClassif, SubClassif definedBy) {
-        super(symbol, Classif.FUNCTION, subClassif);
+    public STFunction(String symbol, Classif primClassif, Object numArgs, SubClassif returnType, SubClassif definedBy) {
+        this(symbol, primClassif, numArgs, returnType);
         this.definedBy = definedBy;
+    }
+
+    public STFunction(String symbol, Classif primClassif, Object numArgs, SubClassif returnType, SubClassif structDef, ArrayList<String> parmList) {
+        this(symbol, primClassif, numArgs, returnType);
+        this.parmList = parmList;
     }
 }

@@ -11,8 +11,7 @@ public class STEntry extends Token {
         this.primClassif = primClassif;
     }
 
-    public STEntry(String symbol, Classif primClassif, SubClassif subClassif) {
-        this(symbol, primClassif);
-        this.subClassif = subClassif;
-    }
+
+
+
 }

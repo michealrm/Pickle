@@ -16,7 +16,7 @@ public class Token
      * Some values for OPERANDs: IDENTIFIER, INTEGER constant, FLOAT constant,
      * STRING constant.
      */
-    public SubClassif subClassif = SubClassif.EMPTY;
+    public SubClassif dclType = SubClassif.EMPTY;
     /** Line number location in the source file for this token.  Line numbers are
      * * relative to 1.
      */
@@ -59,8 +59,8 @@ public class Token
         else
             primClassifStr = "**garbage**";
 
-        if (subClassif != SubClassif.EMPTY)
-            subClassifStr = subClassif.toString();
+        if (dclType != SubClassif.EMPTY)
+            subClassifStr = dclType.toString();
         else
             subClassifStr = "-";
     
