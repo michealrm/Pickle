@@ -1,5 +1,7 @@
 package pickle;
 
+import java.io.IOException;
+
 /**
  * This class represents a token for the Scanner Class.  
  */
@@ -51,6 +53,8 @@ public class Token
      */
     public void printToken()
     {
+        tokenStr = tokenStr.replaceAll("^\"|\"$", "");
+
         String primClassifStr;
         String subClassifStr;
 
@@ -65,8 +69,12 @@ public class Token
             subClassifStr = "-";
 
         if (primClassif == Classif.OPERAND &&
-                dclType == SubClassif.STRING)
+                dclType == SubClassif.STRING &&
+                (tokenStr.contains("\\t") || tokenStr.contains("\\n")) )
         {
+            tokenStr = tokenStr.replace("\\n", "\n");
+            tokenStr = tokenStr.replace("\\t", "\t");
+
             System.out.printf("%-11s %-12s "
                     , primClassifStr
                     , subClassifStr);
