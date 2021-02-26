@@ -66,11 +66,10 @@ public class Token
         if (dclType != SubClassif.EMPTY)
             subClassifStr = dclType.toString();
         else
-            subClassifStr = "-";
+            subClassifStr = "n/a";
 
         if (primClassif == Classif.OPERAND &&
-                dclType == SubClassif.STRING &&
-                (tokenStr.contains("\\t") || tokenStr.contains("\\n")) )
+                dclType == SubClassif.STRING)
         {
             tokenStr = tokenStr.replace("\\n", "\n");
             tokenStr = tokenStr.replace("\\t", "\t");
