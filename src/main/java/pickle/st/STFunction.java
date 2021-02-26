@@ -10,12 +10,12 @@ public class STFunction extends STEntry {
     SubClassif returnType = SubClassif.EMPTY;
     SubClassif definedBy = SubClassif.EMPTY;
     ArrayList<String> parmList = new ArrayList<String>();
-    SubClassif varArgs = SubClassif.EMPTY;
-    Integer numArgs;
+    Object numArgs;
     SymbolTable symbolTable;
 
     public STFunction(String symbol, Classif primClassif, Object numArgs, SubClassif returnType) {
         super(symbol, primClassif);
+        this.numArgs = numArgs;
         this.returnType = returnType;
     }
 

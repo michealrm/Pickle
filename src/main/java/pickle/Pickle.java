@@ -24,6 +24,9 @@ public class Pickle
 {
     public static void main(String[] args) 
     {
+        // Create the Global SymbolTable
+        SymbolTable.initGlobal();
+
         // Create the SymbolTable
         SymbolTable symbolTable = new SymbolTable();
 

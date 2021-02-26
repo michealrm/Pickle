@@ -25,8 +25,6 @@ public class Scanner {
     public Token nextToken;
 
     public Scanner(String fileNm, SymbolTable symbolTable) {
-        SymbolTable.initGlobal();
-
         this.sourceFileNm = fileNm;
         this.symbolTable = symbolTable;
         sourceLineM = new ArrayList<>();
