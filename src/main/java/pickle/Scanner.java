@@ -86,9 +86,9 @@ public class Scanner {
         int[] nextPos = advanceTokenPos(nextToken);
         nextToken = new Token(nextPos[0], nextPos[1]);
         int[] advancedPos = advanceTokenPos(nextToken);
-        if(isTokenWhitespace(nextToken)) {
+        while(advancedPos != null && isTokenWhitespace(nextToken)) {
             nextToken = new Token(advancedPos[0], advancedPos[1]);
-            advanceTokenPos(nextToken);
+            advancedPos = advanceTokenPos(nextToken);
         }
 
         return currentToken;
@@ -140,7 +140,7 @@ public class Scanner {
                     t.tokenStr = ""; // For EMPTY continuesToken returns true, so we'll start reading a new token
 
                     iColNumber = textCharM.length;
-                    int ret[] = nextChar(iLineNumber, iColNumber);
+                    int[] ret = nextChar(iLineNumber, iColNumber);
                     iLineNumber = ret[0];
                     iColNumber = ret[1];
                     t.iSourceLineNr = iLineNumber;
