@@ -23,8 +23,7 @@ public class Scanner {
     public int iColPos;
     public Token currentToken;
     public Token nextToken;
-    private int lastLine = -1;
-    boolean isComment = false;
+    private int lastLine = -1; // Used by advanceTokenPos
 
     public Scanner(String fileNm, SymbolTable symbolTable) {
         this.sourceFileNm = fileNm;
@@ -76,22 +75,18 @@ public class Scanner {
         iColPos = nextToken.iColPos;
         currentToken = nextToken;
 
-        // Print line number
-        if(lastLine < iSourceLineNr && iSourceLineNr < sourceLineM.size()) {
-            lastLine = iSourceLineNr;
-            System.out.println("  " + (iSourceLineNr + 1) + " " + this.sourceLineM.get(iSourceLineNr));
-        }
-
         if(currentToken.primClassif == Classif.EOF)
             return currentToken;
         int[] nextPos = advanceTokenPos(nextToken);
         nextToken = new Token(nextPos[0], nextPos[1]);
         int[] advancedPos = advanceTokenPos(nextToken);
-        while(!isComment && advancedPos != null && isTokenWhitespace(nextToken)) {
+
+        // Skip whitespace tokens
+        while(advancedPos != null && isTokenWhitespace(nextToken)) {
+            //System.out.println(nextToken.iSourceLineNr);
             nextToken = new Token(advancedPos[0], advancedPos[1]);
             advancedPos = advanceTokenPos(nextToken);
         }
-        isComment = false;
 
         return currentToken;
     }
@@ -125,7 +120,13 @@ public class Scanner {
 
             do {
 
-                int[] nextPos = skipEmptyLines(iLineNumber, iColNumber);
+                // Print line
+                if(lastLine < iLineNumber ) {
+                    lastLine = iLineNumber;
+                    System.out.println("  " + (iLineNumber + 1) + " " + this.sourceLineM.get(iLineNumber));
+                }
+
+                int[] nextPos = skipEmptyLine(iLineNumber, iColNumber);
                 sourceLineBefore = iLineNumber;
                 iLineNumber = nextPos[0];
                 iColNumber = nextPos[1];
@@ -139,8 +140,6 @@ public class Scanner {
                 // Skip comment
                 if (t.tokenStr.equals("//"))
                 {
-                    isComment = true;
-
                     t.tokenStr = ""; // For EMPTY continuesToken returns true, so we'll start reading a new token
 
                     iColNumber = textCharM.length;
@@ -193,7 +192,7 @@ public class Scanner {
         if(iLineNumber >= sourceLineM.size())
             return packagePositions(iLineNumber, iColNumber);
 
-        int[] pos = skipEmptyLines(iLineNumber, iColNumber);
+        int[] pos = skipEmptyLine(iLineNumber, iColNumber);
         iLineNumber = pos[0];
         iColNumber = pos[1];
 
@@ -206,22 +205,17 @@ public class Scanner {
             iColNumber++;
         }
 
-        ret = skipEmptyLines(iLineNumber, iColNumber);
+        ret = packagePositions(iLineNumber, iColNumber);
+        //ret = skipEmptyLine(iLineNumber, iColNumber);
         return ret;
     }
 
-    private int[] skipEmptyLines(int r, int c) {
-        while(r < sourceLineM.size() && sourceLineM.get(r).length() == 0) {
+    private int[] skipEmptyLine(int r, int c) {
+        if(r < sourceLineM.size() && sourceLineM.get(r).length() == 0) {
             r++;
             c = 0;
-
-            if(r >= sourceLineM.size())
-                break;
         }
-        int[] ret = new int[2];
-        ret[0] = r;
-        ret[1] = c;
-        return ret;
+        return packagePositions(r, c);
     }
 
     private int[] packagePositions(int r, int c) {
