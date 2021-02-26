@@ -260,6 +260,9 @@ public class Scanner {
             // String
             token.primClassif = Classif.OPERAND;
             token.dclType = SubClassif.STRING;
+        } else if(token.tokenStr.equals("T") || token.tokenStr.equals("F")) {
+            token.primClassif = Classif.OPERAND;
+            token.dclType = SubClassif.BOOLEAN;
         } else if(PickleUtil.isInt(token.tokenStr)) {
             // Int
             token.primClassif = Classif.OPERAND;
