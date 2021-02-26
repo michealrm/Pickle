@@ -47,10 +47,10 @@ SEPARATOR   n/a          ;
   12 loc = "TX";
 OPERAND     IDENTIFIER   loc
 OPERATOR    n/a          =
- 13
+  13
 OPERAND     STRING       TX
                            
- 13
+  13
   14 // numeric stuff
   15 print(">>> Checking datatype results based on left operand");
 FUNCTION    BUILTIN      print
@@ -255,9 +255,9 @@ OPERAND     STRING       circum=
                                 
 SEPARATOR   n/a          ,
 OPERAND     IDENTIFIER   circum
- 45
+  45
 SEPARATOR   n/a          )
- 45
+  45
   46 // Simple if
   47 i = 0;
 OPERAND     IDENTIFIER   i
@@ -322,7 +322,7 @@ FUNCTION    BUILTIN      print
 SEPARATOR   n/a          (
 OPERAND     STRING       . Done with first if
                          09                  
- 60
+  60
 SEPARATOR   n/a          )
- 60
+  60
 SEPARATOR   n/a          ;

@@ -216,7 +216,7 @@ public class Scanner {
             if(r >= sourceLineM.size())
                 break;
 
-            System.out.println(" " + r);
+            System.out.println("  " + r); // Print line number
         }
         int[] ret = new int[2];
         ret[0] = r;
