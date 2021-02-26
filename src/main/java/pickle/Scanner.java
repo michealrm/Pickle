@@ -122,6 +122,7 @@ public class Scanner {
             char[] textCharM = sourceLineM.get(iLineNumber).toCharArray();
 
             do {
+
                 int[] nextPos = skipEmptyLines(iLineNumber, iColNumber);
                 sourceLineBefore = iLineNumber;
                 iLineNumber = nextPos[0];
@@ -133,20 +134,17 @@ public class Scanner {
 
                 t.tokenStr = t.tokenStr + textCharM[iColNumber];
 
-                // Comment
+                // Skip comment
                 if (t.tokenStr.equals("//"))
                 {
-                    t.tokenStr = "";
-                    t.primClassif = Classif.EMPTY;
-                    t.dclType = SubClassif.EMPTY;
+                    t.tokenStr = " ";
+                    t.primClassif = Classif.SEPARATOR; // Act as whitespace since for EMPTY continuesToken returns true
 
                     iLineNumber++;
                     iColNumber = 0;
-                    textCharM = sourceLineM.get(iLineNumber).toCharArray();
-                    int[] ret = nextPos(iLineNumber, iColNumber);
-                    iLineNumber = ret[0];
-                    iColNumber = ret[1];
-                    continue;
+                    t.iSourceLineNr = iLineNumber;
+                    t.iColPos = iColNumber;
+                    return packagePositions(iLineNumber, iColNumber);
                 }
 
                 // Classify token
@@ -316,7 +314,7 @@ public class Scanner {
                 }
             case OPERATOR:
                 // == ?
-                return (token.tokenStr.equals(">") ||
+                return ((token.tokenStr.equals(">") ||
                         token.tokenStr.equals("<") ||
                         token.tokenStr.equals("=") ||
                         token.tokenStr.equals("!") ||
@@ -324,7 +322,7 @@ public class Scanner {
                         token.tokenStr.equals("-") ||
                         token.tokenStr.equals("*") ||
                         token.tokenStr.equals("/") ||
-                        token.tokenStr.equals("^")
+                        token.tokenStr.equals("^"))
                         && c == '=')
                         || (token.tokenStr.equals("+") && c == '+')
                         || (token.tokenStr.equals("-") && c == '-')
