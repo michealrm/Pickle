@@ -289,6 +289,12 @@ public class Scanner {
      * @return
      */
     public boolean continuesToken(Token token, char c) {
+        Token copy = new Token(token.tokenStr + c);
+        setClassification(copy);
+        if(copy.primClassif != Classif.EMPTY && copy.dclType != token.dclType) {
+            token.primClassif = copy.primClassif;
+            token.dclType = copy.dclType;
+        }
         switch (token.primClassif) {
             case EMPTY:
                 return true;
