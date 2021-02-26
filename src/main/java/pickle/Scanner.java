@@ -24,6 +24,7 @@ public class Scanner {
     public Token currentToken;
     public Token nextToken;
     private int lastLine = -1;
+    boolean isComment = false;
 
     public Scanner(String fileNm, SymbolTable symbolTable) {
         this.sourceFileNm = fileNm;
@@ -86,10 +87,11 @@ public class Scanner {
         int[] nextPos = advanceTokenPos(nextToken);
         nextToken = new Token(nextPos[0], nextPos[1]);
         int[] advancedPos = advanceTokenPos(nextToken);
-        while(advancedPos != null && isTokenWhitespace(nextToken)) {
+        while(!isComment && advancedPos != null && isTokenWhitespace(nextToken)) {
             nextToken = new Token(advancedPos[0], advancedPos[1]);
             advancedPos = advanceTokenPos(nextToken);
         }
+        isComment = false;
 
         return currentToken;
     }
@@ -137,14 +139,14 @@ public class Scanner {
                 // Skip comment
                 if (t.tokenStr.equals("//"))
                 {
+                    isComment = true;
+
                     t.tokenStr = ""; // For EMPTY continuesToken returns true, so we'll start reading a new token
 
                     iColNumber = textCharM.length;
                     int[] ret = nextChar(iLineNumber, iColNumber);
                     iLineNumber = ret[0];
                     iColNumber = ret[1];
-                    t.iSourceLineNr = iLineNumber;
-                    t.iColPos = iColNumber;
                     return packagePositions(iLineNumber, iColNumber);
                 }
 
@@ -418,7 +420,6 @@ public class Scanner {
     public int[] nextChar(int iSourceLineNr, int iColPos) {
 
         String line = sourceLineM.get(iSourceLineNr);
-        char[] textCharM = line.toCharArray();
         do {
             int[] pos = nextPos(iSourceLineNr, iColPos);
             iSourceLineNr = pos[0];
