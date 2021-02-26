@@ -133,15 +133,6 @@ public class Scanner {
 
                 t.tokenStr = t.tokenStr + textCharM[iColNumber];
 
-                if (t.tokenStr.equals("//"))
-                {
-                    t.tokenStr = "";
-                    iColNumber = 0;
-                    iLineNumber++;
-                    textCharM = sourceLineM.get(iLineNumber).toCharArray();
-                    continue;
-                }
-
                 // Classify token
                 setClassification(t);
 
@@ -292,7 +283,7 @@ public class Scanner {
                     case FLOAT:
                         return Character.isDigit(c) || c == '.';
                     case BOOLEAN:
-                        return containsIn(token.tokenStr + c, "true", "false");
+                        return containsIn(token.tokenStr + c, "T", "F");
                     case STRING:
                         char start = token.tokenStr.charAt(0);
                         char end = token.tokenStr.charAt(token.tokenStr.length() - 1);
@@ -309,7 +300,19 @@ public class Scanner {
                 }
             case OPERATOR:
                 // == ?
-                return (token.tokenStr.equals(">") || token.tokenStr.equals("<") || token.tokenStr.equals("=") || token.tokenStr.equals("!")) && c == '=';
+                return (token.tokenStr.equals(">") ||
+                        token.tokenStr.equals("<") ||
+                        token.tokenStr.equals("=") ||
+                        token.tokenStr.equals("!") ||
+                        token.tokenStr.equals("+") ||
+                        token.tokenStr.equals("-") ||
+                        token.tokenStr.equals("*") ||
+                        token.tokenStr.equals("/") ||
+                        token.tokenStr.equals("^")
+                        && c == '=')
+                        || (token.tokenStr.equals("+") && c == '+')
+                        || (token.tokenStr.equals("-") && c == '-')
+                        || (token.tokenStr.equals("/") && c == '/'); // Comment
             case SEPARATOR:
                 return isTokenWhitespace(token) && isCharWhitespace(c);
             // Other separators are only one character
@@ -340,6 +343,7 @@ public class Scanner {
             case '/':
             case ':':
             case '!':
+            case '^':
                 return true;
             default:
                 return false;
@@ -403,7 +407,7 @@ public class Scanner {
     }
 
     public boolean isTokenWhitespace(Token t) {
-        return isCharWhitespace(t.tokenStr.charAt(0));
+        return t.tokenStr.length() == 0 || isCharWhitespace(t.tokenStr.charAt(0));
     }
 
     private boolean isCharWhitespace(char c) {

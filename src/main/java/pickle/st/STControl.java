@@ -11,8 +11,8 @@ public class STControl extends STEntry {
         super(symbol, primClassif);
     }
 
-    public STControl(String symbol, Classif primClassif, SubClassif subClassif) {
+    public STControl(String symbol, Classif primClassif, SubClassif dclType) {
         super(symbol, primClassif);
-        this.subClassif = subClassif;
+        this.dclType = dclType;
     }
 }
