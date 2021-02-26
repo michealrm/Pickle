@@ -26,8 +26,6 @@ public class Scanner {
     private int lastLine = -1;
 
     public Scanner(String fileNm, SymbolTable symbolTable) {
-        SymbolTable.initGlobal();
-
         this.sourceFileNm = fileNm;
         this.symbolTable = symbolTable;
         sourceLineM = new ArrayList<>();
