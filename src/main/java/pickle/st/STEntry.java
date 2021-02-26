@@ -10,8 +10,4 @@ public class STEntry extends Token {
         super(symbol);
         this.primClassif = primClassif;
     }
-
-
-
-
 }

@@ -24,45 +24,9 @@ public class Scanner {
     public Token currentToken;
     public Token nextToken;
 
-    public static SymbolTable globalSymbolTable;
-
-    /**
-     * Initialize global symbol table
-     */
-    static {
-        globalSymbolTable = new SymbolTable();
-
-        globalSymbolTable.put("def", new STControl("def", Classif.CONTROL, SubClassif.FLOW));
-        globalSymbolTable.put("enddef", new STControl("enddef", Classif.CONTROL, SubClassif.END));
-
-        globalSymbolTable.put("if", new STControl("if", Classif.CONTROL, SubClassif.FLOW));
-        globalSymbolTable.put("endif", new STControl("endif", Classif.CONTROL, SubClassif.END));
-        globalSymbolTable.put("else", new STControl("else", Classif.CONTROL, SubClassif.END));
-
-        globalSymbolTable.put("for", new STControl("for", Classif.CONTROL, SubClassif.FLOW));
-        globalSymbolTable.put("endfor", new STControl("endfor", Classif.CONTROL, SubClassif.END));
-
-        globalSymbolTable.put("while", new STControl("while", Classif.CONTROL, SubClassif.FLOW));
-        globalSymbolTable.put("endwhile", new STControl("endwhile", Classif.CONTROL, SubClassif.END));
-
-        globalSymbolTable.put("print", new STFunction("print", Classif.FUNCTION, SubClassif.VAR_ARGS, SubClassif.VOID, SubClassif.BUILTIN));
-
-
-        globalSymbolTable.put("Int", new STControl("Int", Classif.CONTROL, SubClassif.DECLARE));
-        globalSymbolTable.put("Float", new STControl("Float", Classif.CONTROL, SubClassif.DECLARE));
-        globalSymbolTable.put("String", new STControl("String", Classif.CONTROL, SubClassif.DECLARE));
-        globalSymbolTable.put("Bool", new STControl("Bool", Classif.CONTROL, SubClassif.DECLARE));
-        globalSymbolTable.put("Date", new STControl("Date", Classif.CONTROL, SubClassif.DECLARE));
-
-        globalSymbolTable.put("and", new STEntry("and", Classif.OPERATOR));
-        globalSymbolTable.put("or", new STEntry("or", Classif.OPERATOR));
-        globalSymbolTable.put("not", new STEntry("not", Classif.OPERATOR));
-        globalSymbolTable.put("in", new STEntry("in", Classif.OPERATOR));
-        globalSymbolTable.put("notin", new STEntry("notin", Classif.OPERATOR));
-
-    }
-
     public Scanner(String fileNm, SymbolTable symbolTable) {
+        SymbolTable.initGlobal();
+
         this.sourceFileNm = fileNm;
         this.symbolTable = symbolTable;
         sourceLineM = new ArrayList<>();
@@ -259,11 +223,11 @@ public class Scanner {
         } else if(isSeparator(token)) {
             // Separator
           token.primClassif = Classif.SEPARATOR;
-        } else if((stEntry = globalSymbolTable.get(tokenStr)) != null) {
+        } else if((stEntry = SymbolTable.globalSymbolTable.getSymbol(tokenStr)) != null) {
             // Found in global symbol table
             token.primClassif = stEntry.primClassif;
             token.dclType = stEntry.dclType;
-        } else if((stEntry = symbolTable.get(tokenStr)) != null) {
+        } else if((stEntry = symbolTable.getSymbol(tokenStr)) != null) {
             // Found in local symbol table
             token.primClassif = stEntry.primClassif;
             token.dclType = stEntry.dclType;
@@ -322,7 +286,7 @@ public class Scanner {
                         return Character.isLetterOrDigit(c);
                     default:
                         // Built-in operands like and, or, etc. that don't have a subclassif
-                        return containsIn(token.tokenStr + c, globalSymbolTable.hm);
+                        return containsIn(token.tokenStr + c, SymbolTable.globalSymbolTable.hm);
                     // ??? Possibly other cases
                 }
             case OPERATOR:
@@ -334,15 +298,15 @@ public class Scanner {
             case FUNCTION:
                 switch (token.dclType) {
                     case BUILTIN:
-                        return containsIn(token.tokenStr + c, globalSymbolTable.hm);
+                        return containsIn(token.tokenStr + c, SymbolTable.globalSymbolTable.hm);
                     case USER:
                         return containsIn(token.tokenStr + c, symbolTable.hm);
                     case VOID:
-                        return containsIn(token.tokenStr + c, globalSymbolTable.hm) ||
+                        return containsIn(token.tokenStr + c, SymbolTable.globalSymbolTable.hm) ||
                                 containsIn(token.tokenStr + c, symbolTable.hm);
                 }
             case CONTROL:
-                return containsIn(token.tokenStr + c, globalSymbolTable.hm);
+                return containsIn(token.tokenStr + c, SymbolTable.globalSymbolTable.hm);
         }
     }
 
