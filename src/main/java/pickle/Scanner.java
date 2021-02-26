@@ -137,11 +137,12 @@ public class Scanner {
                 // Skip comment
                 if (t.tokenStr.equals("//"))
                 {
-                    t.tokenStr = " ";
-                    t.primClassif = Classif.SEPARATOR; // Act as whitespace since for EMPTY continuesToken returns true
+                    t.tokenStr = ""; // For EMPTY continuesToken returns true, so we'll start reading a new token
 
-                    iLineNumber++;
-                    iColNumber = 0;
+                    iColNumber = textCharM.length;
+                    int ret[] = nextChar(iLineNumber, iColNumber);
+                    iLineNumber = ret[0];
+                    iColNumber = ret[1];
                     t.iSourceLineNr = iLineNumber;
                     t.iColPos = iColNumber;
                     return packagePositions(iLineNumber, iColNumber);
