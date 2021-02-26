@@ -53,11 +53,6 @@ public class Token
      */
     public void printToken()
     {
-        if(Scanner.isComment) {
-            Scanner.isComment = false;
-            return;
-        }
-
         tokenStr = tokenStr.replaceAll("^\"|\"$", "");
 
         String primClassifStr;
