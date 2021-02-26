@@ -24,7 +24,7 @@ public class Scanner {
     public Token currentToken;
     public Token nextToken;
     private int lastLine = -1;
-    boolean isComment = false;
+    public static boolean isComment = false;
 
     public Scanner(String fileNm, SymbolTable symbolTable) {
         this.sourceFileNm = fileNm;
@@ -91,8 +91,6 @@ public class Scanner {
             nextToken = new Token(advancedPos[0], advancedPos[1]);
             advancedPos = advanceTokenPos(nextToken);
         }
-        isComment = false;
-
         return currentToken;
     }
 

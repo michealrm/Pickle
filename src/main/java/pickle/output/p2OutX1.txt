@@ -49,9 +49,7 @@ OPERAND     IDENTIFIER   loc
 OPERATOR    n/a          =
 OPERAND     STRING       TX
                            
-SEPARATOR   n/a          ;
   14 // numeric stuff
-OPERATOR    n/a          
   15 print(">>> Checking datatype results based on left operand");
 FUNCTION    BUILTIN      print
 SEPARATOR   n/a          (
@@ -87,8 +85,6 @@ OPERATOR    n/a          =
 OPERAND     IDENTIFIER   radius
 OPERATOR    n/a          ^
 OPERAND     INTEGER      2
-SEPARATOR   n/a          ;
-OPERATOR    n/a          
   22 print("\t1. area all float");
 FUNCTION    BUILTIN      print
 SEPARATOR   n/a          (
@@ -258,9 +254,7 @@ OPERAND     STRING       circum=
 SEPARATOR   n/a          ,
 OPERAND     IDENTIFIER   circum
 SEPARATOR   n/a          )
-SEPARATOR   n/a          ;
   46 // Simple if
-OPERATOR    n/a          
   47 i = 0;
 OPERAND     IDENTIFIER   i
 OPERATOR    n/a          =
@@ -279,11 +273,7 @@ OPERAND     IDENTIFIER   loc
 OPERATOR    n/a          ==
 OPERAND     STRING       TX
                            
-OPERATOR    n/a          :
-OPERATOR    n/a          
   50     // It is TX
-SEPARATOR   n/a              
-OPERATOR    n/a          
   51     print("\tloc is", loc);
 FUNCTION    BUILTIN      print
 SEPARATOR   n/a          (
@@ -292,11 +282,8 @@ OPERAND     STRING       . loc is
 SEPARATOR   n/a          ,
 OPERAND     IDENTIFIER   loc
 SEPARATOR   n/a          )
-SEPARATOR   n/a          ;
   52     // it is ok to have this statement on multiple lines.  
-OPERATOR    n/a          
   53     // That is why we have a semicolon
-OPERATOR    n/a          
   54     i 
 OPERAND     IDENTIFIER   i
   55        = 
@@ -323,9 +310,7 @@ SEPARATOR   n/a          (
 OPERAND     STRING       >>> Second If
                                       
 SEPARATOR   n/a          )
-SEPARATOR   n/a          ;
   62 // if then else
-OPERATOR    n/a          
   63 if i >= 5:
 CONTROL     FLOW         if
 OPERAND     IDENTIFIER   i
@@ -355,9 +340,7 @@ SEPARATOR   n/a          )
 SEPARATOR   n/a          ;
   67 endif;
 CONTROL     END          endif
-SEPARATOR   n/a          ;
   68 // while and if 
-OPERATOR    n/a          
   69 print(">>> First while i < 5");    
 FUNCTION    BUILTIN      print
 SEPARATOR   n/a          (
@@ -519,9 +502,7 @@ SEPARATOR   n/a          (
 OPERAND     STRING       . After first while
                          09                 
 SEPARATOR   n/a          )
-SEPARATOR   n/a          ;
   96 // nested while loops
-OPERATOR    n/a          
   97 print(">>> Second while i < 5 ... with nested while");
 FUNCTION    BUILTIN      print
 SEPARATOR   n/a          (
