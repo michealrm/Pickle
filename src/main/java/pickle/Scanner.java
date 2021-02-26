@@ -133,6 +133,22 @@ public class Scanner {
 
                 t.tokenStr = t.tokenStr + textCharM[iColNumber];
 
+                // Comment
+                if (t.tokenStr.equals("//"))
+                {
+                    t.tokenStr = "";
+                    t.primClassif = Classif.EMPTY;
+                    t.dclType = SubClassif.EMPTY;
+
+                    iLineNumber++;
+                    iColNumber = 0;
+                    textCharM = sourceLineM.get(iLineNumber).toCharArray();
+                    int[] ret = nextPos(iLineNumber, iColNumber);
+                    iLineNumber = ret[0];
+                    iColNumber = ret[1];
+                    continue;
+                }
+
                 // Classify token
                 setClassification(t);
 
