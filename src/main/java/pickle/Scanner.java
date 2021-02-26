@@ -125,7 +125,6 @@ public class Scanner {
                     lastLine = iLineNumber;
                     System.out.println("  " + (iLineNumber + 1) + " " + this.sourceLineM.get(iLineNumber));
                 }
-
                 int[] nextPos = skipEmptyLine(iLineNumber, iColNumber);
                 sourceLineBefore = iLineNumber;
                 iLineNumber = nextPos[0];
@@ -170,10 +169,7 @@ public class Scanner {
                 // TODO: Change later for multiline comments
             } while (sourceLineBefore == iLineNumber && continuesToken(t, textCharM[iColNumber]));
 
-            int[] ret = new int[2];
-            ret[0] = iLineNumber;
-            ret[1] = iColNumber;
-            return ret;
+            return packagePositions(iLineNumber, iColNumber);
         } finally {
             SyntaxExceptionHandler.tokenException(t, t.iSourceLineNr, t.iColPos);
         }
