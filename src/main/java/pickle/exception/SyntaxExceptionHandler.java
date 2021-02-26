@@ -1,5 +1,8 @@
 package main.java.pickle.exception;
 
+import pickle.SubClassif;
+import pickle.Token;
+
 public class SyntaxExceptionHandler {
 
     /**
@@ -7,8 +10,9 @@ public class SyntaxExceptionHandler {
      *
      * @param tokenStr Token to be scanned for exceptions
      */
-    public static void tokenException(String tokenStr, int iLineNumber, int iColNumber) throws Exception {
-        iLineNumber++;
+    public static void tokenException(Token token, int iLineNumber, int iColNumber) throws Exception {
+        iLineNumber++; // For display
+        String tokenStr = token.tokenStr;
 
         int decimal = 0;
 
@@ -16,7 +20,7 @@ public class SyntaxExceptionHandler {
             char c = tokenStr.charAt(i);
 
             // Decimal FloatingPointException
-            if (c == '.') {
+            if (token.dclType == SubClassif.FLOAT && c == '.') {
                 decimal++;
                 if (decimal > 1)
                     throw new NumberFormatException(errorMsg(iLineNumber, iColNumber, "Float contains more than one decimal"));

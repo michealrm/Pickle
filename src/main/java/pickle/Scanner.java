@@ -23,6 +23,7 @@ public class Scanner {
     public int iColPos;
     public Token currentToken;
     public Token nextToken;
+    private int lastLine = -1;
 
     public Scanner(String fileNm, SymbolTable symbolTable) {
         SymbolTable.initGlobal();
@@ -71,15 +72,26 @@ public class Scanner {
      * @return The token at iSourceLineNr and iColPos
      */
     public Token getNext() throws Exception {
+
         iSourceLineNr = nextToken.iSourceLineNr;
         iColPos = nextToken.iColPos;
         currentToken = nextToken;
+
+        // Print line number
+        if(lastLine < iSourceLineNr && iSourceLineNr < sourceLineM.size()) {
+            lastLine = iSourceLineNr;
+            System.out.println("  " + (iSourceLineNr + 1) + " " + this.sourceLineM.get(iSourceLineNr));
+        }
 
         if(currentToken.primClassif == Classif.EOF)
             return currentToken;
         int[] nextPos = advanceTokenPos(nextToken);
         nextToken = new Token(nextPos[0], nextPos[1]);
-        advanceTokenPos(nextToken);
+        int[] advancedPos = advanceTokenPos(nextToken);
+        if(isTokenWhitespace(nextToken)) {
+            nextToken = new Token(advancedPos[0], advancedPos[1]);
+            advanceTokenPos(nextToken);
+        }
 
         return currentToken;
     }
@@ -123,6 +135,15 @@ public class Scanner {
 
                 t.tokenStr = t.tokenStr + textCharM[iColNumber];
 
+                if (t.tokenStr.equals("//"))
+                {
+                    t.tokenStr = "";
+                    iColNumber = 0;
+                    iLineNumber++;
+                    textCharM = sourceLineM.get(iLineNumber).toCharArray();
+                    continue;
+                }
+
                 // Classify token
                 setClassification(t);
 
@@ -149,7 +170,7 @@ public class Scanner {
             ret[1] = iColNumber;
             return ret;
         } finally {
-            SyntaxExceptionHandler.tokenException(t.tokenStr, t.iSourceLineNr, t.iColPos);
+            SyntaxExceptionHandler.tokenException(t, t.iSourceLineNr, t.iColPos);
         }
     }
 
@@ -261,7 +282,6 @@ public class Scanner {
      * @return
      */
     public boolean continuesToken(Token token, char c) {
-
         switch (token.primClassif) {
             case EMPTY:
                 return true;
@@ -291,7 +311,7 @@ public class Scanner {
                 }
             case OPERATOR:
                 // == ?
-                return (token.tokenStr.equals(">") || token.tokenStr.equals("<") || token.tokenStr.equals("=")) && c == '=';
+                return (token.tokenStr.equals(">") || token.tokenStr.equals("<") || token.tokenStr.equals("=") || token.tokenStr.equals("!")) && c == '=';
             case SEPARATOR:
                 return isTokenWhitespace(token) && isCharWhitespace(c);
             // Other separators are only one character
@@ -321,6 +341,7 @@ public class Scanner {
             case '*':
             case '/':
             case ':':
+            case '!':
                 return true;
             default:
                 return false;
@@ -369,6 +390,7 @@ public class Scanner {
      * @return
      */
     public int[] nextChar(int iSourceLineNr, int iColPos) {
+
         String line = sourceLineM.get(iSourceLineNr);
         char[] textCharM = line.toCharArray();
         do {
