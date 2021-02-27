@@ -75,12 +75,6 @@ public class Scanner {
         iColPos = nextToken.iColPos;
         currentToken = nextToken;
 
-        // Print line
-        if(lastLine < iSourceLineNr ) {
-            lastLine = iSourceLineNr;
-            System.out.println("  " + (iSourceLineNr + 1) + " " + this.sourceLineM.get(iSourceLineNr));
-        }
-
         if(currentToken.primClassif == Classif.EOF)
             return currentToken;
         int[] nextPos = advanceTokenPos(nextToken);
@@ -125,6 +119,15 @@ public class Scanner {
             char[] textCharM = sourceLineM.get(iLineNumber).toCharArray();
 
             do {
+
+                // Print line
+                // This ends up printing the line for nextToken, so the last token of the last line (usually ;) will
+                // be printed after the next line is printed
+                // TODO: Put this in nextToken() for currentToken, but handle whitespace lines (including comments on their own line)
+                if(lastLine < iLineNumber ) {
+                    lastLine = iLineNumber;
+                    System.out.println("  " + (iLineNumber + 1) + " " + this.sourceLineM.get(iLineNumber));
+                }
                 int[] nextPos = skipEmptyLine(iLineNumber, iColNumber);
                 sourceLineBefore = iLineNumber;
                 iLineNumber = nextPos[0];
