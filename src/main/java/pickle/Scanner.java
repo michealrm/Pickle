@@ -15,6 +15,8 @@ import java.util.Set;
 
 public class Scanner {
 
+    private static final boolean PRINT_CURRENT_TOKEN_LINE = true;
+
     public String sourceFileNm;
     public ArrayList<String> sourceLineM;
     public SymbolTable symbolTable;
@@ -75,6 +77,10 @@ public class Scanner {
         iColPos = nextToken.iColPos;
         currentToken = nextToken;
 
+        if(PRINT_CURRENT_TOKEN_LINE) {
+            printLine(iSourceLineNr);
+        }
+
         if(currentToken.primClassif == Classif.EOF)
             return currentToken;
         int[] nextPos = advanceTokenPos(nextToken);
@@ -123,10 +129,8 @@ public class Scanner {
                 // Print line
                 // This ends up printing the line for nextToken, so the last token of the last line (usually ;) will
                 // be printed after the next line is printed
-                // TODO: Put this in nextToken() for currentToken, but handle whitespace lines (including comments on their own line)
-                if(lastLine < iLineNumber ) {
-                    lastLine = iLineNumber;
-                    System.out.println("  " + (iLineNumber + 1) + " " + this.sourceLineM.get(iLineNumber));
+                if(!PRINT_CURRENT_TOKEN_LINE) {
+                    printLine(iLineNumber);
                 }
                 int[] nextPos = skipEmptyLine(iLineNumber, iColNumber);
                 sourceLineBefore = iLineNumber;
@@ -178,6 +182,12 @@ public class Scanner {
         }
     }
 
+    private void printLine(int iLineNumber) {
+        if(lastLine < iLineNumber && iLineNumber < sourceLineM.size()) {
+            lastLine = iLineNumber;
+            System.out.println("  " + (iLineNumber + 1) + " " + this.sourceLineM.get(iLineNumber));
+        }
+    }
 
     /**
      * Returns the next character, skipping blank lines if necessary.
