@@ -1,3 +1,10 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------------< groupId:Pickle >---------------------------
+[INFO] Building Pickle 2.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- exec-maven-plugin:3.0.0:java (default-cli) @ Pickle ---
 run:
 primClassif subClassif   tokenStr
   1 Int i;
@@ -318,3 +325,9 @@ SEPARATOR   n/a          )
   61 
   62         
 SEPARATOR   n/a          ;
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.674 s
+[INFO] Finished at: 2021-02-26T16:59:58-06:00
+[INFO] ------------------------------------------------------------------------

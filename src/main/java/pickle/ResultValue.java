@@ -1,10 +1,12 @@
 package pickle;
 
 import java.util.HashMap;
+import pickle.exception.InvalidNumberException;
+import pickle.exception.InvalidOperationException;
 
 public class ResultValue
 {
-	public int iDatatype;
+	public SubClassif iDatatype;
 	public Object value;
 	public boolean isNumber = false;
 	public String scTerminatingStr;
@@ -19,42 +21,42 @@ public class ResultValue
 	* @param iType: the datatype of the object
 	* @param val: the value of the object
 	*/
-	public ResultValue(int iType, Object val) throws Exception
+	public ResultValue(SubClassif iType, Object val) throws Exception
 	{
 		iDatatype = iType;
 		value = val;
 		
 		// Check if type is a number type
-		if (type == SubClassif.INTEGER || type == SubClassif.FLOAT)
+		if (iDatatype == SubClassif.INTEGER || iDatatype == SubClassif.FLOAT)
 		{
-			if (type instanceof Numeric)
+			if (val instanceof Numeric)
 			{
 				value = val;
 			}
 			else
 			{
-				value = new Numeric((String), val, type);
+				value = new Numeric( (String) val, iDatatype);
 			}
 			isNumber = true;
 		}
 		
 		// Check if type is an identifier type
-		else if (type == SubClassif.IDENTIFIER)
+		else if (iDatatype == SubClassif.IDENTIFIER)
 		{
 			if (val instanceof Numeric)
 			{
 				value = val;
-				type = ((Numeric) val).type;
+				iDatatype = ((Numeric) val).type;
 			}
 			else if (val instanceof String)
 			{
 				value = val;
-				type = SubClassif.STRING;
+				iDatatype = SubClassif.STRING;
 			}
 			else if (val instanceof Boolean)
 			{
 				value = val;
-				type = SubClassif.BOOLEAN;
+				iDatatype = SubClassif.BOOLEAN;
 			}
 			else
 			{
@@ -76,7 +78,7 @@ public class ResultValue
 	public ResultValue executeOperation(ResultValue rightOperand, String operation) throws Exception
 	{
 		Object result = 0;
-		int resultType = iDatatype;
+		SubClassif resultType = iDatatype;
 		
 		if (isNumber)
 		{
@@ -118,11 +120,11 @@ public class ResultValue
 				{
 					if (((Numeric) value).equals((Numeric) rightOperand.value) == true)
 					{
-						result = new Boolean(true);
+						result = true;
 					}
 					else
 					{
-						result = new Boolean(false);
+						result = false;
 					}
 					resultType = SubClassif.BOOLEAN;
 				}
@@ -130,11 +132,11 @@ public class ResultValue
 				{
 					if (((Numeric) value).notequals((Numeric) rightOperand.value) == true)
 					{
-						result = new Boolean(true);
+						result = true;
 					}
 					else
 					{
-						result = new Boolean(false);
+						result = false;
 					}
 					resultType = SubClassif.BOOLEAN;
 				}
@@ -142,11 +144,11 @@ public class ResultValue
 				{
 					if (((Numeric) value).lessthan((Numeric) rightOperand.value) == true)
 					{
-						result = new Boolean(true);
+						result = true;
 					}
 					else
 					{
-						result = new Boolean(false);
+						result = false;
 					}
 					resultType = SubClassif.BOOLEAN;
 				}
@@ -154,11 +156,11 @@ public class ResultValue
 				{
 					if (((Numeric) value).lessthanequalto((Numeric) rightOperand.value) == true)
 					{
-						result = new Boolean(true);
+						result = true;
 					}
 					else
 					{
-						result = new Boolean(false);
+						result = false;
 					}
 					resultType = SubClassif.BOOLEAN;
 				}
@@ -166,11 +168,11 @@ public class ResultValue
 				{
 					if (((Numeric) value).greaterthan((Numeric) rightOperand.value) == true)
 					{
-						result = new Boolean(true);
+						result = true;
 					}
 					else
 					{
-						result = new Boolean(false);
+						result = false;
 					}
 					resultType = SubClassif.BOOLEAN;
 				}
@@ -178,11 +180,11 @@ public class ResultValue
 				{
 					if (((Numeric) value).greaterthanequalto((Numeric) rightOperand.value) == true)
 					{
-						result = new Boolean(true);
+						result = true;
 					}
 					else
 					{
-						result = new Boolean(false);
+						result = false;
 					}
 					resultType = SubClassif.BOOLEAN;
 				}
@@ -220,11 +222,11 @@ public class ResultValue
 				{
 					if (((Numeric) value).equals(tempRightOperand) == true)
 					{
-						result = new Boolean(true);
+						result = true;
 					}
 					else
 					{
-						result = new Boolean(false);
+						result = false;
 					}
 					resultType = SubClassif.BOOLEAN;
 				}
@@ -232,11 +234,11 @@ public class ResultValue
 				{
 					if (((Numeric) value).notequals(tempRightOperand) == true)
 					{
-						result = new Boolean(true);
+						result = true;
 					}
 					else
 					{
-						result = new Boolean(false);
+						result = false;
 					}
 					resultType = SubClassif.BOOLEAN;
 				}
@@ -244,11 +246,11 @@ public class ResultValue
 				{
 					if (((Numeric) value).lessthan(tempRightOperand) == true)
 					{
-						result = new Boolean(true);
+						result = true;
 					}
 					else
 					{
-						result = new Boolean(false);
+						result = false;
 					}
 					resultType = SubClassif.BOOLEAN;
 				}
@@ -256,11 +258,11 @@ public class ResultValue
 				{
 					if (((Numeric) value).lessthanequalto(tempRightOperand) == true)
 					{
-						result = new Boolean(true);
+						result = true;
 					}
 					else
 					{
-						result = new Boolean(false);
+						result = false;
 					}
 					resultType = SubClassif.BOOLEAN;
 				}
@@ -268,11 +270,11 @@ public class ResultValue
 				{
 					if (((Numeric) value).greaterthan(tempRightOperand) == true)
 					{
-						result = new Boolean(true);
+						result = true;
 					}
 					else
 					{
-						result = new Boolean(false);
+						result = false;
 					}
 					resultType = SubClassif.BOOLEAN;
 				}
@@ -280,11 +282,11 @@ public class ResultValue
 				{
 					if (((Numeric) value).greaterthanequalto(tempRightOperand) == true)
 					{
-						result = new Boolean(true);
+						result = true;
 					}
 					else
 					{
-						result = new Boolean(false);
+						result = false;
 					}
 					resultType = SubClassif.BOOLEAN;
 				}
@@ -307,11 +309,11 @@ public class ResultValue
 				{
 					if (value.equals(true))
 					{
-						result = new Boolean(false);
+						result = false;
 					}
 					else if (value.equals(false))
 					{
-						result = new Boolean(true);
+						result = true;
 					}
 					else
 					{
@@ -332,44 +334,44 @@ public class ResultValue
 				{
 					if ((Boolean) value && (Boolean) rightOperand.value)
 					{
-						result = new Boolean(true);
+						result = true;
 					}
 					else
 					{
-						result = new Boolean(false);
+						result = false;
 					}
 				}
 				else if (operation.equals("or"))
 				{
 					if ((Boolean) value || (Boolean) rightOperand.value)
 					{
-						result = new Boolean(true);
+						result = true;
 					}
 					else
 					{
-						result = new Boolean(false);
+						result = false;
 					}
 				}
 				else if (operation.equals("=="))
 				{
 					if (value.equals(rightOperand.value))
 					{
-						result = new Boolean(true);
+						result = true;
 					}
 					else
 					{
-						result = new Boolean(false);
+						result = false;
 					}
 				}
 				else if (operation.equals("!="))
 				{
 					if (!value.equals(rightOperand.value))
 					{
-						result = new Boolean(true);
+						result = true;
 					}
 					else
 					{
-						result = new Boolean(false);
+						result = false;
 					}
 				}
 				else
@@ -454,11 +456,11 @@ public class ResultValue
 			{
 				if (((StringBuilder) value).toString().equals(scRightOperand))
 				{
-					result = new Boolean(true);
+					result = true;
 				}
 				else
 				{
-					result = new Boolean(false);
+					result = false;
 				}
 				resultType = SubClassif.BOOLEAN;
 			}
@@ -466,11 +468,11 @@ public class ResultValue
 			{
 				if (((StringBuilder) value).toString().notequals(scRightOperand))
 				{
-					result = new Boolean(true);
+					result = true;
 				}
 				else
 				{
-					result = new Boolean(false);
+					result = false;
 				}
 				resultType = SubClassif.BOOLEAN;
 			}
@@ -478,11 +480,11 @@ public class ResultValue
 			{
 				if (((StringBuilder) value).toString().compareTo(scRightOperand) < 0)
 				{
-					result = new Boolean(true);
+					result = true;
 				}
 				else
 				{
-					result = new Boolean(false);
+					result = false;
 				}
 				resultType = SubClassif.BOOLEAN;
 			}
@@ -490,11 +492,11 @@ public class ResultValue
 			{
 				if (((StringBuilder) value).toString().compareTo(scRightOperand) <= 0)
 				{
-					result = new Boolean(true);
+					result = true;
 				}
 				else
 				{
-					result = new Boolean(false);
+					result = false;
 				}
 				resultType = SubClassif.BOOLEAN;
 			}
@@ -502,11 +504,11 @@ public class ResultValue
 			{
 				if (((StringBuilder) value).toString().compareTo(scRightOperand) > 0)
 				{
-					result = new Boolean(true);
+					result = true;
 				}
 				else
 				{
-					result = new Boolean(false);
+					result = false;
 				}
 				resultType = SubClassif.BOOLEAN;
 			}
@@ -514,11 +516,11 @@ public class ResultValue
 			{
 				if (((StringBuilder) value).toString().compareTo(scRightOperand) >= 0)
 				{
-					result = new Boolean(true);
+					result = true;
 				}
 				else
 				{
-					result = new Boolean(false);
+					result = false;
 				}
 				resultType = SubClassif.BOOLEAN;
 			}
@@ -538,6 +540,6 @@ public class ResultValue
 	@Override
 	public String toString()
 	{
-		return SubClassif[iDatatype] + " " + value.toString();
+		return iDatatype + " " + value.toString();
 	}
 }

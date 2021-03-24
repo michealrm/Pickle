@@ -1,4 +1,5 @@
-package pickle;
+package pickle.exception;
+
 
 public class InvalidOperationException extends Exception
 {

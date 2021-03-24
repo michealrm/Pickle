@@ -25,6 +25,10 @@ public class Numeric {
         }
     }
 
+    public Numeric(String value, SubClassif iDatType) throws NotNumericException {
+
+    }
+
 
 
 }

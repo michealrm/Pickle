@@ -1,4 +1,5 @@
-package main.java.pickle.exception;
+package pickle.exception;
+
 
 import pickle.SubClassif;
 import pickle.Token;
