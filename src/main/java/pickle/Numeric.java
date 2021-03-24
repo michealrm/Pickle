@@ -19,11 +19,11 @@ public class Numeric {
 
     public Numeric(String value, SubClassif iDataType) throws NotNumericException {
         stringValue = value;
-        type = iDataType;
-
         convertToNumber(value);
+        type = iDataType;
     }
 
+    // The type returned is based on the type of the left operand
 
     public Object add(Numeric value) {
         if(type == SubClassif.INTEGER)
@@ -110,10 +110,12 @@ public class Numeric {
     private void convertToNumber(String value) throws NotNumericException {
         if(PickleUtil.isFloat(value)) {
             type = SubClassif.FLOAT;
-            floatValue = Float.parseFloat(value);
+            floatValue = Float.parseFloat(value);   // Have both float and int values, since we don't know what type the left operand is
+            intValue = floatValue.intValue();
         } else if(PickleUtil.isInt(value)) {
             type = SubClassif.INTEGER;
             intValue = Integer.parseInt(value);
+            floatValue = intValue.floatValue();
         } else {
             throw new NotNumericException(value);
         }
