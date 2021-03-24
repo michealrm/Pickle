@@ -5,10 +5,15 @@ public enum SubClassif
     // OPERAND's subclassifications
     IDENTIFIER,     // identifier
     INTEGER,        // integer constant
+    INTEGERARR,     // integer array
     FLOAT,          // float constant
+    FLOATARR,       // float array
     BOOLEAN,        // boolean constant
+    BOOLEANARR,     // boolean array
     STRING,         // string constant
+    STRINGARR,      // string array
     DATE,           // date constant
+    DATEARR,        // date array
     VOID,           // void
     // CONTROL's subclassifications
     FLOW,           // flow statement (e.g., if)

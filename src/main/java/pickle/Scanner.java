@@ -1,9 +1,10 @@
 package pickle;
 
-import main.java.pickle.exception.SyntaxExceptionHandler;
-import pickle.st.STControl;
+import pickle.exception.InvalidReturnTypeException;
+import pickle.exception.SyntaxExceptionHandler;
 import pickle.st.STEntry;
 import pickle.st.STFunction;
+import pickle.st.STIdentifier;
 import pickle.st.SymbolTable;
 
 import java.io.BufferedReader;
@@ -11,11 +12,15 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 public class Scanner {
 
     private static final boolean PRINT_CURRENT_TOKEN_LINE = true;
+
+    public static LinkedHashMap<Integer, SymbolTable> linkedSymbolTable = new LinkedHashMap<>(); // Volatile list of symbol tables used for depth sensing
+    public static Integer currentSymbolTableDepth = 0;
 
     public String sourceFileNm;
     public ArrayList<String> sourceLineM;
@@ -238,48 +243,116 @@ public class Scanner {
      * Sets the classification and subclassification of the token
      * @param token Token that will be classified
      */
-    public void setClassification(Token token) {
+    public void setClassification(Token token) throws Exception {
+
         String tokenStr = token.tokenStr;
         STEntry stEntry;
+
         if(token.tokenStr.length() == 0) {
+
             // Empty token
             token.primClassif = Classif.EMPTY;
+
         } else if(iSourceLineNr >= sourceLineM.size() - 1 && iColPos == sourceLineM.get(iSourceLineNr).length()) {
+
             // EOF
             token.primClassif = Classif.EOF;
+
+        } else if(token.tokenStr.compareTo("def") == 0) {   // TODO 1: Add parameters as identifiers within the function symbol table
+                                                            // TODO 2: Set STFunction numArgs in parser
+            // Data for declaration of a function
+
+            Token funcReturnType = currentToken = getNext();
+            Token funcName = currentToken = getNext();
+
+            SubClassif funcReturnTypeClassif = getDataType(funcReturnType.tokenStr.substring(0, funcReturnType.tokenStr.length() - 2));
+
+            if(funcReturnTypeClassif == null)
+                throw new InvalidReturnTypeException(String.format("Invalid function return type at line %d, column %d", iSourceLineNr, iColPos));
+
+            // Put function name identifier in current symbol table
+            linkedSymbolTable.get(currentSymbolTableDepth).putSymbol(funcName.tokenStr, new STFunction(funcName.tokenStr, Classif.FUNCTION, null, funcReturnTypeClassif, SubClassif.USER));
+
+            // Go to the next depth of symbol table (within the function)
+            ++currentSymbolTableDepth;
+
+            // Put the symbol table in the hashmap of symbol tables within the SymbolTable class
+            SymbolTable.putSymbolTable(funcName.tokenStr, new SymbolTable());
+
+            // Put the symbol table in the linked hashmap of symbol tables that is used for depth sensing
+            linkedSymbolTable.put(currentSymbolTableDepth, SymbolTable.getSymbolTable(funcName.tokenStr));
+
+        } else if(token.tokenStr.compareTo("enddef") == 0) {
+
+            --currentSymbolTableDepth; // We encountered an enddef, so the function has ended, and we go to the outer symbol table
+
+        } else if(  (token.tokenStr.compareTo("Int") == 0 || token.tokenStr.compareTo("Float") == 0 || token.tokenStr.compareTo("String") == 0 || token.tokenStr.compareTo("Date") == 0 || // TODO Set STIdentifier parm and nonlocal values in parser
+                    token.tokenStr.substring(0, 3).compareTo("Int[") == 0 || token.tokenStr.substring(0, 5).compareTo("Float[") == 0 || token.tokenStr.substring(0, 6).compareTo("String[") == 0 || token.tokenStr.substring(0, 4).compareTo("Date[") == 0)
+                    && iColPos <= 7) { // iColPos should be <= 7, since it should be a declaration at the start of a line
+
+            // Data for declaration of an identifier
+
+            SubClassif dataType = getDataType(token.tokenStr.substring(0, token.tokenStr.length() - 2));
+            Token identifierName = currentToken = getNext();
+            SubClassif identifierStructure = null;
+
+            if(!isArray(dataType))
+                identifierStructure = SubClassif.PRIMITIVE;
+            else
+                identifierStructure = SubClassif.FIXED_ARRAY;
+
+            // Put the symbol in the current symbol table
+            linkedSymbolTable.get(currentSymbolTableDepth).putSymbol(identifierName.tokenStr, new STIdentifier(identifierName.tokenStr, Classif.IDENTIFIER, dataType, identifierStructure));
+
         } else if(isTokenWhitespace(token)) {
+
             // Token is whitespace
             token.primClassif = Classif.SEPARATOR;
+
         } else if(isSeparator(token)) {
+
             // Separator
           token.primClassif = Classif.SEPARATOR;
+
         } else if((stEntry = SymbolTable.globalSymbolTable.getSymbol(tokenStr)) != null) {
+
             // Found in global symbol table
             token.primClassif = stEntry.primClassif;
             token.dclType = stEntry.dclType;
+
         } else if((stEntry = symbolTable.getSymbol(tokenStr)) != null) {
+
             // Found in local symbol table
             token.primClassif = stEntry.primClassif;
             token.dclType = stEntry.dclType;
+
         } else if(token.tokenStr.charAt(0) == '"' || token.tokenStr.charAt(0) == '\'') {
+
             // String
             token.primClassif = Classif.OPERAND;
             token.dclType = SubClassif.STRING;
+
         } else if(token.tokenStr.equals("T") || token.tokenStr.equals("F")) {
+
             token.primClassif = Classif.OPERAND;
             token.dclType = SubClassif.BOOLEAN;
+
         } else if(PickleUtil.isInt(token.tokenStr)) {
+
             // Int
             token.primClassif = Classif.OPERAND;
             token.dclType = SubClassif.INTEGER;
+
         } else if(PickleUtil.isFloat(token.tokenStr)) {
+
             // Float
             token.primClassif = Classif.OPERAND;
             token.dclType = SubClassif.FLOAT;
+
         } else if(isOperator(token)) {
             token.primClassif = Classif.OPERATOR;
-        }
-        else if(isValidIdentifier(token)) {
+
+        }  else if(isValidIdentifier(token)) {
             // Identifier
             token.primClassif = Classif.OPERAND;
             token.dclType = SubClassif.IDENTIFIER;
@@ -293,7 +366,7 @@ public class Scanner {
      * @param c
      * @return
      */
-    public boolean continuesToken(Token token, char c) {
+    public boolean continuesToken(Token token, char c) throws Exception {
         Token copy = new Token(token.tokenStr + c);
         setClassification(copy);
         if(copy.primClassif != Classif.EMPTY && copy.dclType != token.dclType) {
@@ -442,4 +515,47 @@ public class Scanner {
         return c == ' ' || c == '\t' || c == '\n';
     }
 
+    private SubClassif getDataType(String tokenStr) {
+        switch(tokenStr.substring(0, tokenStr.length() - 2)) {
+            case "Int":
+                return SubClassif.INTEGER;
+
+            case "Int[":
+                return SubClassif.INTEGERARR;
+
+            case "Float":
+                return SubClassif.FLOAT;
+
+            case "Float[":
+                return SubClassif.FLOATARR;
+
+            case "String":
+                return SubClassif.STRING;
+
+            case "String[":
+                return SubClassif.STRINGARR;
+
+            case "Date":
+                return SubClassif.DATE;
+
+            case "Date[":
+                return SubClassif.DATEARR;
+
+            default:
+                return null;
+        }
+    }
+
+    private boolean isArray(SubClassif dataType) {
+        switch(dataType) {
+
+            case INTEGERARR:
+            case FLOATARR:
+            case STRINGARR:
+            case DATEARR:
+                return true;
+            default:
+                return false;
+        }
+    }
 }
