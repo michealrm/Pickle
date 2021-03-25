@@ -1,4 +1,4 @@
-package pickle;
+package pickle.exception;
 
 public class InvalidNumberException extends Exception
 {

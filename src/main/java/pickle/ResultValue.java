@@ -1,10 +1,11 @@
 package pickle;
 
-import java.util.HashMap;
+import pickle.exception.InvalidNumberException;
+import pickle.exception.InvalidOperationException;
 
 public class ResultValue
 {
-	public int iDatatype;
+	public SubClassif iDatatype;
 	public Object value;
 	public boolean isNumber = false;
 	public String scTerminatingStr;
@@ -19,42 +20,41 @@ public class ResultValue
 	* @param iType: the datatype of the object
 	* @param val: the value of the object
 	*/
-	public ResultValue(int iType, Object val) throws Exception
+	public ResultValue(SubClassif iType, Object val) throws Exception
 	{
 		iDatatype = iType;
-		value = val;
-		
+
 		// Check if type is a number type
-		if (type == SubClassif.INTEGER || type == SubClassif.FLOAT)
+		if (iDatatype == SubClassif.INTEGER || iDatatype == SubClassif.FLOAT)
 		{
-			if (type instanceof Numeric)
+			if (val instanceof Numeric)
 			{
 				value = val;
 			}
 			else
 			{
-				value = new Numeric((String), val, type);
+				value = new Numeric( (String) val, iDatatype);
 			}
 			isNumber = true;
 		}
 		
 		// Check if type is an identifier type
-		else if (type == SubClassif.IDENTIFIER)
+		else if (iDatatype == SubClassif.IDENTIFIER)
 		{
 			if (val instanceof Numeric)
 			{
 				value = val;
-				type = ((Numeric) val).type;
+				iDatatype = ((Numeric) val).type;
 			}
 			else if (val instanceof String)
 			{
 				value = val;
-				type = SubClassif.STRING;
+				iDatatype = SubClassif.STRING;
 			}
 			else if (val instanceof Boolean)
 			{
 				value = val;
-				type = SubClassif.BOOLEAN;
+				iDatatype = SubClassif.BOOLEAN;
 			}
 			else
 			{
@@ -75,8 +75,8 @@ public class ResultValue
 	*/
 	public ResultValue executeOperation(ResultValue rightOperand, String operation) throws Exception
 	{
-		Object result = 0;
-		int resultType = iDatatype;
+		Object result;
+		SubClassif resultType = iDatatype;
 		
 		if (isNumber)
 		{
@@ -94,203 +94,145 @@ public class ResultValue
 			}
 			else if (rightOperand.isNumber)
 			{
-				if (operation.equals("+")) // If it's addition
-				{
-					result = ((Numeric) value).add((Numeric) rightOperand.value).toString();
-				}
-				else if (operation.equals("-")) // If it's subtraction
-				{
-					result = ((Numeric) value).subtract((Numeric) rightOperand.value).toString();
-				}
-				else if (operation.equals("*")) // If it's multiplication
-				{
-					result = ((Numeric) value).multiply((Numeric) rightOperand.value).toString();
-				}
-				else if (operation.equals("/")) // If it's division
-				{
-					result = ((Numeric) value).divide((Numeric) rightOperand.value).toString();
-				}
-				else if (operation.equals("^")) // If it's a power
-				{
-					result = ((Numeric) value).power((Numeric) rightOperand.value).toString();
-				}
-				else if (operation.equals("==")) // If it's equals
-				{
-					if (((Numeric) value).equals((Numeric) rightOperand.value) == true)
-					{
-						result = new Boolean(true);
-					}
-					else
-					{
-						result = new Boolean(false);
-					}
-					resultType = SubClassif.BOOLEAN;
-				}
-				else if (operation.equals("!=")) // If it's notequals
-				{
-					if (((Numeric) value).notequals((Numeric) rightOperand.value) == true)
-					{
-						result = new Boolean(true);
-					}
-					else
-					{
-						result = new Boolean(false);
-					}
-					resultType = SubClassif.BOOLEAN;
-				}
-				else if (operation.equals("<")) // If it's lessthan
-				{
-					if (((Numeric) value).lessthan((Numeric) rightOperand.value) == true)
-					{
-						result = new Boolean(true);
-					}
-					else
-					{
-						result = new Boolean(false);
-					}
-					resultType = SubClassif.BOOLEAN;
-				}
-				else if (operation.equals("<=")) // If it's lessthanequalto
-				{
-					if (((Numeric) value).lessthanequalto((Numeric) rightOperand.value) == true)
-					{
-						result = new Boolean(true);
-					}
-					else
-					{
-						result = new Boolean(false);
-					}
-					resultType = SubClassif.BOOLEAN;
-				}
-				else if (operation.equals(">")) // If it's greaterthan
-				{
-					if (((Numeric) value).greaterthan((Numeric) rightOperand.value) == true)
-					{
-						result = new Boolean(true);
-					}
-					else
-					{
-						result = new Boolean(false);
-					}
-					resultType = SubClassif.BOOLEAN;
-				}
-				else if (operation.equals(">=")) // If it's greaterthanequalto
-				{
-					if (((Numeric) value).greaterthanequalto((Numeric) rightOperand.value) == true)
-					{
-						result = new Boolean(true);
-					}
-					else
-					{
-						result = new Boolean(false);
-					}
-					resultType = SubClassif.BOOLEAN;
-				}
-				else
-				{
-					throw new InvalidOperationException("Invalid operation detected");
+				switch (operation) {
+					case "+":
+						result = ((Numeric) value).add((Numeric) rightOperand.value).toString();
+						break;
+					case "-":
+						result = ((Numeric) value).subtract((Numeric) rightOperand.value).toString();
+						break;
+					case "*":
+						result = ((Numeric) value).multiply((Numeric) rightOperand.value).toString();
+						break;
+					case "/":
+						result = ((Numeric) value).divide((Numeric) rightOperand.value).toString();
+						break;
+					case "^":
+						result = ((Numeric) value).power((Numeric) rightOperand.value).toString();
+						break;
+					case "==":
+						if (((Numeric) value).equals((Numeric) rightOperand.value)) {
+							result = true;
+						} else {
+							result = false;
+						}
+						resultType = SubClassif.BOOLEAN;
+						break;
+					case "!=":
+						if (((Numeric) value).notEqual((Numeric) rightOperand.value)) {
+							result = true;
+						} else {
+							result = false;
+						}
+						resultType = SubClassif.BOOLEAN;
+						break;
+					case "<":
+						if (((Numeric) value).lessThan((Numeric) rightOperand.value)) {
+							result = true;
+						} else {
+							result = false;
+						}
+						resultType = SubClassif.BOOLEAN;
+						break;
+					case "<=":
+						if (((Numeric) value).lessThanEqualTo((Numeric) rightOperand.value)) {
+							result = true;
+						} else {
+							result = false;
+						}
+						resultType = SubClassif.BOOLEAN;
+						break;
+					case ">":
+						if (((Numeric) value).greaterThan((Numeric) rightOperand.value)) {
+							result = true;
+						} else {
+							result = false;
+						}
+						resultType = SubClassif.BOOLEAN;
+						break;
+					case ">=":
+						if (((Numeric) value).greaterThanEqualTo((Numeric) rightOperand.value)) {
+							result = true;
+						} else {
+							result = false;
+						}
+						resultType = SubClassif.BOOLEAN;
+						break;
+					default:
+						throw new InvalidOperationException("Invalid operation detected");
 				}
 			}
 			else if (rightOperand.iDatatype == SubClassif.STRING)
 			{
 				Numeric tempRightOperand = 
 					new Numeric(((StringBuilder) rightOperand.value).toString(), rightOperand.iDatatype);
-				
-				if (operation.equals("+"))
-				{
-					result = ((Numeric) value).add(tempRightOperand).toString();
-				}
-				else if (operation.equals("-"))
-				{
-					result = ((Numeric) value).subtract(tempRightOperand).toString();
-				}
-				else if (operation.equals("*"))
-				{
-					result = ((Numeric) value).multiply(tempRightOperand).toString();
-				}
-				else if (operation.equals("/"))
-				{
-					result = ((Numeric) value).divide(tempRightOperand).toString();
-				}
-				else if (operation.equals("^"))
-				{
-					result = ((Numeric) value).power(tempRightOperand).toString();
-				}
-				else if (operation.equals("=="))
-				{
-					if (((Numeric) value).equals(tempRightOperand) == true)
-					{
-						result = new Boolean(true);
-					}
-					else
-					{
-						result = new Boolean(false);
-					}
-					resultType = SubClassif.BOOLEAN;
-				}
-				else if (operation.equals("!="))
-				{
-					if (((Numeric) value).notequals(tempRightOperand) == true)
-					{
-						result = new Boolean(true);
-					}
-					else
-					{
-						result = new Boolean(false);
-					}
-					resultType = SubClassif.BOOLEAN;
-				}
-				else if (operation.equals("<"))
-				{
-					if (((Numeric) value).lessthan(tempRightOperand) == true)
-					{
-						result = new Boolean(true);
-					}
-					else
-					{
-						result = new Boolean(false);
-					}
-					resultType = SubClassif.BOOLEAN;
-				}
-				else if (operation.equals("<="))
-				{
-					if (((Numeric) value).lessthanequalto(tempRightOperand) == true)
-					{
-						result = new Boolean(true);
-					}
-					else
-					{
-						result = new Boolean(false);
-					}
-					resultType = SubClassif.BOOLEAN;
-				}
-				else if (operation.equals(">"))
-				{
-					if (((Numeric) value).greaterthan(tempRightOperand) == true)
-					{
-						result = new Boolean(true);
-					}
-					else
-					{
-						result = new Boolean(false);
-					}
-					resultType = SubClassif.BOOLEAN;
-				}
-				else if (operation.equals(">="))
-				{
-					if (((Numeric) value).greaterthanequalto(tempRightOperand) == true)
-					{
-						result = new Boolean(true);
-					}
-					else
-					{
-						result = new Boolean(false);
-					}
-					resultType = SubClassif.BOOLEAN;
-				}
-				else
-				{
-					throw new InvalidOperationException("Invalid operation detected");
+
+				switch (operation) {
+					case "+":
+						result = ((Numeric) value).add(tempRightOperand).toString();
+						break;
+					case "-":
+						result = ((Numeric) value).subtract(tempRightOperand).toString();
+						break;
+					case "*":
+						result = ((Numeric) value).multiply(tempRightOperand).toString();
+						break;
+					case "/":
+						result = ((Numeric) value).divide(tempRightOperand).toString();
+						break;
+					case "^":
+						result = ((Numeric) value).power(tempRightOperand).toString();
+						break;
+					case "==":
+						if (((Numeric) value).equals(tempRightOperand)) {
+							result = true;
+						} else {
+							result = false;
+						}
+						resultType = SubClassif.BOOLEAN;
+						break;
+					case "!=":
+						if (((Numeric) value).notEqual(tempRightOperand)) {
+							result = true;
+						} else {
+							result = false;
+						}
+						resultType = SubClassif.BOOLEAN;
+						break;
+					case "<":
+						if (((Numeric) value).lessThan(tempRightOperand)) {
+							result = true;
+						} else {
+							result = false;
+						}
+						resultType = SubClassif.BOOLEAN;
+						break;
+					case "<=":
+						if (((Numeric) value).lessThanEqualTo(tempRightOperand)) {
+							result = true;
+						} else {
+							result = false;
+						}
+						resultType = SubClassif.BOOLEAN;
+						break;
+					case ">":
+						if (((Numeric) value).greaterThan(tempRightOperand)) {
+							result = true;
+						} else {
+							result = false;
+						}
+						resultType = SubClassif.BOOLEAN;
+						break;
+					case ">=":
+						if (((Numeric) value).greaterThanEqualTo(tempRightOperand)) {
+							result = true;
+						} else {
+							result = false;
+						}
+						resultType = SubClassif.BOOLEAN;
+						break;
+					default:
+						throw new InvalidOperationException("Invalid operation detected");
 				}
 			}
 			else
@@ -307,11 +249,11 @@ public class ResultValue
 				{
 					if (value.equals(true))
 					{
-						result = new Boolean(false);
+						result = false;
 					}
 					else if (value.equals(false))
 					{
-						result = new Boolean(true);
+						result = true;
 					}
 					else
 					{
@@ -327,55 +269,39 @@ public class ResultValue
 			else if (rightOperand.iDatatype == SubClassif.BOOLEAN)
 			{
 				// Begin a boolean operation with the rightOperand and the operation passed in
-				
-				if (operation.equals("and"))
-				{
-					if ((Boolean) value && (Boolean) rightOperand.value)
-					{
-						result = new Boolean(true);
-					}
-					else
-					{
-						result = new Boolean(false);
-					}
-				}
-				else if (operation.equals("or"))
-				{
-					if ((Boolean) value || (Boolean) rightOperand.value)
-					{
-						result = new Boolean(true);
-					}
-					else
-					{
-						result = new Boolean(false);
-					}
-				}
-				else if (operation.equals("=="))
-				{
-					if (value.equals(rightOperand.value))
-					{
-						result = new Boolean(true);
-					}
-					else
-					{
-						result = new Boolean(false);
-					}
-				}
-				else if (operation.equals("!="))
-				{
-					if (!value.equals(rightOperand.value))
-					{
-						result = new Boolean(true);
-					}
-					else
-					{
-						result = new Boolean(false);
-					}
-				}
-				else
-				{
-					throw new InvalidOperationException("The operand's datatype is invalid for "
-						+ operation + " operations");
+
+				switch (operation) {
+					case "and":
+						if ((Boolean) value && (Boolean) rightOperand.value) {
+							result = true;
+						} else {
+							result = false;
+						}
+						break;
+					case "or":
+						if ((Boolean) value || (Boolean) rightOperand.value) {
+							result = true;
+						} else {
+							result = false;
+						}
+						break;
+					case "==":
+						if (value.equals(rightOperand.value)) {
+							result = true;
+						} else {
+							result = false;
+						}
+						break;
+					case "!=":
+						if (!value.equals(rightOperand.value)) {
+							result = true;
+						} else {
+							result = false;
+						}
+						break;
+					default:
+						throw new InvalidOperationException("The operand's datatype is invalid for "
+								+ operation + " operations");
 				}
 			}
 			else
@@ -405,126 +331,101 @@ public class ResultValue
 				throw new InvalidOperationException("The operand's datatype is invalid for "
 					+ operation + " operations");
 			}
-			
-			if (operation.equals("#"))
-			{
-				result = new StringBuilder(((StringBuilder) value).toString().concat(scRightOperand));
-			}
-			else if (operation.equals("+"))
-			{
-				Numeric leftOp = new Numeric(value.toString(), SubClassif.STRING);
-				Numeric rightOp = new Numeric(rightOperand.value.toString(), SubClassif.STRING);
-				
-				result = leftOp.add(rightOp);
-				resultType = leftOp.type;
-			}
-			else if (operation.equals("-"))
-			{
-				Numeric leftOp = new Numeric(value.toString(), SubClassif.STRING);
-				Numeric rightOp = new Numeric(rightOperand.value.toString(), SubClassif.STRING);
-				
-				result = leftOp.subtract(rightOp);
-				resultType = leftOp.type;
-			}
-			else if (operation.equals("*"))
-			{
-				Numeric leftOp = new Numeric(value.toString(), SubClassif.STRING);
-				Numeric rightOp = new Numeric(rightOperand.value.toString(), SubClassif.STRING);
-				
-				result = leftOp.multiply(rightOp);
-				resultType = leftOp.type;
-			}
-			else if (operation.equals("/"))
-			{
-				Numeric leftOp = new Numeric(value.toString(), SubClassif.STRING);
-				Numeric rightOp = new Numeric(rightOperand.value.toString(), SubClassif.STRING);
-				
-				result = leftOp.divide(rightOp);
-				resultType = leftOp.type;
-			}
-			else if (operation.equals("^"))
-			{
-				Numeric leftOp = new Numeric(value.toString(), SubClassif.STRING);
-				Numeric rightOp = new Numeric(rightOperand.value.toString(), SubClassif.STRING);
-				
-				result = leftOp.power(rightOp);
-				resultType = leftOp.type;
-			}
-			else if (operation.equals("=="))
-			{
-				if (((StringBuilder) value).toString().equals(scRightOperand))
-				{
-					result = new Boolean(true);
+
+			switch (operation) {
+				case "#":
+					result = new StringBuilder(((StringBuilder) value).toString().concat(scRightOperand));
+					break;
+				case "+": {
+					Numeric leftOp = new Numeric(value.toString(), SubClassif.STRING);
+					Numeric rightOp = new Numeric(rightOperand.value.toString(), SubClassif.STRING);
+
+					result = leftOp.add(rightOp);
+					resultType = leftOp.type;
+					break;
 				}
-				else
-				{
-					result = new Boolean(false);
+				case "-": {
+					Numeric leftOp = new Numeric(value.toString(), SubClassif.STRING);
+					Numeric rightOp = new Numeric(rightOperand.value.toString(), SubClassif.STRING);
+
+					result = leftOp.subtract(rightOp);
+					resultType = leftOp.type;
+					break;
 				}
-				resultType = SubClassif.BOOLEAN;
-			}
-			else if (operation.equals("!="))
-			{
-				if (((StringBuilder) value).toString().notequals(scRightOperand))
-				{
-					result = new Boolean(true);
+				case "*": {
+					Numeric leftOp = new Numeric(value.toString(), SubClassif.STRING);
+					Numeric rightOp = new Numeric(rightOperand.value.toString(), SubClassif.STRING);
+
+					result = leftOp.multiply(rightOp);
+					resultType = leftOp.type;
+					break;
 				}
-				else
-				{
-					result = new Boolean(false);
+				case "/": {
+					Numeric leftOp = new Numeric(value.toString(), SubClassif.STRING);
+					Numeric rightOp = new Numeric(rightOperand.value.toString(), SubClassif.STRING);
+
+					result = leftOp.divide(rightOp);
+					resultType = leftOp.type;
+					break;
 				}
-				resultType = SubClassif.BOOLEAN;
-			}
-			else if (operation.equals("<"))
-			{
-				if (((StringBuilder) value).toString().compareTo(scRightOperand) < 0)
-				{
-					result = new Boolean(true);
+				case "^": {
+					Numeric leftOp = new Numeric(value.toString(), SubClassif.STRING);
+					Numeric rightOp = new Numeric(rightOperand.value.toString(), SubClassif.STRING);
+
+					result = leftOp.power(rightOp);
+					resultType = leftOp.type;
+					break;
 				}
-				else
-				{
-					result = new Boolean(false);
-				}
-				resultType = SubClassif.BOOLEAN;
-			}
-			else if (operation.equals("<="))
-			{
-				if (((StringBuilder) value).toString().compareTo(scRightOperand) <= 0)
-				{
-					result = new Boolean(true);
-				}
-				else
-				{
-					result = new Boolean(false);
-				}
-				resultType = SubClassif.BOOLEAN;
-			}
-			else if (operation.equals(">"))
-			{
-				if (((StringBuilder) value).toString().compareTo(scRightOperand) > 0)
-				{
-					result = new Boolean(true);
-				}
-				else
-				{
-					result = new Boolean(false);
-				}
-				resultType = SubClassif.BOOLEAN;
-			}
-			else if (operation.equals(">="))
-			{
-				if (((StringBuilder) value).toString().compareTo(scRightOperand) >= 0)
-				{
-					result = new Boolean(true);
-				}
-				else
-				{
-					result = new Boolean(false);
-				}
-				resultType = SubClassif.BOOLEAN;
-			}
-			else
-			{
-				throw new InvalidOperationException("Invalid operation detected");
+				case "==":
+					if (((StringBuilder) value).toString().equals(scRightOperand)) {
+						result = true;
+					} else {
+						result = false;
+					}
+					resultType = SubClassif.BOOLEAN;
+					break;
+				case "!=":
+					if (((StringBuilder) value).toString().compareTo(scRightOperand) != 0) {
+						result = true;
+					} else {
+						result = false;
+					}
+					resultType = SubClassif.BOOLEAN;
+					break;
+				case "<":
+					if (((StringBuilder) value).toString().compareTo(scRightOperand) < 0) {
+						result = true;
+					} else {
+						result = false;
+					}
+					resultType = SubClassif.BOOLEAN;
+					break;
+				case "<=":
+					if (((StringBuilder) value).toString().compareTo(scRightOperand) <= 0) {
+						result = true;
+					} else {
+						result = false;
+					}
+					resultType = SubClassif.BOOLEAN;
+					break;
+				case ">":
+					if (((StringBuilder) value).toString().compareTo(scRightOperand) > 0) {
+						result = true;
+					} else {
+						result = false;
+					}
+					resultType = SubClassif.BOOLEAN;
+					break;
+				case ">=":
+					if (((StringBuilder) value).toString().compareTo(scRightOperand) >= 0) {
+						result = true;
+					} else {
+						result = false;
+					}
+					resultType = SubClassif.BOOLEAN;
+					break;
+				default:
+					throw new InvalidOperationException("Invalid operation detected");
 			}
 		}
 		else
@@ -538,6 +439,6 @@ public class ResultValue
 	@Override
 	public String toString()
 	{
-		return SubClassif[iDatatype] + " " + value.toString();
+		return iDatatype + " " + value.toString();
 	}
 }
