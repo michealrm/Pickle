@@ -4,13 +4,13 @@ import java.util.HashMap;
 
 public class StorageManager {
 
-    private static HashMap<String, Object> storageManager = new HashMap<>();
+    private static final HashMap<String, ResultValue> storageManager = new HashMap<>();
 
-    public void storeVariable(String symbol, Object value) {
+    public static void storeVariable(String symbol, ResultValue value) {
         storageManager.put(symbol, value);
     }
 
-    public Object retrieveVariable(String symbol) {
+    public static ResultValue retrieveVariable(String symbol) {
         return storageManager.get(symbol);
     }
 }

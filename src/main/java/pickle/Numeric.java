@@ -1,5 +1,7 @@
 package pickle;
 
+import pickle.exception.InvalidNumberException;
+
 public class Numeric {
 
     public SubClassif type;
@@ -21,6 +23,37 @@ public class Numeric {
         stringValue = value;
         convertToNumber(value);
         type = iDataType;
+    }
+
+    /**
+     * Used in the Parser for  with the Parser, operation, and paramNum passed in for error handling
+     * @param parser The parser used for token position in error handling
+     * @param value The ResultValue that will convert to Numeric
+     * @param operation The operation (ex: +=) used in error handling
+     * @param paramNum The parameter index number (ex: 1st parameter) used in error handling
+     */
+    public Numeric(Parser parser, ResultValue value, String operation, String paramNum) throws Exception {
+        if(value == null) {
+
+        }
+        switch(value.iDatatype) {
+            case INTEGER:
+
+                break;
+            case FLOAT:
+                break;
+            default:
+                throw new InvalidNumberException("Expected a number in the " + paramNum + " of the " + operation +
+                        " operation, but read type " + value.iDatatype + " for token " + value.value);
+        }
+    }
+
+    /**
+     * Receives an object and sets type, intValue or floatValue or stringValue
+     * @param obj The object to set the instance variables
+     * @throws Exception If
+     */
+    private void setNumericFromObject(Object obj) throws Exception {
     }
 
     // The type returned is based on the type of the left operand
@@ -68,30 +101,11 @@ public class Numeric {
     }
 
     public boolean notEqual(Numeric value) {
-        if(type == SubClassif.INTEGER) {
+        if (type == SubClassif.INTEGER) {
             return !intValue.equals(value.intValue);
         } else {
             return !floatValue.equals(value.floatValue);
         }
-    }
-    public Numeric(Parser parser, ResultValue value, String operation, String paramNum) {
-
-    }
-
-    public Numeric add(Numeric num) {
-        return null;
-    }
-
-    public Numeric subtract(Numeric num) {
-        return null;
-    }
-
-    public Numeric multiply(Numeric num) {
-        return null;
-    }
-
-    public Numeric divide(Numeric num) {
-        return null;
     }
 
     public boolean lessThan(Numeric value) {

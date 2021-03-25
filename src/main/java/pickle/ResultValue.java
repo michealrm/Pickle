@@ -3,6 +3,17 @@ package pickle;
 import pickle.exception.InvalidNumberException;
 import pickle.exception.InvalidOperationException;
 
+/**
+ * A wrapper for the results of expressions
+ *
+ * `value` conversions from Pickle type -> Java class
+ * Integer	-> Numeric
+ * Float	-> Numeric
+ * String	-> String
+ * Bool		-> Boolean
+ *
+ * @see pickle.SubClassif for the subclassifications (iDatatype) of the tokens
+ */
 public class ResultValue
 {
 	public SubClassif iDatatype;
@@ -435,7 +446,11 @@ public class ResultValue
 		}
 		return new ResultValue(resultType, result);
 	}
-	
+
+	public boolean equals(ResultValue rv) {
+		return (iDatatype == rv.iDatatype && value == rv.value);
+	}
+
 	@Override
 	public String toString()
 	{
