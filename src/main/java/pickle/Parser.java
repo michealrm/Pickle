@@ -2,6 +2,12 @@ package pickle;
 
 import pickle.exception.ParserException;
 
+/**
+ * Micheal: executeStatements, print, testing
+ * JCGV: while
+ * Alex: debug
+ *
+ */
 public class Parser {
 
     public Scanner scan;
@@ -28,7 +34,46 @@ public class Parser {
      * @throws Exception
      */
     private ResultValue declareStmt() throws Exception {
-        return null;
+        ResultValue res = null;
+        if(scan.currentToken.dclType != SubClassif.DECLARE)
+            error("Expected a DECLARE token like Int, Float, etc.");
+        String typeStr = scan.currentToken.tokenStr;
+
+        scan.getNext();
+        if(scan.currentToken.dclType != SubClassif.IDENTIFIER)
+            error("Expected a variable for the target of a declaration");
+        String variableStr = scan.currentToken.tokenStr;
+
+        scan.getNext();
+        // Only instantiation, no assignment
+        if(scan.currentToken.tokenStr.equals(";")) {
+            switch(typeStr) {
+                case "Int":
+                    assign(variableStr, new ResultValue(SubClassif.INTEGER, 0));
+                    break;
+                case "Float":
+                    assign(variableStr, new ResultValue(SubClassif.FLOAT, 0.0));
+                    break;
+                case "Bool":
+                    assign(variableStr, new ResultValue(SubClassif.BOOLEAN, false));
+                    break;
+                case "String":
+                    assign(variableStr, new ResultValue(SubClassif.STRING, ""));
+                    break;
+                default:
+                    error("Unsupported type %s", typeStr);
+            }
+        }
+        // Instantiation and assignment
+        else if(scan.currentToken.tokenStr.equals("=")) {
+            scan.getNext();
+            res = expr();
+        }
+        // Error
+        else {
+            errorWithCurrent("Expected an assignment (ex: Float f = 1.0;) or only declaration (ex: Float f;)");
+        }
+        return res;
     }
 
     /**
@@ -84,7 +129,7 @@ public class Parser {
     void ifStmt(boolean bExec) throws Exception {
         if(bExec) {
             ResultValue resCond = evalCond("if");
-            if(Boolean.parseBoolean(String.valueOf(resCond.value))) { // TODO: Another way to get resCond.value -> bool?
+            if(Boolean.parseBoolean(String.valueOf(resCond.value))) {
                 ResultValue resTemp = executeStatements(true);
                 if(resTemp.scTerminatingStr.equals("else")) {
                     if(!scan.getNext().tokenStr.equals(":"))
