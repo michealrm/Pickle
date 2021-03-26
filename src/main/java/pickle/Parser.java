@@ -86,44 +86,32 @@ public class Parser {
         ResultValue res = null;
         if(scan.currentToken.dclType != SubClassif.IDENTIFIER)
             error("Expected a variable for the target of an assignment");
-        String variableStr = scan.currentToken.tokenStr;
+        String variableName = scan.currentToken.tokenStr;
 
         scan.getNext();
         if(scan.currentToken.primClassif != Classif.OPERATOR)
             error("Expected assignment operator for assignment statement");
 
         String operatorStr = scan.currentToken.tokenStr;
-        ResultValue resO2 = null;
-        ResultValue resO1 = null;
-        Numeric nOp2;
-        Numeric nOp1;
+        ResultValue exprToAssign = expr();
         switch(operatorStr) {
             case "=":
-                resO2 = expr();
-                res = assign(variableStr, resO2);
+                res = assign(variableName, exprToAssign);
                 break;
             case "-=":
-                resO2 = expr();
-                nOp2 = new Numeric(this, resO2, "-=", "2nd operand");
-                //resO2 = getVariableValue(variableStr); // not used. Do we need to get the value? Can't we just assign?
-                nOp1 = new Numeric(this, resO1, "-=", "1st operand");
-                res = assign(variableStr, Utility.subtractToResult(this, nOp1, nOp2)); // parser for diagnostics like line number
+                assign(variableName, getVariableValue(variableName).executeOperation(exprToAssign, "-="));
+                // TODO: Add line, col number, and parameter num in executeOperation's exception handling (like Parser.error())
                 break;
             case "+=":
-                resO2 = expr();
-
-                nOp2 = new Numeric(this, resO2, "+=", "2nd operand"); // -= and 2nd Operand added for errors
-                // parser for diagnostics like line number
-
-                resO2 = getVariableValue(variableStr);
-
-                nOp1 = new Numeric(this, resO1, "+=", "1st operand");
-
-                res = assign(variableStr, Utility.addToResult(this, nOp1, nOp2)); // parser for diagnostics like line number
+                assign(variableName, getVariableValue(variableName).executeOperation(exprToAssign, "+="));
                 break;
             default:
-                error("Expected assignment operator");
+                error("Expected assignment operator for assignment statement");
         }
+
+        if(scan.currentToken.primClassif != Classif.SEPARATOR)
+            errorWithCurrent("Expected a SEPARATOR to terminate assignment");
+
         return res;
     }
 
@@ -278,6 +266,7 @@ public class Parser {
                 break;
             case IDENTIFIER:
                 resOperand2 = StorageManager.retrieveVariable(scan.nextToken.tokenStr);
+                break;
             default:
                 // We'll catch the error when we switch the operator
                 // We need this ResultValue classification for the unary minus (separator follows minus)
