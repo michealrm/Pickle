@@ -32,6 +32,19 @@ public class Pickle
         // Create the SymbolTable
         SymbolTable symbolTable = new SymbolTable();
 
+        // Create the Scanner
+        Scanner scan = new Scanner(args[0], symbolTable);
+
+        // Create the Parser
+        Parser parser = new Parser(scan);
+
+        try {
+            parser.executeStatements(true);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+        /* Scanner printing. TODO: Maybe have this print for a debug flag?
         try
         {
             // Print a column heading 
@@ -50,5 +63,6 @@ public class Pickle
         {
             e.printStackTrace();
         }
+        */
     }
 }

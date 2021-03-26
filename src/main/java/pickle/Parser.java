@@ -16,6 +16,10 @@ public class Parser {
 
     public Scanner scan;
 
+    public Parser(Scanner scanner) {
+        scan = scanner;
+    }
+
     ////////////////
     // Statements //
     ////////////////
