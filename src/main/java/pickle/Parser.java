@@ -46,7 +46,7 @@ public class Parser {
                     // Either flow is in another executeStmt's flowQueue or this is an invalid/non-matching termination
                     res.scTerminatingStr = resTemp.scTerminatingStr;
                     scan.getNext(); // Skip past END
-                    if(!scan.getNext().tokenStr.equals(";"))
+                    if(!scan.currentToken.tokenStr.equals(";"))
                         errorWithCurrent("Expected a ';' after an %s", resTemp.scTerminatingStr);
                     scan.getNext(); // Skip past ';'
                     return res;
@@ -208,6 +208,7 @@ public class Parser {
             scan.getNext(); // Skip past the "if" to the opening parenthesis of the condition expression
             ResultValue resCond = evalCond("if");
             if(Boolean.parseBoolean(String.valueOf(resCond.value))) {
+                scan.getNext(); // Skip past ':'
                 ResultValue resTemp = executeStatements(true);
                 if(resTemp.scTerminatingStr.equals("else")) {
                     if(!scan.getNext().tokenStr.equals(":"))
@@ -217,7 +218,7 @@ public class Parser {
                 if(!resTemp.scTerminatingStr.equals("endif"))
                     errorWithCurrent("Expected an 'endif' for an 'if'");
                 if(!scan.getNext().tokenStr.equals(";"))
-                    errorWithCurrent("Expected';' after and'endif'");
+                    errorWithCurrent("Expected';' after an 'endif'");
             }
             else {
                 ResultValue resTemp = executeStatements(false);
@@ -235,7 +236,7 @@ public class Parser {
             if(resTemp.scTerminatingStr.equals("else")) {
                 if(!scan.getNext().tokenStr.equals(":"))
                     errorWithCurrent("Expected ':' after else");
-                resTemp = executeStatements(false);
+                resTemp = executeStatements(true);
             }
             if(!scan.getNext().tokenStr.equals("endif"))
                 errorWithCurrent("Expected an 'endif' for an 'if'");

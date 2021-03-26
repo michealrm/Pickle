@@ -321,7 +321,10 @@ public class ResultValue
 			
 			if (rightOperand.iDatatype == SubClassif.STRING)
 			{
-				scRightOperand = ((StringBuilder) rightOperand.value).toString();
+				if(rightOperand.value instanceof String)
+					scRightOperand = (String)rightOperand.value;
+				else
+					scRightOperand = ((StringBuilder) rightOperand.value).toString();
 			}
 			else if (rightOperand.iDatatype == SubClassif.BOOLEAN)
 			{
@@ -382,7 +385,8 @@ public class ResultValue
 					break;
 				}
 				case "==":
-					if (((StringBuilder) value).toString().equals(scRightOperand)) {
+					String valueStr = value instanceof String ? (String)value : ((StringBuilder)value).toString();
+					if (valueStr.equals(scRightOperand)) {
 						result = true;
 					} else {
 						result = false;

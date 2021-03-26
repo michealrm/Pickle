@@ -468,7 +468,7 @@ public class Scanner {
 
     public boolean isSeparator(String tokenStr) {
         char c = tokenStr.charAt(0);
-        return c == ',' || c == ';' || c == '[' || c == ']' || c == '(' || c == ')' || c == '\\';
+        return c == ',' || c == ';' || c == ':' || c == '[' || c == ']' || c == '(' || c == ')' || c == '\\';
     }
 
     private boolean isValidIdentifier(Token token) {
