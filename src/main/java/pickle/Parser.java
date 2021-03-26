@@ -1,6 +1,7 @@
 package pickle;
 
 import pickle.exception.ParserException;
+import pickle.exception.ScannerTokenFormatException;
 
 import java.util.LinkedList;
 import java.util.Locale;
@@ -199,6 +200,12 @@ public class Parser {
         if(!scan.currentToken.tokenStr.equals(";"))
             errorWithCurrent("Expected a ';' to terminate assignment");
         scan.getNext();
+
+        // Debug statement
+        if (scan.scanDebug.bShowAssign && res != null)
+        {
+            System.out.println(res.toString() + " assigned to variable " + scan.currentToken.tokenStr);
+        }
 
         return res;
     }
@@ -422,13 +429,20 @@ public class Parser {
 
         String operator = scan.currentToken.tokenStr;
         expr = resOperand1.executeOperation(resOperand2, operator); // Note: IDE lies, resOperand1 won't be
-            // null (-> NPE) because default case in switch (where resOperand1 would be null) results in an Exception
+        // null (-> NPE) because default case in switch (where resOperand1 would be null) results in an Exception
 
         scan.getNext(); // On either 2nd operand or separator since max operands is 2
         if(!scan.isSeparator(scan.currentToken.tokenStr) && !scan.isSeparator(scan.nextToken.tokenStr))
             errorWithCurrent("Expected expression to end with a SEPARATOR (e.g. ';', ',')");
         else
             scan.getNext(); // End on SEPARATOR
+
+        // Debug statement
+        if (scan.scanDebug.bShowExpr)
+        {
+            System.out.println("\n>" + expr);
+        }
+
         return expr;
     }
 
@@ -471,6 +485,97 @@ public class Parser {
     private ResultValue assign(String variableName, ResultValue value) {
         StorageManager.storeVariable(variableName, value);
         return value;
+    }
+
+    /**
+     * Check debug statement format and set its values
+     * @return rStmt: is true if stmt is valid, false otherwise
+     * @throws ScannerTokenFormatException
+     */
+    private void parseDebugStmt() throws Exception
+    {
+        boolean bFormat = false;
+
+        if (this.scan.currentToken.tokenStr.equals("debug"))
+        {
+            this.scan.getNext();
+        }
+        else
+        {
+            throw new ParserException(this.scan.nextToken.iSourceLineNr,
+                "Parser Error: token at column " + this.scan.nextToken.iColPos
+                + " has invalid format.", "file name");
+        }
+
+        if (this.scan.currentToken.tokenStr.equals("bShowToken"))
+        {
+            this.scan.getNext();
+            if (this.scan.currentToken.tokenStr.equals("on"))
+            {
+                this.scan.scanDebug.bShowToken = true;
+                bFormat = true;
+            }
+            else if (this.scan.currentToken.tokenStr.equals("off"))
+            {
+                this.scan.scanDebug.bShowToken = false;
+                bFormat = true;
+            }
+        }
+        else if (this.scan.currentToken.tokenStr.equals("bShowExpr"))
+        {
+            this.scan.getNext();
+            if (this.scan.currentToken.tokenStr.equals("on"))
+            {
+                this.scan.scanDebug.bShowExpr = true;
+                bFormat = true;
+            }
+            else if (this.scan.currentToken.tokenStr.equals("off"))
+            {
+                this.scan.scanDebug.bShowExpr = false;
+                bFormat = true;
+            }
+        }
+        else if (this.scan.currentToken.tokenStr.equals("bShowAssign"))
+        {
+            this.scan.getNext();
+            if (this.scan.currentToken.tokenStr.equals("on"))
+            {
+                this.scan.scanDebug.bShowAssign = true;
+                bFormat = true;
+            }
+            else if (this.scan.currentToken.tokenStr.equals("off"))
+            {
+                this.scan.scanDebug.bShowAssign = false;
+                bFormat = true;
+            }
+        }
+
+        if(!bFormat)
+        {
+            throw new ParserException(this.scan.nextToken.iSourceLineNr,
+                "Parser Error: token at column " + this.scan.nextToken.iColPos
+                + " has invalid format.", "file name");
+        }
+        scan.getNext();
+
+        // making sure there is no token on the line after ';'
+        if(this.scan.currentToken.tokenStr.equals(";"))
+        {
+            if(this.scan.nextToken.iSourceLineNr == this.scan.currentToken.iSourceLineNr)
+            {
+                throw new ParserException(this.scan.nextToken.iSourceLineNr,
+                    "Parser Error: token at column " + this.scan.nextToken.iColPos
+                    + " appears after a ';'", "file name");
+            }
+        }
+        else
+        {
+            throw new ParserException(this.scan.currentToken.iSourceLineNr,
+                "PARSER ERROR: token at column " + this.scan.nextToken.iColPos
+                + " expected ';' at the end of a debug statement", "file name");
+        }
+
+        scan.getNext();
     }
 
     // Exceptions
