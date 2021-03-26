@@ -71,6 +71,8 @@ public class Parser {
     }
 
     ResultValue executeStmt(boolean bExec) throws Exception {
+        // TODO: Need a default case to throw an error
+
         // Check for END
         if(scan.currentToken.dclType == SubClassif.END) {
             ResultValue res = new ResultValue(SubClassif.EMPTY, "");
@@ -103,7 +105,10 @@ public class Parser {
                 String msgStr = msgToken.tokenStr;
                 if(!scan.getNext().tokenStr.equals(")"))
                     errorWithCurrent("Expected ')' closing after print parameter");
-                print(msgStr); // TODO: CRITICAL: String is being returned with double quotes around it
+                if(!scan.getNext().tokenStr.equals(";"))
+                    errorWithCurrent("Expected ';' after print statement");
+                scan.getNext();
+                print(msgStr);
             }
         }
         if(!bExec)
