@@ -26,6 +26,7 @@ public class Parser {
             scan.getNext();
             return new ResultValue(SubClassif.EMPTY, "");
         }
+        return null;
     }
 
     /**
@@ -219,16 +220,17 @@ public class Parser {
      *
      * @return The ResultValue of the expression
      */
-    // TODO: Maybe later we could have expr() call assignmentStmt since that's an expression & so we could just
-    //  call expr() if we hit an IDENTIFIER at the start of a statement. And I guess assignmentStmt would take
-    //  in the variableName and equal, and then pass back to expr()
     ResultValue expr() throws Exception {
         // Only supports one operator until program 4
 
+        /*
         // Skip ( for expressions wrapped in parenthesis like (1 + 5) or while (T) <--
         // TODO: An edge case may be a = ("hello"). Is it okay to support that?
-        if(scan.currentToken.tokenStr.equals("("))
+        if(scan.currentToken.tokenStr.equals("(")) {
             scan.getNext();
+            ResultValue innerExprValue = expr(); // TODO: Make sure that expr() will stop when it hits a separator
+        }
+         */
 
         // Get operand one
         ResultValue resOperand1 = null;
@@ -243,7 +245,7 @@ public class Parser {
                 resOperand1 = new ResultValue(SubClassif.STRING, scan.currentToken.tokenStr);
                 break;
             case BOOLEAN:
-                resOperand1 = new ResultValue(SubClassif.BOOLEAN, scan.currentToken.tokenStr);
+                resOperand1 = new ResultValue(SubClassif.BOOLEAN, scan.currentToken.tokenStr.equals("T"));
                 break;
             case IDENTIFIER:
                 resOperand1 = StorageManager.retrieveVariable(scan.currentToken.tokenStr);
@@ -254,7 +256,7 @@ public class Parser {
         scan.getNext(); // Now we're on the operator
 
         // Expression is only one operand
-        if(scan.currentToken.tokenStr.equals(";")) {
+        if(scan.currentToken.primClassif == Classif.SEPARATOR) {
             scan.getNext();
             return resOperand1;
         }
@@ -282,124 +284,14 @@ public class Parser {
                 resOperand2 = new ResultValue(scan.nextToken.dclType, scan.nextToken.tokenStr);
         }
 
-        // Operator, using lookahead above for the second operand to apply the operation
-        ResultValue expr = null;
-        Object resultObj;
-        Numeric nOperand1;
-        Numeric nOperand2;
-        boolean bResult;
-        switch(scan.currentToken.tokenStr) {
-            // Numeric arithmetic
+        String operator = scan.currentToken.tokenStr;
+        ResultValue expr = resOperand1.executeOperation(resOperand2, operator); // Note: IDE lies, resOperand1 won't be
+            // null (-> NPE) because default case in switch (where resOperand1 would be null) results in an Exception
 
-            // Add. Second operand is required
-            case "+":
-                nOperand1 = new Numeric(this, resOperand1, "+", "1st operand");
-                nOperand2 = new Numeric(this, resOperand2, "+", "2st operand");
-                resultObj = nOperand1.add(nOperand2);
-
-                if(resultObj instanceof Integer) {
-                    expr = new ResultValue(SubClassif.INTEGER, resultObj);
-                } else if(resultObj instanceof Float) {
-                    expr = new ResultValue(SubClassif.FLOAT, resultObj);
-                }
-                break;
-
-            // Subtraction. Either unary minus or second operand is required
-            case "-":
-                nOperand1 = new Numeric(this, resOperand1, "-", "1st operand");
-
-                // If we have a separator that follows a minus, then apply unary minus
-                char c = String.valueOf(resOperand2.value).charAt(0);
-                if(c == ',' || c == ';') {
-                    resultObj = nOperand1.unaryMinus();
-                }
-                // We have 2 operands
-                else {
-                    nOperand2 = new Numeric(this, resOperand2, "-", "2nd operand");
-                    resultObj = nOperand1.add(nOperand2);
-                }
-
-                if(resultObj instanceof Integer) {
-                    expr = new ResultValue(SubClassif.INTEGER, resultObj);
-                } else if(resultObj instanceof Float) {
-                    expr = new ResultValue(SubClassif.FLOAT, resultObj);
-                }
-                break;
-
-            // Multiplication
-            case "*":
-                nOperand1 = new Numeric(this, resOperand1, "*", "1st operand");
-                nOperand2 = new Numeric(this, resOperand2, "*", "2nd operand");
-                resultObj = nOperand1.multiply(nOperand2);
-
-                if(resultObj instanceof Integer) {
-                    expr = new ResultValue(SubClassif.INTEGER, resultObj);
-                } else if(resultObj instanceof Float) {
-                    expr = new ResultValue(SubClassif.FLOAT, resultObj);
-                }
-                break;
-
-            // Division
-            case "/":
-                nOperand1 = new Numeric(this, resOperand1, "/", "1st operand");
-                nOperand2 = new Numeric(this, resOperand2, "/", "2nd operand");
-                resultObj = nOperand1.divide(nOperand2);
-
-                if(resultObj instanceof Integer) {
-                    expr = new ResultValue(SubClassif.INTEGER, resultObj);
-                } else if(resultObj instanceof Float) {
-                    expr = new ResultValue(SubClassif.FLOAT, resultObj);
-                }
-                break;
-
-            // Boolean equality operators
-            case "==":
-                expr = new ResultValue(SubClassif.BOOLEAN, resOperand1.equals(resOperand2));
-                break;
-            case "!=":
-                expr = new ResultValue(SubClassif.BOOLEAN, !resOperand1.equals(resOperand2));
-                break;
-
-            // Boolean comparison operators (Numeric operands) TODO: Numeric operands for now (String, Date?)
-            case "<=":
-                nOperand1 = new Numeric(this, resOperand1, "<=", "1st operand");
-                nOperand2 = new Numeric(this, resOperand2, "<=", "2nd operand");
-                bResult = nOperand1.lessThanEqualTo(nOperand2);
-
-                expr = new ResultValue(SubClassif.BOOLEAN, bResult);
-                break;
-            case ">=":
-                nOperand1 = new Numeric(this, resOperand1, ">=", "1st operand");
-                nOperand2 = new Numeric(this, resOperand2, ">=", "2nd operand");
-                bResult = nOperand1.greaterThanEqualTo(nOperand2);
-
-                expr = new ResultValue(SubClassif.BOOLEAN, bResult);
-                break;
-            case "<":
-                nOperand1 = new Numeric(this, resOperand1, "<", "1st operand");
-                nOperand2 = new Numeric(this, resOperand2, "<", "2nd operand");
-                bResult = nOperand1.lessThan(nOperand2);
-
-                expr = new ResultValue(SubClassif.BOOLEAN, bResult);
-                break;
-            case ">":
-                nOperand1 = new Numeric(this, resOperand1, ">", "1st operand");
-                nOperand2 = new Numeric(this, resOperand2, ">", "2nd operand");
-                bResult = nOperand1.greaterThan(nOperand2);
-
-                expr = new ResultValue(SubClassif.BOOLEAN, bResult);
-                break;
-
-            // I don't know what this does
-            case "^":
-                break;
-
-            // Operator not found
-            default:
-                errorWithCurrent("Expected an operator for the expression");
-        }
-
-        skipTo(";");
+        scan.getNext(); // On either 2nd operand or separator since max operands is 2
+        if(!scan.isSeparator(scan.currentToken.tokenStr) || !scan.isSeparator(scan.nextToken.tokenStr))
+            errorWithCurrent("Expected expression to end with a SEPARATOR (e.g. ';', ',')");
+        skipTo(Classif.SEPARATOR); // We'll change this to keep parsing until we hit a separator in program 4
         scan.getNext();
         return expr;
     }
@@ -422,6 +314,11 @@ public class Parser {
      */
     private void skipTo(String to) throws Exception {
         while(!scan.currentToken.tokenStr.equals(to))
+            scan.getNext();
+    }
+
+    private void skipTo(Classif primClassif) throws Exception {
+        while(scan.currentToken.primClassif != primClassif)
             scan.getNext();
     }
 

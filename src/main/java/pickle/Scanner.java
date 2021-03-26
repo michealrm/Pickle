@@ -453,7 +453,11 @@ public class Scanner {
     }
 
     private boolean isSeparator(Token token) {
-        char c = token.tokenStr.charAt(0);
+        return isSeparator(token.tokenStr);
+    }
+
+    public boolean isSeparator(String tokenStr) {
+        char c = tokenStr.charAt(0);
         return c == ',' || c == ';' || c == '[' || c == ']' || c == '(' || c == ')' || c == '\\';
     }
 
