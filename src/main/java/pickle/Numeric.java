@@ -25,13 +25,14 @@ public class Numeric {
         type = iDataType;
     }
 
-    /**
+    /*
      * Used in the Parser for  with the Parser, operation, and paramNum passed in for error handling
      * @param parser The parser used for token position in error handling
      * @param value The ResultValue that will convert to Numeric
      * @param operation The operation (ex: +=) used in error handling
      * @param paramNum The parameter index number (ex: 1st parameter) used in error handling
      */
+    /*
     public Numeric(Parser parser, ResultValue value, String operation, String paramNum) throws Exception {
         if(value == null) {
 
@@ -47,6 +48,7 @@ public class Numeric {
                         " operation, but read type " + value.iDatatype + " for token " + value.value);
         }
     }
+    */
 
     /**
      * Receives an object and sets type, intValue or floatValue or stringValue
@@ -152,5 +154,14 @@ public class Numeric {
         } else {
             throw new NotNumericException(value);
         }
+    }
+
+    public String toString() {
+        String str;
+        if(type == SubClassif.INTEGER)
+            str = String.valueOf(intValue);
+        else
+            str = String.valueOf(floatValue);
+        return str;
     }
 }

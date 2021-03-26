@@ -3,6 +3,7 @@ package pickle;
 import pickle.exception.ParserException;
 
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Queue;
 import java.util.Stack;
 
@@ -18,7 +19,7 @@ public class Parser {
 
     public Parser(Scanner scanner) throws Exception {
         scan = scanner;
-        scan.getNext();
+        scan.getNext(); // Call initial getNext() to get first token
     }
 
     ////////////////
@@ -32,9 +33,10 @@ public class Parser {
      *  The important part is that scTerminatingStr is set
      */
     ResultValue executeStatements(boolean bExec) throws Exception {
-        ResultValue res = new ResultValue(SubClassif.EMPTY, "");
+        ResultValue res;
         Queue<String> flowQueue = new LinkedList<>();
         while(true) {
+            res = new ResultValue(SubClassif.EMPTY, "");
             if(scan.currentToken.tokenStr.equals("if") || scan.currentToken.tokenStr.equals("while"))
                 flowQueue.add(scan.currentToken.tokenStr);
 
@@ -59,15 +61,11 @@ public class Parser {
                     flowQueue.remove();
                     break;
                 } else {
-                    errorWithCurrent("Expected an flow END (e.g. endif) for %s", flowQueue.peek());
+                    errorWithCurrent("Expected an END for %s", flowQueue.peek());
                 }
 
             }
-
-            executeStmt(bExec);
         }
-
-        scan.getNext();
 
         return res;
     }
@@ -99,21 +97,10 @@ public class Parser {
                 return assignmentStmt();
             }
             if(scan.currentToken.tokenStr.equals("print")) {
-                if(!scan.getNext().tokenStr.equals("("))
-                    errorWithCurrent("Expected '(' for builtin function 'print'");
-                Token msgToken = scan.getNext();
-                if(msgToken.dclType != SubClassif.STRING)
-                    errorWithCurrent("Expected a string inside print"); // TODO: Are we allowing types other than String in print?
-                String msgStr = msgToken.tokenStr;
-                if(!scan.getNext().tokenStr.equals(")"))
-                    errorWithCurrent("Expected ')' closing after print parameter");
-                if(!scan.getNext().tokenStr.equals(";"))
-                    errorWithCurrent("Expected ';' after print statement");
-                scan.getNext();
-                print(msgStr);
+                printStmt();
             }
         }
-        if(!bExec)
+        else
             skipAfter(";");
         return new ResultValue(SubClassif.EMPTY, "");
     }
@@ -134,7 +121,6 @@ public class Parser {
      * @throws Exception
      */
     private ResultValue declareStmt() throws Exception {
-        ResultValue res = null;
         if(scan.currentToken.dclType != SubClassif.DECLARE)
             error("Expected a DECLARE token like Int, Float, etc.");
         String typeStr = scan.currentToken.tokenStr;
@@ -167,13 +153,14 @@ public class Parser {
         // Instantiation and assignment
         else if(scan.currentToken.tokenStr.equals("=")) {
             scan.getNext();
-            res = expr();
+            assign(variableStr, expr());
         }
         // Error
         else {
             errorWithCurrent("Expected an assignment (ex: Float f = 1.0;) or only declaration (ex: Float f;)");
         }
-        return res;
+        scan.getNext(); // Skip past ';' to next statement
+        return null;
     }
 
     /**
@@ -186,12 +173,15 @@ public class Parser {
         if(scan.currentToken.dclType != SubClassif.IDENTIFIER)
             error("Expected a variable for the target of an assignment");
         String variableName = scan.currentToken.tokenStr;
+        if(variableName.equals("radius"))
+            System.out.println();
 
         scan.getNext();
         if(scan.currentToken.primClassif != Classif.OPERATOR)
             error("Expected assignment operator for assignment statement");
 
         String operatorStr = scan.currentToken.tokenStr;
+        scan.getNext();
         ResultValue exprToAssign = expr();
         switch(operatorStr) {
             case "=":
@@ -208,8 +198,9 @@ public class Parser {
                 error("Expected assignment operator for assignment statement");
         }
 
-        if(scan.currentToken.primClassif != Classif.SEPARATOR)
-            errorWithCurrent("Expected a SEPARATOR to terminate assignment");
+        if(!scan.currentToken.tokenStr.equals(";"))
+            errorWithCurrent("Expected a ';' to terminate assignment");
+        scan.getNext();
 
         return res;
     }
@@ -296,6 +287,34 @@ public class Parser {
         }
     }
 
+    private void printStmt() throws Exception {
+        StringBuffer msg = new StringBuffer();
+        if(!scan.getNext().tokenStr.equals("("))
+            errorWithCurrent("Expected '(' for builtin function 'print'");
+        do {
+            scan.getNext();
+            ResultValue msgPart = expr();
+            switch(msgPart.iDatatype) {
+                case INTEGER:
+                case FLOAT:
+                case BOOLEAN:
+                case STRING:
+                case IDENTIFIER:
+                    msg.append(msgPart.value);
+                    break;
+                default:
+                    error("Unsupported type %s in print function \"%s\"", msgPart.iDatatype, msgPart.value);
+            }
+        } while(scan.currentToken.tokenStr.equals(","));
+
+        if(!scan.currentToken.tokenStr.equals(")"))
+            errorWithCurrent("Expected ')' closing after print parameter");
+        if(!scan.getNext().tokenStr.equals(";"))
+            errorWithCurrent("Expected ';' after print statement");
+        scan.getNext(); // Skip past ';'
+        System.out.println(msg.toString());
+    }
+
     //////////
     // Eval //
     //////////
@@ -306,6 +325,8 @@ public class Parser {
      * Note: currentToken must be at the start of an expression.
      * An expression can also be within parenthesis, like while () <--
      *
+     * Ends scan on SEPARATOR token that terminated the expression
+     *
      * @return The ResultValue of the expression
      */
     ResultValue expr() throws Exception {
@@ -315,7 +336,7 @@ public class Parser {
         // We're only supporting one set of parenthesis around
         if(scan.currentToken.tokenStr.equals("(")) {
             scan.getNext();
-            ResultValue innerExprValue = expr(); // TODO: Make sure that expr() will stop when it hits a separator
+            //ResultValue innerExprValue = expr(); // TODO: Make sure that expr() will stop when it hits a separator
             // TODO: Fix expr
         }
 
@@ -336,6 +357,7 @@ public class Parser {
                 break;
             case IDENTIFIER:
                 resOperand1 = StorageManager.retrieveVariable(scan.currentToken.tokenStr);
+                break;
             default:
                 errorWithCurrent("Expected a token that can be evaluated in an expression");
         }
@@ -344,7 +366,6 @@ public class Parser {
 
         // Expression is only one operand
         if(scan.currentToken.primClassif == Classif.SEPARATOR) {
-            scan.getNext();
             return resOperand1;
         }
 
@@ -377,9 +398,10 @@ public class Parser {
             // null (-> NPE) because default case in switch (where resOperand1 would be null) results in an Exception
 
         scan.getNext(); // On either 2nd operand or separator since max operands is 2
-        if(!scan.isSeparator(scan.currentToken.tokenStr) || !scan.isSeparator(scan.nextToken.tokenStr))
+        if(!scan.isSeparator(scan.currentToken.tokenStr) && !scan.isSeparator(scan.nextToken.tokenStr))
             errorWithCurrent("Expected expression to end with a SEPARATOR (e.g. ';', ',')");
-        skipAfter(Classif.SEPARATOR); // We'll change this to keep parsing until we hit a separator in program 4
+        else
+            scan.getNext(); // End on SEPARATOR
         return expr;
     }
 
@@ -424,10 +446,6 @@ public class Parser {
         return value;
     }
 
-    private void print(String msg) {
-        System.out.println(msg);
-    }
-
     // Exceptions
 
     public void error(String fmt) throws Exception {
@@ -447,11 +465,11 @@ public class Parser {
      * @param fmt The error message to be printed
      */
     public void errorWithCurrent(String fmt) throws Exception {
-        error("Read %s, " + fmt, scan.currentToken.tokenStr);
+        error("Read \"%s\", " + fmt, scan.currentToken.tokenStr);
     }
 
     public void errorWithCurrent(String fmt, Object... varArgs) throws Exception {
-        error("Read %s, " + fmt, scan.currentToken.tokenStr, varArgs);
+        error("Read \"%s\", " + fmt, scan.currentToken.tokenStr, varArgs);
     }
 
 
