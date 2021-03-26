@@ -287,7 +287,10 @@ public class Scanner {
             --currentSymbolTableDepth; // We encountered an enddef, so the function has ended, and we go to the outer symbol table
 
         } else if(  (token.tokenStr.compareTo("Int") == 0 || token.tokenStr.compareTo("Float") == 0 || token.tokenStr.compareTo("String") == 0 || token.tokenStr.compareTo("Date") == 0 || // TODO Set STIdentifier parm and nonlocal values in parser
-                    token.tokenStr.substring(0, 3).compareTo("Int[") == 0 || token.tokenStr.substring(0, 5).compareTo("Float[") == 0 || token.tokenStr.substring(0, 6).compareTo("String[") == 0 || token.tokenStr.substring(0, 4).compareTo("Date[") == 0)
+                (token.tokenStr.length() >= 3 && token.tokenStr.substring(0, 3).compareTo("Int[") == 0) ||
+                (token.tokenStr.length() >= 5 && token.tokenStr.substring(0, 5).compareTo("Float[") == 0) ||
+                (token.tokenStr.length() >= 6 && token.tokenStr.substring(0, 6).compareTo("String[") == 0) ||
+                (token.tokenStr.length() >= 4 && token.tokenStr.substring(0, 4).compareTo("Date[") == 0))
                     && iColPos <= 7) { // iColPos should be <= 7, since it should be a declaration at the start of a line
 
             // Data for declaration of an identifier

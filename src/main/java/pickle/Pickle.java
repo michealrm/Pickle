@@ -24,7 +24,7 @@ public class Pickle
 {
     public static void main(String[] args) 
     {
-        System.out.println("run:");
+        //System.out.println("run:");
 
         // Create the Global SymbolTable
         SymbolTable.initGlobal();
@@ -35,10 +35,12 @@ public class Pickle
         // Create the Scanner
         Scanner scan = new Scanner(args[0], symbolTable);
 
-        // Create the Parser
-        Parser parser = new Parser(scan);
 
         try {
+            // Create the Parser
+            Parser parser = new Parser(scan);
+
+            // Execute statements in the source file
             parser.executeStatements(true);
         } catch(Exception e) {
             e.printStackTrace();

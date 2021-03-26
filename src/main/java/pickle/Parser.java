@@ -16,8 +16,9 @@ public class Parser {
 
     public Scanner scan;
 
-    public Parser(Scanner scanner) {
+    public Parser(Scanner scanner) throws Exception {
         scan = scanner;
+        scan.getNext();
     }
 
     ////////////////
@@ -38,7 +39,7 @@ public class Parser {
                 flowQueue.add(scan.currentToken.tokenStr);
 
             ResultValue resTemp = executeStmt(bExec);
-            if(resTemp.scTerminatingStr.equals("endif") || resTemp.scTerminatingStr.equals("endwhile")) {
+            if(resTemp.scTerminatingStr != null && (resTemp.scTerminatingStr.equals("endif") || resTemp.scTerminatingStr.equals("endwhile"))) {
                 if(flowQueue.isEmpty()) {
                     // Either flow is in another executeStmt's flowQueue or this is an invalid/non-matching termination
                     res.scTerminatingStr = resTemp.scTerminatingStr;
@@ -62,6 +63,8 @@ public class Parser {
                 }
 
             }
+
+            executeStmt(bExec);
         }
 
         return res;
@@ -91,8 +94,18 @@ public class Parser {
             if (scan.currentToken.dclType == SubClassif.IDENTIFIER) {
                 return assignmentStmt();
             }
+            if(scan.currentToken.tokenStr.equals("print")) {
+                if(!scan.getNext().tokenStr.equals("("))
+                    errorWithCurrent("Expected '(' for builtin function 'print'");
+                Token msgToken = scan.getNext();
+                if(msgToken.dclType != SubClassif.STRING)
+                    errorWithCurrent("Expected a string inside print"); // TODO: Are we allowing types other than String in print?
+                String msgStr = msgToken.tokenStr;
+                if(!scan.getNext().tokenStr.equals(")"))
+                    errorWithCurrent("Expected ')' closing after print parameter");
+                print(msgStr); // TODO: CRITICAL: String is being returned with double quotes around it
+            }
         }
-
         if(!bExec)
             skipAfter(";");
         return new ResultValue(SubClassif.EMPTY, "");
@@ -291,14 +304,13 @@ public class Parser {
     ResultValue expr() throws Exception {
         // Only supports one operator until program 4
 
-        /*
-        // Skip ( for expressions wrapped in parenthesis like (1 + 5) or while (T) <--
-        // TODO: An edge case may be a = ("hello"). Is it okay to support that?
+
+        // We're only supporting one set of parenthesis around
         if(scan.currentToken.tokenStr.equals("(")) {
             scan.getNext();
             ResultValue innerExprValue = expr(); // TODO: Make sure that expr() will stop when it hits a separator
+            // TODO: Fix expr
         }
-         */
 
         // Get operand one
         ResultValue resOperand1 = null;
@@ -403,6 +415,10 @@ public class Parser {
     private ResultValue assign(String variableName, ResultValue value) {
         StorageManager.storeVariable(variableName, value);
         return value;
+    }
+
+    private void print(String msg) {
+        System.out.println(msg);
     }
 
     // Exceptions
