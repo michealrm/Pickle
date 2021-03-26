@@ -2,6 +2,10 @@ package pickle;
 
 import pickle.exception.ParserException;
 
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Stack;
+
 /**
  * Micheal: executeStatements, print, testing
  * JCGV: while
@@ -16,17 +20,88 @@ public class Parser {
     // Statements //
     ////////////////
 
-    ResultValue executeStatements(boolean bExec) {
-        return null;
+    /**
+     *
+     * @param bExec
+     * @return The ResultValue evaluated from the statements. Will likely be EMPTY with an empty string value.
+     *  The important part is that scTerminatingStr is set
+     */
+    ResultValue executeStatements(boolean bExec) throws Exception {
+        ResultValue res = new ResultValue(SubClassif.EMPTY, "");
+        Queue<String> flowQueue = new LinkedList<>();
+        while(true) {
+            if(scan.currentToken.tokenStr.equals("if") || scan.currentToken.tokenStr.equals("while"))
+                flowQueue.add(scan.currentToken.tokenStr);
+
+            ResultValue resTemp = executeStmt(bExec);
+            if(resTemp.scTerminatingStr.equals("endif") || resTemp.scTerminatingStr.equals("endwhile")) {
+                if(flowQueue.isEmpty()) {
+                    // Either flow is in another executeStmt's flowQueue or this is an invalid/non-matching termination
+                    res.scTerminatingStr = resTemp.scTerminatingStr;
+                    scan.getNext(); // Skip past END
+                    if(!scan.getNext().tokenStr.equals(";"))
+                        errorWithCurrent("Expected a ';' after an %s", resTemp.scTerminatingStr);
+                    scan.getNext(); // Skip past ';'
+                    return res;
+                }
+
+                // scTerminatingStr's END token has a matching FLOW at the front of the queue
+                if(("end" + flowQueue.peek()).equals(resTemp.scTerminatingStr)) {
+                    if(!scan.getNext().tokenStr.equals(";"))
+                        errorWithCurrent("Expected a ';' after an %s", resTemp.scTerminatingStr);
+
+                    res.scTerminatingStr = resTemp.scTerminatingStr;
+                    flowQueue.remove();
+                    break;
+                } else {
+                    errorWithCurrent("Expected an flow END (e.g. endif) for %s", flowQueue.peek());
+                }
+
+            }
+        }
+
+        return res;
     }
 
     ResultValue executeStmt(boolean bExec) throws Exception {
-        if(!bExec) {
-            skipTo(";");
-            scan.getNext();
-            return new ResultValue(SubClassif.EMPTY, "");
+        // Check for END
+        if(scan.currentToken.dclType == SubClassif.END) {
+            ResultValue res = new ResultValue(SubClassif.EMPTY, "");
+            res.scTerminatingStr = scan.currentToken.tokenStr;
+            return res;
         }
-        return null;
+
+        // Check for FLOW token
+        switch(scan.currentToken.tokenStr) {
+            case "while":
+                whileStmt(bExec);
+                break;
+            case "if":
+                ifStmt(bExec);
+                break;
+        }
+        if(bExec) {
+            if (scan.currentToken.dclType == SubClassif.DECLARE) {
+                declareStmt();
+            }
+            if (scan.currentToken.dclType == SubClassif.IDENTIFIER) {
+                return assignmentStmt();
+            }
+        }
+
+        if(!bExec)
+            skipAfter(";");
+        return new ResultValue(SubClassif.EMPTY, "");
+    }
+
+    /**
+     * Calls scan.getNext() until ';' is hit and calls an additional scan.getNext() to end on the position after the ';'
+     *
+     * @return An EMPTY ResultValue with value ""
+     */
+    private ResultValue scanStmt() throws Exception {
+        skipAfter(";");
+        return new ResultValue(SubClassif.EMPTY, "");
     }
 
     /**
@@ -117,6 +192,7 @@ public class Parser {
 
     void ifStmt(boolean bExec) throws Exception {
         if(bExec) {
+            scan.getNext(); // Skip past the "if" to the opening parenthesis of the condition expression
             ResultValue resCond = evalCond("if");
             if(Boolean.parseBoolean(String.valueOf(resCond.value))) {
                 ResultValue resTemp = executeStatements(true);
@@ -141,10 +217,10 @@ public class Parser {
                     errorWithCurrent("Expected ';' after 'endif'");
             }
         } else {
-            skipTo(":");
+            skipAfter(":");
             ResultValue resTemp = executeStatements(false);
             if(resTemp.scTerminatingStr.equals("else")) {
-                if(scan.getNext().tokenStr.equals(":"))
+                if(!scan.getNext().tokenStr.equals(":"))
                     errorWithCurrent("Expected ':' after else");
                 resTemp = executeStatements(false);
             }
@@ -280,8 +356,7 @@ public class Parser {
         scan.getNext(); // On either 2nd operand or separator since max operands is 2
         if(!scan.isSeparator(scan.currentToken.tokenStr) || !scan.isSeparator(scan.nextToken.tokenStr))
             errorWithCurrent("Expected expression to end with a SEPARATOR (e.g. ';', ',')");
-        skipTo(Classif.SEPARATOR); // We'll change this to keep parsing until we hit a separator in program 4
-        scan.getNext();
+        skipAfter(Classif.SEPARATOR); // We'll change this to keep parsing until we hit a separator in program 4
         return expr;
     }
 
@@ -309,6 +384,16 @@ public class Parser {
     private void skipTo(Classif primClassif) throws Exception {
         while(scan.currentToken.primClassif != primClassif)
             scan.getNext();
+    }
+
+    private void skipAfter(String to) throws Exception {
+        skipTo(to);
+        scan.getNext();
+    }
+
+    private void skipAfter(Classif primClassif) throws Exception {
+        skipTo(primClassif);
+        scan.getNext();
     }
 
     private ResultValue assign(String variableName, ResultValue value) {
