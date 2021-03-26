@@ -173,8 +173,6 @@ public class Parser {
         if(scan.currentToken.dclType != SubClassif.IDENTIFIER)
             error("Expected a variable for the target of an assignment");
         String variableName = scan.currentToken.tokenStr;
-        if(variableName.equals("radius"))
-            System.out.println();
 
         scan.getNext();
         if(scan.currentToken.primClassif != Classif.OPERATOR)
@@ -331,7 +329,7 @@ public class Parser {
      */
     ResultValue expr() throws Exception {
         // Only supports one operator until program 4
-
+        ResultValue expr = null;
 
         // We're only supporting one set of parenthesis around
         if(scan.currentToken.tokenStr.equals("(")) {
@@ -340,6 +338,34 @@ public class Parser {
             // TODO: Fix expr
         }
 
+        // Check for unary minus
+        Numeric unaryMinusOn = null;
+        if(scan.currentToken.tokenStr.equals("-")) {
+            scan.getNext(); // Now we should be on either an IDENTIFIER or an INT or FLOAT
+            switch(scan.currentToken.dclType) {
+                case INTEGER:
+                    unaryMinusOn = new Numeric(scan.currentToken.tokenStr);
+                    expr = new ResultValue(SubClassif.INTEGER, unaryMinusOn.unaryMinus());
+                    break;
+                case FLOAT:
+                    unaryMinusOn = new Numeric(scan.currentToken.tokenStr);
+                    expr = new ResultValue(SubClassif.FLOAT, unaryMinusOn.unaryMinus());
+                    break;
+                case IDENTIFIER:
+                    String variableName = scan.currentToken.tokenStr;
+                    ResultValue variableValue = getVariableValue(variableName);
+                    if(!variableValue.isNumber) {
+                        errorWithCurrent("Expected a variable with a numeric value for unary minus");
+                    }
+                    unaryMinusOn = (Numeric)variableValue.value;
+                    expr = new ResultValue(unaryMinusOn.type, unaryMinusOn.unaryMinus());
+                    break;
+                default:
+                    errorWithCurrent("Expected a INTEGER, FLOAT, or IDENTIFIER for unary minus");
+            }
+            scan.getNext();
+            return expr;
+        }
         // Get operand one
         ResultValue resOperand1 = null;
         switch(scan.currentToken.dclType) {
@@ -394,7 +420,7 @@ public class Parser {
         }
 
         String operator = scan.currentToken.tokenStr;
-        ResultValue expr = resOperand1.executeOperation(resOperand2, operator); // Note: IDE lies, resOperand1 won't be
+        expr = resOperand1.executeOperation(resOperand2, operator); // Note: IDE lies, resOperand1 won't be
             // null (-> NPE) because default case in switch (where resOperand1 would be null) results in an Exception
 
         scan.getNext(); // On either 2nd operand or separator since max operands is 2
