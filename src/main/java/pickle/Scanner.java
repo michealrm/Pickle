@@ -31,6 +31,7 @@ public class Scanner {
     public Token currentToken;
     public Token nextToken;
     private int lastLine = -1; // Used by advanceTokenPos
+    public Debug scanDebug = new Debug();
 
     public Scanner(String fileNm, SymbolTable symbolTable) {
         this.sourceFileNm = fileNm;
@@ -97,6 +98,11 @@ public class Scanner {
             //System.out.println(nextToken.iSourceLineNr);
             nextToken = new Token(advancedPos[0], advancedPos[1]);
             advancedPos = advanceTokenPos(nextToken);
+        }
+        
+        if (scanDebug.bShowToken)
+        {
+            currentToken.printToken();
         }
 
         return currentToken;
@@ -570,6 +576,20 @@ public class Scanner {
                 return true;
             default:
                 return false;
+        }
+    }
+    
+    public static class Debug
+    {
+        public boolean bShowToken;
+        public boolean bShowExpr;
+        public boolean bShowAssign;
+
+        public Debug()
+        {
+            this.bShowToken = false;
+            this.bShowExpr = false;
+            this.bShowAssign = false;
         }
     }
 }
