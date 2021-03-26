@@ -34,17 +34,14 @@ public class ResultValue
 	public ResultValue(SubClassif iType, Object val) throws Exception
 	{
 		iDatatype = iType;
+		value = val;
 
 		// Check if type is a number type
 		if (iDatatype == SubClassif.INTEGER || iDatatype == SubClassif.FLOAT)
 		{
-			if (val instanceof Numeric)
+			if ( !(val instanceof Numeric) )
 			{
-				value = val;
-			}
-			else
-			{
-				value = new Numeric( (String) val, iDatatype);
+				value = new Numeric( val.toString(), iDatatype);
 			}
 			isNumber = true;
 		}
@@ -54,17 +51,14 @@ public class ResultValue
 		{
 			if (val instanceof Numeric)
 			{
-				value = val;
 				iDatatype = ((Numeric) val).type;
 			}
 			else if (val instanceof String)
 			{
-				value = val;
 				iDatatype = SubClassif.STRING;
 			}
 			else if (val instanceof Boolean)
 			{
-				value = val;
 				iDatatype = SubClassif.BOOLEAN;
 			}
 			else

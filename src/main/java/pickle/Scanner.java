@@ -17,7 +17,7 @@ import java.util.Set;
 
 public class Scanner {
 
-    private static final boolean PRINT_CURRENT_TOKEN_LINE = true;
+    private static final boolean PRINT_CURRENT_TOKEN_LINE = false;
 
     public static LinkedHashMap<Integer, SymbolTable> linkedSymbolTable = new LinkedHashMap<>(); // Volatile list of symbol tables used for depth sensing
     public static Integer currentSymbolTableDepth = 0;
@@ -134,7 +134,7 @@ public class Scanner {
                 // Print line
                 // This ends up printing the line for nextToken, so the last token of the last line (usually ;) will
                 // be printed after the next line is printed
-                if(!PRINT_CURRENT_TOKEN_LINE) {
+                if(PRINT_CURRENT_TOKEN_LINE) {
                     printLine(iLineNumber);
                 }
                 int[] nextPos = skipEmptyLine(iLineNumber, iColNumber);
@@ -149,7 +149,7 @@ public class Scanner {
                 t.tokenStr = t.tokenStr + textCharM[iColNumber];
 
                 // Skip comment
-                if (t.tokenStr.equals("//"))
+                if (t.tokenStr.equals("/"))
                 {
                     t.tokenStr = ""; // For EMPTY continuesToken returns true, so we'll start reading a new token
 
@@ -264,7 +264,7 @@ public class Scanner {
             // EOF
             token.primClassif = Classif.EOF;
 
-        } else if(token.tokenStr.compareTo("def") == 0) {   // TODO 1: Add parameters as identifiers within the function symbol table
+        } /* else if(token.tokenStr.compareTo("def") == 0) {   // TODO 1: Add parameters as identifiers within the function symbol table
                                                             // TODO 2: Set STFunction numArgs in parser
             // Data for declaration of a function
 
@@ -300,9 +300,10 @@ public class Scanner {
                     && iColPos <= 7) { // iColPos should be <= 7, since it should be a declaration at the start of a line
 
             // Data for declaration of an identifier
-
-            SubClassif dataType = getDataType(token.tokenStr.substring(0, token.tokenStr.length() - 2));
             Token identifierName = currentToken = getNext();
+            System.out.println("IDENTIFIER NAME" + identifierName);
+            SubClassif dataType = getDataType(token.tokenStr.substring(0, token.tokenStr.length() - 2));
+
             SubClassif identifierStructure = null;
 
             if(!isArray(dataType))
@@ -313,7 +314,7 @@ public class Scanner {
             // Put the symbol in the current symbol table
             linkedSymbolTable.get(currentSymbolTableDepth).putSymbol(identifierName.tokenStr, new STIdentifier(identifierName.tokenStr, Classif.IDENTIFIER, dataType, identifierStructure));
 
-        } else if(isTokenWhitespace(token)) {
+        } */ else if(isTokenWhitespace(token)) {
 
             // Token is whitespace
             token.primClassif = Classif.SEPARATOR;

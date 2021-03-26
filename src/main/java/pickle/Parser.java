@@ -67,6 +67,8 @@ public class Parser {
             executeStmt(bExec);
         }
 
+        scan.getNext();
+
         return res;
     }
 
