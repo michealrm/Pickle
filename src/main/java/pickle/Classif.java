@@ -1,13 +1,24 @@
 package pickle;
 public enum Classif 
 {
-    EMPTY,      // empty
-    IDENTIFIER, // identifier for declarations
-    OPERAND,    // constants, identifier
-    OPERATOR,   // + - * / < > = !
-    SEPARATOR,  // ( ) , : ; [ ] 
-    FUNCTION,   // TBD
-    CONTROL,    // TBD
-    EOF         // EOF encountered
+    EMPTY("EMPTY"),      // empty
+    IDENTIFIER("IDENTIFIER"), // identifier for declarations
+    OPERAND("OPERAND"),    // constants, identifier
+    OPERATOR("OPERATOR"),   // + - * / < > = !
+    SEPARATOR("SEPARATOR"),  // ( ) , : ; [ ]
+    FUNCTION("FUNCTION"),   // TBD
+    CONTROL("CONTROL"),    // TBD
+    EOF("EOF");         // EOF encountered
+
+    private String value;
+
+    Classif(String value) {
+        this.value = value;
+    }
+
+    public String toString() {
+        return value;
+    }
+
 }
 

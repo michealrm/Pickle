@@ -42,14 +42,11 @@ public class Parser {
                 flowQueue.add(scan.currentToken.tokenStr);
 
             ResultValue resTemp = executeStmt(bExec);
-            if(resTemp.scTerminatingStr != null && (resTemp.scTerminatingStr.equals("endif") || resTemp.scTerminatingStr.equals("endwhile"))) {
+            if(resTemp.scTerminatingStr != null && resTemp.iDatatype == SubClassif.END) {
                 if(flowQueue.isEmpty()) {
-                    // Either flow is in another executeStmt's flowQueue or this is an invalid/non-matching termination
+                    // Either flow is higher in the call stack or this is an invalid/non-matching termination
+                    // ifStmt and whileStmt will catch that after returning res
                     res.scTerminatingStr = resTemp.scTerminatingStr;
-                    scan.getNext(); // Skip past END
-                    if(!scan.currentToken.tokenStr.equals(";"))
-                        errorWithCurrent("Expected a ';' after an %s", resTemp.scTerminatingStr);
-                    scan.getNext(); // Skip past ';'
                     return res;
                 }
 
@@ -72,33 +69,35 @@ public class Parser {
     }
 
     ResultValue executeStmt(boolean bExec) throws Exception {
-        // TODO: Need a default case to throw an error
-
-        // Check for END
-        if(scan.currentToken.dclType == SubClassif.END) {
-            ResultValue res = new ResultValue(SubClassif.EMPTY, "");
-            res.scTerminatingStr = scan.currentToken.tokenStr;
-            return res;
-        }
-
         // Check for FLOW token
         switch(scan.currentToken.tokenStr) {
             case "while":
                 whileStmt(bExec);
-                break;
             case "if":
                 ifStmt(bExec);
-                break;
         }
+
+        // Check for END
+        if(scan.currentToken.dclType == SubClassif.END) {
+            ResultValue res = new ResultValue(SubClassif.END, scan.currentToken.tokenStr);
+            res.scTerminatingStr = scan.currentToken.tokenStr;
+            // DO NOT skip past endX;. We need this if XStmt for exception handling
+
+            return res;
+        }
+
         if(bExec) {
             if (scan.currentToken.dclType == SubClassif.DECLARE) {
                 declareStmt();
             }
-            if (scan.currentToken.dclType == SubClassif.IDENTIFIER) {
+            else if (scan.currentToken.dclType == SubClassif.IDENTIFIER) {
                 return assignmentStmt();
             }
-            if(scan.currentToken.tokenStr.equals("print")) {
+            else if(scan.currentToken.tokenStr.equals("print")) {
                 printStmt();
+            }
+            else {
+                error("Unsupported statement type for token %s. Classif: %s/%s", scan.currentToken.tokenStr, scan.currentToken.primClassif, scan.currentToken.dclType);
             }
         }
         else
@@ -215,6 +214,8 @@ public class Parser {
             scan.getNext(); // Skip past the "if" to the opening parenthesis of the condition expression
             ResultValue resCond = evalCond("if");
             if(Boolean.parseBoolean(String.valueOf(resCond.value))) {
+                if(!scan.currentToken.tokenStr.equals(":"))
+                    errorWithCurrent("Expected ':' after if");
                 scan.getNext(); // Skip past ':'
                 ResultValue resTemp = executeStatements(true);
                 if(resTemp.scTerminatingStr.equals("else")) {
@@ -224,18 +225,25 @@ public class Parser {
                 }
                 if(!resTemp.scTerminatingStr.equals("endif"))
                     errorWithCurrent("Expected an 'endif' for an 'if'");
-                if(!scan.getNext().tokenStr.equals(";"))
+                scan.getNext(); // Skip past endif
+                if(!scan.currentToken.tokenStr.equals(";"))
                     errorWithCurrent("Expected';' after an 'endif'");
+                scan.getNext(); // Skip past ';'
             }
             else {
+                if(!scan.currentToken.tokenStr.equals(":"))
+                    errorWithCurrent("Expected ':' after if");
+                scan.getNext(); // Skip past ':'
                 ResultValue resTemp = executeStatements(false);
                 if(resTemp.scTerminatingStr.equals("else")) {
                     if(!scan.getNext().tokenStr.equals(":"))
                         errorWithCurrent("Expected ':' after 'else'");
+                    scan.getNext();
                     resTemp = executeStatements(true);
                 }
                 if(!scan.getNext().tokenStr.equals(";"))
                     errorWithCurrent("Expected ';' after 'endif'");
+                scan.getNext(); // Skip past ';'
             }
         } else {
             skipAfter(":");
@@ -245,10 +253,12 @@ public class Parser {
                     errorWithCurrent("Expected ':' after else");
                 resTemp = executeStatements(true);
             }
-            if(!scan.getNext().tokenStr.equals("endif"))
+            if(!resTemp.scTerminatingStr.equals("endif"))
                 errorWithCurrent("Expected an 'endif' for an 'if'");
-            if(!scan.getNext().tokenStr.equals(";"))
-                errorWithCurrent("Expected ';' after 'endif'");
+            scan.getNext(); // Skip past endif
+            if(!scan.currentToken.tokenStr.equals(";"))
+                errorWithCurrent("Expected';' after an 'endif'");
+            scan.getNext(); // Skip past ';'
         }
     }
 
