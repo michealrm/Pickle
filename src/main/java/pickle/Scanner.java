@@ -178,8 +178,14 @@ public class Scanner {
                     }
                 }
 
-                // TODO: Change later for multiline comments
             } while (sourceLineBefore == iLineNumber && continuesToken(t, textCharM[iColNumber]));
+
+            // Remove surrounding quotes and replace escaped characters for strings
+            if (t.primClassif == Classif.OPERAND && t.dclType == SubClassif.STRING) {
+                t.tokenStr = t.tokenStr.replaceAll("^\"|\"$", "");
+                t.tokenStr = t.tokenStr.replaceAll("\\n", "\n");
+                t.tokenStr = t.tokenStr.replaceAll("\\t", "\t");
+            }
 
             return packagePositions(iLineNumber, iColNumber);
         } finally {

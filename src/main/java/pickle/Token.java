@@ -53,8 +53,6 @@ public class Token
      */
     public void printToken()
     {
-        tokenStr = tokenStr.replaceAll("^\"|\"$", "");
-
         String primClassifStr;
         String subClassifStr;
 
@@ -71,9 +69,6 @@ public class Token
         if (primClassif == Classif.OPERAND &&
                 dclType == SubClassif.STRING)
         {
-            tokenStr = tokenStr.replace("\\n", "\n");
-            tokenStr = tokenStr.replace("\\t", "\t");
-
             System.out.printf("%-11s %-12s "
                     , primClassifStr
                     , subClassifStr);
