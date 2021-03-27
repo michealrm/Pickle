@@ -186,16 +186,16 @@ public class Scanner {
 
             } while (sourceLineBefore == iLineNumber && continuesToken(t, textCharM[iColNumber]));
 
-            // Remove surrounding quotes and replace escaped characters for strings
-            if (t.primClassif == Classif.OPERAND && t.dclType == SubClassif.STRING) {
-                t.tokenStr = t.tokenStr.replaceAll("^\"|\"$", "");
-                t.tokenStr = t.tokenStr.replaceAll("\\n", "\n");
-                t.tokenStr = t.tokenStr.replaceAll("\\t", "\t");
-            }
-
             return packagePositions(iLineNumber, iColNumber);
         } finally {
             SyntaxExceptionHandler.tokenException(t, t.iSourceLineNr, t.iColPos);
+
+            // Remove surrounding quotes and replace escaped characters for strings
+            if (t.primClassif == Classif.OPERAND && t.dclType == SubClassif.STRING) {
+                t.tokenStr = t.tokenStr.replaceAll("^\"|\"$", "");
+                t.tokenStr = t.tokenStr.replace("\\n", "\n");
+                t.tokenStr = t.tokenStr.replace("\\t", "\t");
+            }
         }
     }
 
@@ -528,6 +528,8 @@ public class Scanner {
     }
 
     public boolean isTokenWhitespace(Token t) {
+        if(t.dclType == SubClassif.STRING)
+            return false;
         return t.tokenStr.length() == 0 || isCharWhitespace(t.tokenStr.charAt(0));
     }
 

@@ -86,6 +86,27 @@ public class Parser {
     }
 
     ResultValue executeStmt(boolean bExec) throws Exception {
+
+        // Check for FLOW token
+        switch(scan.currentToken.tokenStr) {
+            case "while":
+                flowStack.push("while");
+                whileStmt(bExec);
+                break;
+            case "if":
+                flowStack.push("if");
+                ifStmt(bExec);
+        }
+
+        // Check for END
+        if(scan.currentToken.dclType == SubClassif.END) {
+            ResultValue res = new ResultValue(SubClassif.END, scan.currentToken.tokenStr);
+            res.scTerminatingStr = scan.currentToken.tokenStr;
+            // DO NOT skip past endX;. We need this if XStmt for exception handling
+
+            return res;
+        }
+
         // Check for FLOW token
         switch(scan.currentToken.tokenStr) {
             case "while":
@@ -120,6 +141,8 @@ public class Parser {
             else if(scan.currentToken.tokenStr.equals("print")) {
                 printStmt();
             }
+            else if(scan.currentToken.primClassif == Classif.EMPTY && scan.currentToken.dclType == SubClassif.EMPTY)
+                scan.getNext();
             else {
                 error("Unsupported statement type for token %s. Classif: %s/%s", scan.currentToken.tokenStr, scan.currentToken.primClassif, scan.currentToken.dclType);
             }

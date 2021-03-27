@@ -29,7 +29,7 @@ public class SyntaxExceptionHandler {
 
             char begin = tokenStr.charAt(0);
             char end = tokenStr.charAt(tokenStr.length() - 1);
-            if ((begin == '"' || begin == '\'')) {
+            if (token.dclType == SubClassif.STRING) {
                 // Illegal line ending in string literal
                 if (tokenStr.contains("\n"))
                     throw new Exception(errorMsg(iLineNumber, iColNumber, "Line " + tokenStr + " Illegal line end in string literal"));

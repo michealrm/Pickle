@@ -17,7 +17,7 @@ public class ParserException extends Exception
     {
         StringBuffer sb = new StringBuffer();
         sb.append("Line ");
-        sb.append(iLineNr+1);
+        sb.append(iLineNr);
         sb.append(" ");
         sb.append(diagnostic);
         sb.append(", File: ");
