@@ -23,6 +23,12 @@ public enum SubClassif
     BUILTIN("BUILTIN"),        // builtin function (e.g., print)
     USER("USER"),           // user-defined function
     VAR_ARGS("VAR_ARGS"),       // For when a function is declared with a variable number of arguments
+    DEBUG("DEBUG"),         // Debug statement
+    DEBUG_TOKEN("DEBUG_TOKEN"), // Debug token statement
+    DEBUG_ASSIGN("DEBUG_ASSIGN"), // Debug assignment statement
+    DEBUG_EXPR("DEBUG_EXPR"), // Debug expression statement
+    DEBUG_STMT("DEBUG_STMT"), // Debug statement statement
+    DEBUG_VALUE("DEBUG_VALUE"), // Debug value
     // IDENTIFIER's subclassifications
     PRIMITIVE("PRIMITIVE"),      // Primitive type
     FIXED_ARRAY("FIXED_ARRAY"),    // Array type

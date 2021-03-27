@@ -141,8 +141,12 @@ public class Parser {
             else if(scan.currentToken.tokenStr.equals("print")) {
                 printStmt();
             }
+            // If file starts with a comment and currentToken is empty
             else if(scan.currentToken.primClassif == Classif.EMPTY && scan.currentToken.dclType == SubClassif.EMPTY)
                 scan.getNext();
+            else if(scan.currentToken.tokenStr.equals("debug")) {
+                parseDebugStmt();
+            }
             else {
                 error("Unsupported statement type for token %s. Classif: %s/%s", scan.currentToken.tokenStr, scan.currentToken.primClassif, scan.currentToken.dclType);
             }
@@ -206,7 +210,7 @@ public class Parser {
         else {
             errorWithCurrent("Expected an assignment (ex: Float f = 1.0;) or only declaration (ex: Float f;)");
         }
-        scan.getNext(); // Skip past ';' to next statement
+        scan.getNext(); // Skip past ';' to next statement - This is where the next statement is obtained
         return null;
     }
 
@@ -523,12 +527,50 @@ public class Parser {
         return expr;
     }
 
+
+
     ResultValue evalCond(String flowType) throws Exception {
         ResultValue expr = expr();
         if(expr.iDatatype != SubClassif.BOOLEAN)
             error("%s condition must yield a Bool", flowType);
         return expr;
     }
+
+    /*private void evalDebug() throws Exception {
+        scan.getNext();
+        switch(scan.currentToken.dclType) {
+            case DEBUG:
+                boolean debugValue = false;
+
+                if (scan.nextToken.tokenStr.equals("on")) {
+                    scan.nextToken.primClassif = Classif.DEBUG;
+                    scan.nextToken.dclType = SubClassif.DEBUG_VALUE;
+                    debugValue = true;
+                } else if (scan.nextToken.tokenStr.equals("off")) {
+                    scan.nextToken.primClassif = Classif.DEBUG;
+                    scan.nextToken.dclType = SubClassif.DEBUG_VALUE;
+                    debugValue = false;
+                } else {
+                    errorWithCurrent("Expected 'on' or 'off' for debug statement");
+                    break;
+                }
+
+                if (scan.currentToken.tokenStr.equals("Assign")) {
+                    scan.currentToken.primClassif = Classif.DEBUG;
+                    scan.currentToken.dclType = SubClassif.DEBUG_ASSIGN;
+                    scan.scanDebug.bShowAssign = debugValue;
+                } else if (scan.currentToken.tokenStr.equals("Expr")) {
+                    scan.currentToken.primClassif = Classif.DEBUG;
+                    scan.currentToken.dclType = SubClassif.DEBUG_EXPR;
+                } else if (scan.currentToken.tokenStr.equals("Stmt")) {
+                    scan.currentToken.primClassif = Classif.DEBUG;
+                    scan.currentToken.dclType = SubClassif.DEBUG_STMT;
+                }
+
+
+                break;
+        }
+    } */
 
     // Util
     private ResultValue getVariableValue(String variableStr) {
@@ -571,88 +613,67 @@ public class Parser {
      */
     private void parseDebugStmt() throws Exception
     {
-        boolean bFormat = false;
-
-        if (this.scan.currentToken.tokenStr.equals("debug"))
-        {
-            this.scan.getNext();
-        }
-        else
-        {
-            throw new ParserException(this.scan.nextToken.iSourceLineNr,
-                "Parser Error: token at column " + this.scan.nextToken.iColPos
-                + " has invalid format.", "file name");
-        }
-
-        if (this.scan.currentToken.tokenStr.equals("bShowToken"))
-        {
-            this.scan.getNext();
-            if (this.scan.currentToken.tokenStr.equals("on"))
-            {
-                this.scan.scanDebug.bShowToken = true;
-                bFormat = true;
-            }
-            else if (this.scan.currentToken.tokenStr.equals("off"))
-            {
-                this.scan.scanDebug.bShowToken = false;
-                bFormat = true;
-            }
-        }
-        else if (this.scan.currentToken.tokenStr.equals("bShowExpr"))
-        {
-            this.scan.getNext();
-            if (this.scan.currentToken.tokenStr.equals("on"))
-            {
-                this.scan.scanDebug.bShowExpr = true;
-                bFormat = true;
-            }
-            else if (this.scan.currentToken.tokenStr.equals("off"))
-            {
-                this.scan.scanDebug.bShowExpr = false;
-                bFormat = true;
-            }
-        }
-        else if (this.scan.currentToken.tokenStr.equals("bShowAssign"))
-        {
-            this.scan.getNext();
-            if (this.scan.currentToken.tokenStr.equals("on"))
-            {
-                this.scan.scanDebug.bShowAssign = true;
-                bFormat = true;
-            }
-            else if (this.scan.currentToken.tokenStr.equals("off"))
-            {
-                this.scan.scanDebug.bShowAssign = false;
-                bFormat = true;
-            }
-        }
-
-        if(!bFormat)
-        {
-            throw new ParserException(this.scan.nextToken.iSourceLineNr,
-                "Parser Error: token at column " + this.scan.nextToken.iColPos
-                + " has invalid format.", "file name");
-        }
         scan.getNext();
 
-        // making sure there is no token on the line after ';'
-        if(this.scan.currentToken.tokenStr.equals(";"))
-        {
-            if(this.scan.nextToken.iSourceLineNr == this.scan.currentToken.iSourceLineNr)
-            {
-                throw new ParserException(this.scan.nextToken.iSourceLineNr,
-                    "Parser Error: token at column " + this.scan.nextToken.iColPos
-                    + " appears after a ';'", "file name");
-            }
+        switch (scan.currentToken.tokenStr) {
+            case "Token":
+                scan.getNext();
+                switch(scan.currentToken.tokenStr) {
+                    case "on":
+                        scan.scanDebug.bShowToken = true;
+                        break;
+                    case "off":
+                        scan.scanDebug.bShowToken = false;
+                        break;
+                    default:
+                        errorWithCurrent("Expected 'on' or 'off' for debug statement");
+                }
+                break;
+            case "Assign":
+                scan.getNext();
+                switch(scan.currentToken.tokenStr) {
+                    case "on":
+                        scan.scanDebug.bShowAssign = true;
+                        break;
+                    case "off":
+                        scan.scanDebug.bShowAssign = false;
+                        break;
+                    default:
+                        errorWithCurrent("Expected 'on' or 'off' for debug statement");
+                }
+                break;
+            case "Expr":
+                scan.getNext();
+                switch(scan.currentToken.tokenStr) {
+                    case "on":
+                        scan.scanDebug.bShowExpr = true;
+                        break;
+                    case "off":
+                        scan.scanDebug.bShowExpr = false;
+                        break;
+                    default:
+                        errorWithCurrent("Expected 'on' or 'off' for debug statement");
+                }
+                break;
+            case "Stmt":
+                scan.getNext();
+                switch(scan.currentToken.tokenStr) {
+                    case "on":
+                        scan.scanDebug.bShowStmt = true;
+                        break;
+                    case "off":
+                        scan.scanDebug.bShowStmt = false;
+                        break;
+                    default:
+                        errorWithCurrent("Expected 'on' or 'off' for debug statement");
+                }
+                break;
+            default:
+                errorWithCurrent("Invalid debug statement");
+                /* new ParserException(scan.nextToken.iSourceLineNr,
+                        "Parser Error: token at column " + scan.nextToken.iColPos
+                                + " has invalid format.", "file name");*/
         }
-        else
-        {
-            throw new ParserException(this.scan.currentToken.iSourceLineNr,
-                "PARSER ERROR: token at column " + this.scan.nextToken.iColPos
-                + " expected ';' at the end of a debug statement", "file name");
-        }
-
-        scan.getNext();
     }
 
     // Exceptions

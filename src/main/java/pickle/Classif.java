@@ -8,6 +8,7 @@ public enum Classif
     SEPARATOR("SEPARATOR"),  // ( ) , : ; [ ]
     FUNCTION("FUNCTION"),   // TBD
     CONTROL("CONTROL"),    // TBD
+    DEBUG("DEBUG"),         // Debug statement
     EOF("EOF");         // EOF encountered
 
     private String value;
