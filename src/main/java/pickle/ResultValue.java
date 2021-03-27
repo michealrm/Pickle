@@ -19,8 +19,11 @@ public class ResultValue
 	public SubClassif iDatatype;
 	public Object value;
 	public boolean isNumber = false;
-	public String scTerminatingStr;
-	
+	public static String scTerminatingStr;
+	public static String leftOpGlobal;
+	public static String rightOpGlobal;
+	public static String operationGlobal;
+
 	// Constructor
 	public ResultValue() {}
 	
@@ -82,6 +85,10 @@ public class ResultValue
 	{
 		Object result;
 		SubClassif resultType = iDatatype;
+
+		rightOpGlobal = rightOperand.value.toString();
+		leftOpGlobal = value.toString();
+		operationGlobal = operation;
 		
 		if (isNumber)
 		{

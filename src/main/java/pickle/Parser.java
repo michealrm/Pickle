@@ -28,6 +28,9 @@ public class Parser {
     ResultValue executeStatements(boolean bExec) throws Exception {
         ResultValue res;
         while(true) {
+            if(scan.scanDebug.bShowToken || scan.scanDebug.bShowAssign || scan.scanDebug.bShowExpr || scan.scanDebug.bShowStmt) { // Print line if any debugging is enabled
+                scan.printLine(scan.iSourceLineNr);
+            }
             res = new ResultValue(SubClassif.EMPTY, "");
             ResultValue resTemp = executeStmt(bExec);
 
@@ -521,7 +524,13 @@ public class Parser {
         // Debug statement
         if (scan.scanDebug.bShowExpr)
         {
-            System.out.println("\n>" + expr);
+            if(expr.toString() == "true") {
+                System.out.println(String.format("\n... %s %s %s is T", expr.leftOpGlobal, expr.operationGlobal, expr.rightOpGlobal ));
+            } else if(expr.toString() == "false"){
+                System.out.println(String.format("\n... %s %s %s is F", expr.leftOpGlobal, expr.operationGlobal, expr.rightOpGlobal));
+            } else {
+                System.out.println(String.format("\n... %s %s %s is %s", expr.leftOpGlobal, expr.operationGlobal, expr.rightOpGlobal, expr.toString()));
+            }
         }
 
         return expr;

@@ -199,7 +199,7 @@ public class Scanner {
         }
     }
 
-    private void printLine(int iLineNumber) {
+    public void printLine(int iLineNumber) {
         if(lastLine < iLineNumber && iLineNumber < sourceLineM.size()) {
             lastLine = iLineNumber;
             System.out.println("  " + (iLineNumber + 1) + " " + this.sourceLineM.get(iLineNumber));
