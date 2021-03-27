@@ -254,7 +254,7 @@ public class Parser {
         // Debug statement
         if (scan.scanDebug.bShowAssign && res != null)
         {
-            System.out.println(res.toString() + " assigned to variable " + scan.currentToken.tokenStr);
+            System.out.println( String.format("... Assign result into '%s' is '%s'", variableName, res.toString()));
         }
 
         return res;
