@@ -15,14 +15,10 @@ public class Numeric {
         }
     }
 
-    public Numeric(String value) throws NotNumericException {
-        convertToNumber(value);
-    }
-
     public Numeric(String value, SubClassif iDataType) throws NotNumericException {
         stringValue = value;
-        convertToNumber(value);
         type = iDataType;
+        convertToNumber(value);
     }
 
     /*
@@ -90,7 +86,7 @@ public class Numeric {
 
     public Object power(Numeric value) {
         if(type == SubClassif.INTEGER)
-            return Math.pow(intValue, value.intValue);
+            return (int)Math.pow(intValue, value.intValue);
         else
             return Math.pow(floatValue, value.floatValue);
     }
@@ -143,14 +139,13 @@ public class Numeric {
     }
 
     private void convertToNumber(String value) throws NotNumericException {
-        if(PickleUtil.isFloat(value)) {
-            type = SubClassif.FLOAT;
-            floatValue = Float.parseFloat(value);   // Have both float and int values, since we don't know what type the left operand is
-            intValue = floatValue.intValue();
-        } else if(PickleUtil.isInt(value)) {
-            type = SubClassif.INTEGER;
+        if(type == SubClassif.INTEGER) {
             intValue = Integer.parseInt(value);
             floatValue = intValue.floatValue();
+        }
+        else if(type == SubClassif.FLOAT) {
+            floatValue = Float.parseFloat(value);   // Have both float and int values, since we don't know what type the left operand is
+            intValue = floatValue.intValue();
         } else {
             throw new NotNumericException(value);
         }

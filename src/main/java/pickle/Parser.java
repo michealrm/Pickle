@@ -2,6 +2,7 @@ package pickle;
 
 import pickle.exception.ParserException;
 import pickle.exception.ScannerTokenFormatException;
+import pickle.st.STEntry;
 
 import java.util.Stack;
 
@@ -190,15 +191,19 @@ public class Parser {
             switch(typeStr) {
                 case "Int":
                     assign(variableStr, new ResultValue(SubClassif.INTEGER, 0));
+                    scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.INTEGER));
                     break;
                 case "Float":
                     assign(variableStr, new ResultValue(SubClassif.FLOAT, 0.0));
+                    scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.FLOAT));
                     break;
                 case "Bool":
                     assign(variableStr, new ResultValue(SubClassif.BOOLEAN, false));
+                    scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.BOOLEAN));
                     break;
                 case "String":
                     assign(variableStr, new ResultValue(SubClassif.STRING, ""));
+                    scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.STRING));
                     break;
                 default:
                     error("Unsupported type %s", typeStr);
@@ -219,6 +224,7 @@ public class Parser {
 
     /**
      * Reads a assignment statement starting at an IDENTIFIER token
+     * TODO: Throw in error if variable to be assigned is not in the symbol table
      * @return
      * @throws Exception
      */
@@ -436,11 +442,11 @@ public class Parser {
             scan.getNext(); // Now we should be on either an IDENTIFIER or an INT or FLOAT
             switch(scan.currentToken.dclType) {
                 case INTEGER:
-                    unaryMinusOn = new Numeric(scan.currentToken.tokenStr);
+                    unaryMinusOn = new Numeric(scan.currentToken.tokenStr, scan.currentToken.dclType);
                     expr = new ResultValue(SubClassif.INTEGER, unaryMinusOn.unaryMinus());
                     break;
                 case FLOAT:
-                    unaryMinusOn = new Numeric(scan.currentToken.tokenStr);
+                    unaryMinusOn = new Numeric(scan.currentToken.tokenStr, scan.currentToken.dclType);
                     expr = new ResultValue(SubClassif.FLOAT, unaryMinusOn.unaryMinus());
                     break;
                 case IDENTIFIER:
@@ -462,10 +468,10 @@ public class Parser {
         ResultValue resOperand1 = null;
         switch(scan.currentToken.dclType) {
             case INTEGER:
-                resOperand1 = new ResultValue(SubClassif.INTEGER, new Numeric(scan.currentToken.tokenStr));
+                resOperand1 = new ResultValue(SubClassif.INTEGER, new Numeric(scan.currentToken.tokenStr, scan.currentToken.dclType));
                 break;
             case FLOAT:
-                resOperand1 = new ResultValue(SubClassif.FLOAT, new Numeric(scan.currentToken.tokenStr));
+                resOperand1 = new ResultValue(SubClassif.FLOAT, new Numeric(scan.currentToken.tokenStr, scan.currentToken.dclType));
                 break;
             case STRING:
                 resOperand1 = new ResultValue(SubClassif.STRING, scan.currentToken.tokenStr);
@@ -491,10 +497,10 @@ public class Parser {
         ResultValue resOperand2 = null;
         switch(scan.nextToken.dclType) {
             case INTEGER:
-                resOperand2 = new ResultValue(SubClassif.INTEGER, new Numeric(scan.nextToken.tokenStr));
+                resOperand2 = new ResultValue(SubClassif.INTEGER, new Numeric(scan.nextToken.tokenStr, scan.nextToken.dclType));
                 break;
             case FLOAT:
-                resOperand2 = new ResultValue(SubClassif.FLOAT, new Numeric(scan.nextToken.tokenStr));
+                resOperand2 = new ResultValue(SubClassif.FLOAT, new Numeric(scan.nextToken.tokenStr, scan.nextToken.dclType));
                 break;
             case STRING:
                 resOperand2 = new ResultValue(SubClassif.STRING, scan.nextToken.tokenStr);
@@ -610,7 +616,16 @@ public class Parser {
         scan.getNext();
     }
 
-    private ResultValue assign(String variableName, ResultValue value) {
+    private ResultValue assign(String variableName, ResultValue value) throws Exception {
+        STEntry stEntry = scan.symbolTable.getSymbol(variableName);
+        if(value != null && stEntry != null && value.iDatatype != stEntry.dclType) {
+            if (value.iDatatype == SubClassif.INTEGER || value.iDatatype == SubClassif.FLOAT) {
+                value = new ResultValue(stEntry.dclType, new Numeric(String.valueOf(value.value), stEntry.dclType));
+            } else {
+                error("Variable %s with subclassification %s can not convert assignment value %s in assign statement",
+                        variableName, stEntry.dclType, String.valueOf(value.value));
+            }
+        }
         StorageManager.storeVariable(variableName, value);
         return value;
     }
