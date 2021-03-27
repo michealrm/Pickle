@@ -192,7 +192,7 @@ public class Scanner {
 
             // Remove surrounding quotes and replace escaped characters for strings
             if (t.primClassif == Classif.OPERAND && t.dclType == SubClassif.STRING) {
-                t.tokenStr = t.tokenStr.replaceAll("^\"|\"$", "");
+                t.tokenStr = t.tokenStr.replaceAll("^\"|\"$|^'|'$", "");
                 t.tokenStr = t.tokenStr.replace("\\n", "\n");
                 t.tokenStr = t.tokenStr.replace("\\t", "\t");
             }
@@ -337,12 +337,6 @@ public class Scanner {
         } else if((stEntry = SymbolTable.globalSymbolTable.getSymbol(tokenStr)) != null) {
 
             // Found in global symbol table
-            token.primClassif = stEntry.primClassif;
-            token.dclType = stEntry.dclType;
-
-        } else if((stEntry = symbolTable.getSymbol(tokenStr)) != null) {
-
-            // Found in local symbol table
             token.primClassif = stEntry.primClassif;
             token.dclType = stEntry.dclType;
 
