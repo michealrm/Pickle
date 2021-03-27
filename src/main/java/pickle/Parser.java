@@ -674,6 +674,8 @@ public class Parser {
                         "Parser Error: token at column " + scan.nextToken.iColPos
                                 + " has invalid format.", "file name");*/
         }
+
+        skipAfter(";");
     }
 
     // Exceptions
