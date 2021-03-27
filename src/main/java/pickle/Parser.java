@@ -30,6 +30,11 @@ public class Parser {
         while(true) {
             res = new ResultValue(SubClassif.EMPTY, "");
             ResultValue resTemp = executeStmt(bExec);
+
+            // EOF
+            if(scan.currentToken.primClassif == Classif.EOF)
+                System.exit(0);
+
             if(resTemp.scTerminatingStr != null && resTemp.iDatatype == SubClassif.END) {
                 if(flowStack.isEmpty()) {
                     // Either flow is higher in the call stack or this is an invalid/non-matching termination
@@ -81,13 +86,12 @@ public class Parser {
     }
 
     ResultValue executeStmt(boolean bExec) throws Exception {
-        if(scan.iSourceLineNr == 109)
-            System.out.println();
         // Check for FLOW token
         switch(scan.currentToken.tokenStr) {
             case "while":
                 flowStack.push("while");
                 whileStmt(bExec);
+                break;
             case "if":
                 flowStack.push("if");
                 ifStmt(bExec);
@@ -103,7 +107,11 @@ public class Parser {
         }
 
         if(bExec) {
-            if (scan.currentToken.dclType == SubClassif.DECLARE) {
+            if(scan.currentToken.primClassif == Classif.EOF) {
+                // executeStatements will check for EOF, we just need to get out of this function
+                return new ResultValue(SubClassif.EMPTY, "");
+            }
+            else if (scan.currentToken.dclType == SubClassif.DECLARE) {
                 declareStmt();
             }
             else if (scan.currentToken.dclType == SubClassif.IDENTIFIER) {
@@ -285,8 +293,17 @@ public class Parser {
 
             int iStartSourceLineNr = scan.iSourceLineNr; // Save position at the condition to loop back
             int iStartColPos = scan.iColPos;
-            int iEndSourceLineNr = Integer.MAX_VALUE; // Save position of endwhile to jump to when resCond is false
-            int iEndColPos = Integer.MAX_VALUE;
+            int iEndSourceLineNr; // Save position of endwhile to jump to when resCond is false
+            int iEndColPos;
+
+            // Get iEndSourceLineNr and iEndColPos
+            while(!scan.currentToken.tokenStr.equals("endwhile"))
+                scan.getNext();
+            //Save iEnd
+            iEndSourceLineNr = scan.iSourceLineNr;
+            iEndColPos = scan.iColPos;
+            // Go back to start of expression for evalCond
+            scan.goTo(iStartSourceLineNr, iStartColPos);
 
             ResultValue resCond = evalCond("while");
             while((Boolean)resCond.value) {
