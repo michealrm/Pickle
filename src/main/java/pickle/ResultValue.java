@@ -468,6 +468,6 @@ public class ResultValue
 	@Override
 	public String toString()
 	{
-		return iDatatype + " " + value.toString();
+		return value.toString();
 	}
 }
