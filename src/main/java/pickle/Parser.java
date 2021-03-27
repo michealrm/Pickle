@@ -143,7 +143,7 @@ public class Parser {
                 return assignmentStmt();
             }
             else if(scan.currentToken.tokenStr.equals("print")) {
-                printStmt();
+                printFunc();
             }
             // If file starts with a comment and currentToken is empty
             else if(scan.currentToken.primClassif == Classif.EMPTY && scan.currentToken.dclType == SubClassif.EMPTY)
@@ -383,7 +383,7 @@ public class Parser {
         }
     }
 
-    private void printStmt() throws Exception {
+    private void printFunc() throws Exception {
         StringBuffer msg = new StringBuffer();
         if(!scan.getNext().tokenStr.equals("("))
             errorWithCurrent("Expected '(' for builtin function 'print'");
@@ -401,6 +401,7 @@ public class Parser {
                 default:
                     error("Unsupported type %s in print function \"%s\"", msgPart.iDatatype, msgPart.value);
             }
+            msg.append(" ");    // Add a space whenever there are multiple prints
         } while(scan.currentToken.tokenStr.equals(","));
 
         if(!scan.currentToken.tokenStr.equals(")"))
