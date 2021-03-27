@@ -11,6 +11,10 @@ public class Parser {
     public Scanner scan;
     private Stack<String> flowStack = new Stack<>();
 
+    public static int currentIfLine;
+    public static int currentWhileLine;
+    public static boolean onStmtLine = false;
+
     public Parser(Scanner scanner) throws Exception {
         scan = scanner;
         scan.getNext(); // Call initial getNext() to get first token
@@ -29,7 +33,7 @@ public class Parser {
     ResultValue executeStatements(boolean bExec) throws Exception {
         ResultValue res;
         while(true) {
-            if(scan.scanDebug.bShowToken || scan.scanDebug.bShowAssign || scan.scanDebug.bShowExpr || scan.scanDebug.bShowStmt) { // Print line if any debugging is enabled
+            if(scan.scanDebug.bShowStmt) { // Print line if any debugging is enabled
                 scan.printLine(scan.iSourceLineNr);
             }
             res = new ResultValue(SubClassif.EMPTY, "");
@@ -51,6 +55,8 @@ public class Parser {
                 String frontFlow = flowStack.peek();
                 switch(frontFlow) {
                     case "if":
+                        currentIfLine = scan.iSourceLineNr;
+                        onStmtLine = true;
                         // If we started an if, that can end with either else or endif
                         // If it ends with else, we need to add an else to the flowQueue that needs to end with endif
                         if(!resTemp.scTerminatingStr.equals("else") && !resTemp.scTerminatingStr.equals("endif")) {
@@ -72,6 +78,8 @@ public class Parser {
                         flowStack.pop();
                         break;
                     case "while":
+                        currentWhileLine = scan.iSourceLineNr;
+                        onStmtLine = true;
                         if(!resTemp.scTerminatingStr.equals("endwhile")) {
                             errorWithCurrent("Expected an endwhile to terminate a while");
                         }
@@ -90,16 +98,26 @@ public class Parser {
     }
 
     ResultValue executeStmt(boolean bExec) throws Exception {
+        if (scan.scanDebug.bShowExpr) {
+            switch (scan.currentToken.tokenStr) {
+                case "while":
+                    System.out.println(String.format("\n>whileStmt: %s", scan.readToColon()));
+                    break;
+                case "if":
+                    System.out.println(String.format("\n>ifStmt: %s", scan.readToColon()));
+                    break;
+            }
+        }
 
         // Check for FLOW token
         switch(scan.currentToken.tokenStr) {
             case "while":
                 flowStack.push("while");
-                whileStmt(bExec);
+                whileStmt(bExec);   // Will change the token position
                 break;
             case "if":
                 flowStack.push("if");
-                ifStmt(bExec);
+                ifStmt(bExec);   // Will change the token position
         }
 
         // Check for END
@@ -688,6 +706,7 @@ public class Parser {
                         break;
                     case "off":
                         scan.scanDebug.bShowStmt = false;
+                        scan.printLine(scan.iSourceLineNr);
                         break;
                     default:
                         errorWithCurrent("Expected 'on' or 'off' for debug statement");

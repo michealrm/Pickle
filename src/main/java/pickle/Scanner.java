@@ -571,6 +571,22 @@ public class Scanner {
         }
     }
 
+    public StringBuffer readToColon() {
+        char[] currentChar = sourceLineM.get(iSourceLineNr).toCharArray();
+        char c = currentChar[0];
+        int i = 1;
+
+        StringBuffer s = new StringBuffer();
+
+        while(c != ':') {
+            s.append(c);
+            c = currentChar[i++];
+        }
+        s.append(c);
+
+        return s;
+    }
+
     private boolean isArray(SubClassif dataType) {
         switch(dataType) {
 
