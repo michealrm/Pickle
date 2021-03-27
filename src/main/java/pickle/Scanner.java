@@ -587,7 +587,15 @@ public class Scanner {
                 return false;
         }
     }
-    
+
+    public void goTo(int iSourceLineNr, int iColPos) throws Exception {
+        this.iSourceLineNr = iSourceLineNr;
+        this.iColPos = iColPos;
+        currentToken = new Token(iSourceLineNr, iColPos);
+        nextToken = new Token(iSourceLineNr, iColPos);
+        getNext(); // Load currentToken and nextToken with correct values
+    }
+
     public static class Debug
     {
         public boolean bShowToken;
