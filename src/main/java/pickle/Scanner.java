@@ -167,12 +167,12 @@ public class Scanner {
                 }
 
                 // Classify token
-                setClassification(t);
+                setClassification(t);   // Classify each token
 
                 // Calculate next position
                 nextPos = nextPos(iLineNumber, iColNumber); // We don't want to skip whitespace because that delimits continuesToken
                 sourceLineBefore = iLineNumber;
-                iLineNumber = nextPos[0];
+                iLineNumber = nextPos[0];   // nextPos[2] has first element as line number, second element as column number
                 iColNumber = nextPos[1];
 
                 if (sourceLineBefore != iLineNumber) {
@@ -231,7 +231,7 @@ public class Scanner {
             iColNumber++;
         }
 
-        ret = packagePositions(iLineNumber, iColNumber);
+        ret = packagePositions(iLineNumber, iColNumber);    // The start and end position of the currently built token
         //ret = skipEmptyLine(iLineNumber, iColNumber);
         return ret;
     }
@@ -270,6 +270,9 @@ public class Scanner {
             // EOF
             token.primClassif = Classif.EOF;
 
+        } else if(token.tokenStr.equals("debug")) {
+            token.primClassif = Classif.DEBUG;
+            token.dclType = SubClassif.DEBUG;
         } /* else if(token.tokenStr.compareTo("def") == 0) {   // TODO 1: Add parameters as identifiers within the function symbol table
                                                             // TODO 2: Set STFunction numArgs in parser
             // Data for declaration of a function
@@ -320,7 +323,8 @@ public class Scanner {
             // Put the symbol in the current symbol table
             linkedSymbolTable.get(currentSymbolTableDepth).putSymbol(identifierName.tokenStr, new STIdentifier(identifierName.tokenStr, Classif.IDENTIFIER, dataType, identifierStructure));
 
-        } */ else if(isTokenWhitespace(token)) {
+        } */
+         else if(isTokenWhitespace(token)) {
 
             // Token is whitespace
             token.primClassif = Classif.SEPARATOR;
@@ -368,7 +372,7 @@ public class Scanner {
         } else if(isOperator(token)) {
             token.primClassif = Classif.OPERATOR;
 
-        }  else if(isValidIdentifier(token)) {
+        }  else if(isValidIdentifier(token)) {  // This is the condition we hit a lot when scanning for new tokens and building up token.tokenStr
             // Identifier
             token.primClassif = Classif.OPERAND;
             token.dclType = SubClassif.IDENTIFIER;
@@ -384,13 +388,13 @@ public class Scanner {
      */
     public boolean continuesToken(Token token, char c) throws Exception {
         Token copy = new Token(token.tokenStr + c);
-        setClassification(copy);
+        setClassification(copy);    // Classify the currently built token.tokenStr (The copy is one character ahead of token.tokeStr), which should build into the correct classification
         if(copy.primClassif != Classif.EMPTY && copy.dclType != token.dclType) {
             token.primClassif = copy.primClassif;
             token.dclType = copy.dclType;
         }
         switch (token.primClassif) {
-            case EMPTY:
+            case EMPTY:                 // If there's no classification, then we continue looking for more tokens to build token.tokenStr
                 return true;
             case EOF:
             default:
@@ -443,6 +447,11 @@ public class Scanner {
                     case VOID:
                         return containsIn(token.tokenStr + c, SymbolTable.globalSymbolTable.hm) ||
                                 containsIn(token.tokenStr + c, symbolTable.hm);
+                }
+            case DEBUG:
+                switch(token.dclType) {
+                    case DEBUG:
+                        return Character.isLetterOrDigit(c); // The terminating token should be whitespace, so false will be returned when whitespace is encountered
                 }
             case CONTROL:
                 return containsIn(token.tokenStr + c, SymbolTable.globalSymbolTable.hm);
@@ -582,14 +591,16 @@ public class Scanner {
     public static class Debug
     {
         public boolean bShowToken;
-        public boolean bShowExpr;
         public boolean bShowAssign;
+        public boolean bShowExpr;
+        public boolean bShowStmt;
 
         public Debug()
         {
-            this.bShowToken = false;
-            this.bShowExpr = false;
-            this.bShowAssign = false;
+            bShowToken = false;
+            bShowAssign = false;
+            bShowExpr = false;
+            bShowStmt = false;
         }
     }
 }
