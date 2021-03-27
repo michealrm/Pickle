@@ -3,20 +3,12 @@ package pickle;
 import pickle.exception.ParserException;
 import pickle.exception.ScannerTokenFormatException;
 
-import java.util.LinkedList;
-import java.util.Locale;
-import java.util.Queue;
 import java.util.Stack;
 
-/**
- * Micheal: executeStatements, print, testing
- * JCGV: while
- * Alex: debug
- *
- */
 public class Parser {
 
     public Scanner scan;
+    private Stack<String> flowStack = new Stack<>();
 
     public Parser(Scanner scanner) throws Exception {
         scan = scanner;
@@ -35,15 +27,11 @@ public class Parser {
      */
     ResultValue executeStatements(boolean bExec) throws Exception {
         ResultValue res;
-        Queue<String> flowQueue = new LinkedList<>();
         while(true) {
             res = new ResultValue(SubClassif.EMPTY, "");
-            if(scan.currentToken.tokenStr.equals("if") || scan.currentToken.tokenStr.equals("while"))
-                flowQueue.add(scan.currentToken.tokenStr);
-
             ResultValue resTemp = executeStmt(bExec);
             if(resTemp.scTerminatingStr != null && resTemp.iDatatype == SubClassif.END) {
-                if(flowQueue.isEmpty()) {
+                if(flowStack.isEmpty()) {
                     // Either flow is higher in the call stack or this is an invalid/non-matching termination
                     // ifStmt and whileStmt will catch that after returning res
                     res.scTerminatingStr = resTemp.scTerminatingStr;
@@ -51,17 +39,41 @@ public class Parser {
                 }
 
                 // scTerminatingStr's END token has a matching FLOW at the front of the queue
-                if(("end" + flowQueue.peek()).equals(resTemp.scTerminatingStr)) {
-                    if(!scan.getNext().tokenStr.equals(";"))
-                        errorWithCurrent("Expected a ';' after an %s", resTemp.scTerminatingStr);
+                String frontFlow = flowStack.peek();
+                switch(frontFlow) {
+                    case "if":
+                        // If we started an if, that can end with either else or endif
+                        // If it ends with else, we need to add an else to the flowQueue that needs to end with endif
+                        if(!resTemp.scTerminatingStr.equals("else") && !resTemp.scTerminatingStr.equals("endif")) {
+                            errorWithCurrent("Expected an else or endif to terminate an if");
+                        }
 
-                    res.scTerminatingStr = resTemp.scTerminatingStr;
-                    flowQueue.remove();
-                    break;
-                } else {
-                    errorWithCurrent("Expected an END for %s", flowQueue.peek());
+                        res.scTerminatingStr = resTemp.scTerminatingStr;
+                        flowStack.pop();
+
+                        if(resTemp.scTerminatingStr.equals("else"))
+                            flowStack.add("else"); // else must be checked later that it ends with an endif
+                        break;
+                    case "else":
+                        if(!resTemp.scTerminatingStr.equals("endif")) {
+                            errorWithCurrent("Expected an endif to terminate an else");
+                        }
+
+                        res.scTerminatingStr = resTemp.scTerminatingStr;
+                        flowStack.pop();
+                        break;
+                    case "while":
+                        if(!resTemp.scTerminatingStr.equals("endwhile")) {
+                            errorWithCurrent("Expected an endwhile to terminate a while");
+                        }
+
+                        res.scTerminatingStr = resTemp.scTerminatingStr;
+                        flowStack.pop();
                 }
 
+                // Hit a terminator in flow queue, so executeStatements should return to higher statements in call
+                // stack to pass scTerminatingStr
+                break;
             }
         }
 
@@ -69,11 +81,15 @@ public class Parser {
     }
 
     ResultValue executeStmt(boolean bExec) throws Exception {
+        if(scan.iSourceLineNr == 109)
+            System.out.println();
         // Check for FLOW token
         switch(scan.currentToken.tokenStr) {
             case "while":
+                flowStack.push("while");
                 whileStmt(bExec);
             case "if":
+                flowStack.push("if");
                 ifStmt(bExec);
         }
 
@@ -225,7 +241,8 @@ public class Parser {
                 }
                 if(!resTemp.scTerminatingStr.equals("endif"))
                     errorWithCurrent("Expected an 'endif' for an 'if'");
-                scan.getNext(); // Skip past endif
+
+                scan.getNext(); // Skip past 'endif'
                 if(!scan.currentToken.tokenStr.equals(";"))
                     errorWithCurrent("Expected';' after an 'endif'");
                 scan.getNext(); // Skip past ';'
@@ -251,6 +268,7 @@ public class Parser {
             if(resTemp.scTerminatingStr.equals("else")) {
                 if(!scan.getNext().tokenStr.equals(":"))
                     errorWithCurrent("Expected ':' after else");
+                scan.getNext(); // Skip past ':'
                 resTemp = executeStatements(true);
             }
             if(!resTemp.scTerminatingStr.equals("endif"))
@@ -261,45 +279,54 @@ public class Parser {
             scan.getNext(); // Skip past ';'
         }
     }
-
-    // TODO: NOT DONE, THIS IS FOR IF
     void whileStmt(boolean bExec) throws Exception {
         if(bExec) {
+            scan.getNext(); // Skip past the "while" to the opening parenthesis of the condition expression
+
+            int iStartSourceLineNr = scan.iSourceLineNr; // Save position at the condition to loop back
+            int iStartColPos = scan.iColPos;
+            int iEndSourceLineNr = Integer.MAX_VALUE; // Save position of endwhile to jump to when resCond is false
+            int iEndColPos = Integer.MAX_VALUE;
+
             ResultValue resCond = evalCond("while");
-            if(Boolean.parseBoolean(String.valueOf(resCond.value))) { // TODO: Another way to get resCond.value -> bool?
+            while((Boolean)resCond.value) {
+                if (!scan.currentToken.tokenStr.equals(":"))
+                    errorWithCurrent("Expected ':' after while");
+                scan.getNext(); // Skip past ':'
+
                 ResultValue resTemp = executeStatements(true);
-                if(resTemp.scTerminatingStr.equals("else")) {
-                    if(!scan.getNext().tokenStr.equals(":"))
-                        errorWithCurrent("Expected ':' after else");
-                    resTemp = executeStatements(false);
-                }
-                if(!resTemp.scTerminatingStr.equals("endif"))
-                    errorWithCurrent("Expected an 'endif' for an 'if'");
-                if(!scan.getNext().tokenStr.equals(";"))
-                    errorWithCurrent("Expected';' after and'endif'");
+
+                if (!resTemp.scTerminatingStr.equals("endwhile"))
+                    errorWithCurrent("Expected an 'endwhile' for a 'while'");
+                iEndSourceLineNr = scan.iSourceLineNr;
+                iEndColPos = scan.iColPos;
+
+                // Jump back to beginning
+                scan.goTo(iStartSourceLineNr, iStartColPos);
+                resCond = evalCond("while");
             }
-            else {
-                ResultValue resTemp = executeStatements(false);
-                if(resTemp.scTerminatingStr.equals("else")) {
-                    if(!scan.getNext().tokenStr.equals(":"))
-                        errorWithCurrent("Expected ':' after 'else'");
-                    resTemp = executeStatements(true);
-                }
-                if(!scan.getNext().tokenStr.equals(";"))
-                    errorWithCurrent("Expected ';' after 'endif'");
-            }
+            // Jump to endwhile
+            scan.goTo(iEndSourceLineNr, iEndColPos);
+            if(!scan.currentToken.tokenStr.equals("endwhile"))
+                errorWithCurrent("Expected an 'endwhile' for an 'while'");
+            scan.getNext(); // Skip past endwhile
+            if(!scan.currentToken.tokenStr.equals(";"))
+                errorWithCurrent("Expected';' after an 'endwhile'");
+            scan.getNext(); // Skip past ';'
         } else {
-            skipTo(":");
+            // expr() has already been called outside this if/else, so we should be on ':'
+            if (!scan.currentToken.tokenStr.equals(":"))
+                errorWithCurrent("Expected ':' after while");
+            scan.getNext(); // Skip past ':'
+
             ResultValue resTemp = executeStatements(false);
-            if(resTemp.scTerminatingStr.equals("else")) {
-                if(scan.getNext().tokenStr.equals(":"))
-                    errorWithCurrent("Expected ':' after else");
-                resTemp = executeStatements(false);
-            }
-            if(!scan.getNext().tokenStr.equals("endif"))
-                errorWithCurrent("Expected an 'endif' for an 'if'");
-            if(!scan.getNext().tokenStr.equals(";"))
-                errorWithCurrent("Expected ';' after 'endif'");
+
+            if (!resTemp.scTerminatingStr.equals("endwhile"))
+                errorWithCurrent("Expected an 'endwhile' for a 'while'");
+            scan.getNext(); // Skip past endwhile
+            if(!scan.currentToken.tokenStr.equals(";"))
+                errorWithCurrent("Expected';' after an 'endwhile'");
+            scan.getNext(); // Skip past ';'
         }
     }
 

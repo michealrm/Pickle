@@ -342,7 +342,7 @@ public class ResultValue
 
 			switch (operation) {
 				case "#":
-					result = new StringBuilder(((StringBuilder) value).toString().concat(scRightOperand));
+					result = new StringBuilder(valueToString(value).concat(scRightOperand));
 					break;
 				case "+": {
 					Numeric leftOp = new Numeric(value.toString(), SubClassif.STRING);
@@ -385,7 +385,7 @@ public class ResultValue
 					break;
 				}
 				case "==":
-					String valueStr = value instanceof String ? (String)value : ((StringBuilder)value).toString();
+					String valueStr = valueToString(value);
 					if (valueStr.equals(scRightOperand)) {
 						result = true;
 					} else {
@@ -394,7 +394,7 @@ public class ResultValue
 					resultType = SubClassif.BOOLEAN;
 					break;
 				case "!=":
-					if (((StringBuilder) value).toString().compareTo(scRightOperand) != 0) {
+					if (valueToString(value).compareTo(scRightOperand) != 0) {
 						result = true;
 					} else {
 						result = false;
@@ -402,7 +402,7 @@ public class ResultValue
 					resultType = SubClassif.BOOLEAN;
 					break;
 				case "<":
-					if (((StringBuilder) value).toString().compareTo(scRightOperand) < 0) {
+					if (valueToString(value).compareTo(scRightOperand) < 0) {
 						result = true;
 					} else {
 						result = false;
@@ -410,7 +410,7 @@ public class ResultValue
 					resultType = SubClassif.BOOLEAN;
 					break;
 				case "<=":
-					if (((StringBuilder) value).toString().compareTo(scRightOperand) <= 0) {
+					if (valueToString(value).compareTo(scRightOperand) <= 0) {
 						result = true;
 					} else {
 						result = false;
@@ -418,7 +418,7 @@ public class ResultValue
 					resultType = SubClassif.BOOLEAN;
 					break;
 				case ">":
-					if (((StringBuilder) value).toString().compareTo(scRightOperand) > 0) {
+					if (valueToString(value).compareTo(scRightOperand) > 0) {
 						result = true;
 					} else {
 						result = false;
@@ -426,7 +426,7 @@ public class ResultValue
 					resultType = SubClassif.BOOLEAN;
 					break;
 				case ">=":
-					if (((StringBuilder) value).toString().compareTo(scRightOperand) >= 0) {
+					if (valueToString(value).compareTo(scRightOperand) >= 0) {
 						result = true;
 					} else {
 						result = false;
@@ -445,6 +445,22 @@ public class ResultValue
 		return new ResultValue(resultType, result);
 	}
 
+	/**
+	 * Takes either a String or StringBuilder and converts to String.
+	 * This is needed because some internals in ResultValue use StringBuilder, but some invocations of ResultValue in
+	 *  parser use String.
+	 * @param value An Object that is either a StringBuilder or String
+	 * @return
+	 */
+	private String valueToString(Object value) {
+		String strValue;
+		if(value instanceof String)
+			strValue = (String)value;
+		else
+			strValue = ((StringBuilder)value).toString();
+		return strValue;
+	}
+	
 	public boolean equals(ResultValue rv) {
 		return (iDatatype == rv.iDatatype && value == rv.value);
 	}
