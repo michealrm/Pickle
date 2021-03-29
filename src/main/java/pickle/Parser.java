@@ -331,7 +331,7 @@ public class Parser {
                 if(!scan.getNext().tokenStr.equals(":"))
                     errorWithCurrent("Expected ':' after else");
                 scan.getNext(); // Skip past ':'
-                resTemp = executeStatements(true);
+                resTemp = executeStatements(bExec);
             }
             if(!resTemp.scTerminatingStr.equals("endif"))
                 errorWithCurrent("Expected an 'endif' for an 'if'");
