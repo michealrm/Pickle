@@ -34,7 +34,7 @@ public class Parser {
         ResultValue res;
         while(true) {
             if(scan.scanDebug.bShowStmt) { // Print line if any debugging is enabled
-                scan.printLine(scan.iSourceLineNr);
+                scan.printLineDebug(scan.iSourceLineNr);
             }
             res = new ResultValue(SubClassif.EMPTY, "");
             ResultValue resTemp = executeStmt(bExec);
@@ -706,7 +706,7 @@ public class Parser {
                         break;
                     case "off":
                         scan.scanDebug.bShowStmt = false;
-                        scan.printLine(scan.iSourceLineNr);
+                        scan.printLineDebug(scan.iSourceLineNr);
                         break;
                     default:
                         errorWithCurrent("Expected 'on' or 'off' for debug statement");

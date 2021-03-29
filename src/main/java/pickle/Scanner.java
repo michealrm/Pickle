@@ -206,6 +206,10 @@ public class Scanner {
         }
     }
 
+    public void printLineDebug(int iLineNumber) {
+            System.out.println("  " + (iLineNumber + 1) + " " + this.sourceLineM.get(iLineNumber));
+    }
+
     /**
      * Returns the next character, skipping blank lines if necessary.
      * This does not skip whitespace
