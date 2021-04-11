@@ -4,6 +4,7 @@ import pickle.exception.ParserException;
 import pickle.exception.ScannerTokenFormatException;
 import pickle.st.STEntry;
 
+import javax.xml.transform.Result;
 import java.util.Stack;
 
 public class Parser {
@@ -160,8 +161,8 @@ public class Parser {
             else if (scan.currentToken.dclType == SubClassif.IDENTIFIER) {
                 return assignmentStmt();
             }
-            else if(scan.currentToken.tokenStr.equals("print")) {
-                printFunc();
+            else if(scan.currentToken.primClassif == Classif.FUNCTION) {
+                callBuiltInFunc(bExec);
             }
             // If file starts with a comment and currentToken is empty
             else if(scan.currentToken.primClassif == Classif.EMPTY && scan.currentToken.dclType == SubClassif.EMPTY)
@@ -401,6 +402,40 @@ public class Parser {
         }
     }
 
+    /**
+     * This calls any built-in function we made, depending on currentToken's tokenStr
+     *
+     * @param bFlag
+     * @return ResultValue
+     * @throws Exception
+     */
+    private ResultValue callBuiltInFunc(boolean bFlag) throws Exception
+    {
+        if (scan.currentToken.tokenStr.equals("print"))
+        {
+            printFunc();
+            return null;
+        }
+        else if (scan.currentToken.tokenStr.equals("LENGTH"))
+        {
+            return lengthFunc(bFlag);
+        }
+        else if (scan.currentToken.tokenStr.equals("SPACES"))
+        {
+            return spacesFunc(bFlag);
+        }
+        else if (scan.currentToken.tokenStr.equals("ELEM"))
+        {
+            return elemFunc(bFlag);
+        }
+        else if (scan.currentToken.tokenStr.equals("MAXELEM"))
+        {
+            return maxElemFunc(bFlag);
+        }
+        return new ResultValue();
+
+    }
+
     private void printFunc() throws Exception {
         StringBuffer msg = new StringBuffer();
         if(!scan.getNext().tokenStr.equals("("))
@@ -430,6 +465,307 @@ public class Parser {
         System.out.println(msg.toString());
     }
 
+    /**
+     * Returns the length
+     * @param bExec
+     * @return
+     * @throws Exception
+     */
+    private ResultValue lengthFunc(boolean bExec) throws Exception
+    {
+        scan.getNext();
+
+        // Counts the number of parentheses it finds for error checking
+        int iParenCounter = 0;
+
+        // If not found, throw an error; otherwise, continue
+        if (!scan.currentToken.tokenStr.equals("("))
+        {
+            error("Missing left paren");
+        }
+        iParenCounter++;
+
+        ResultValue param;
+        ResultValue result = null;
+
+        scan.getNext();
+
+        if (bExec)
+        {
+            param = expr(bExec);
+            // Convert to String
+            // TODO: Create convertType function in ResultValue
+            param = ResultValue.convertType(SubClassif.STRING, param);
+            if (!scan.currentToken.tokenStr.equals(")"))
+            {
+                error("Missing right paren");
+            }
+            else if (param.iDatatype != SubClassif.STRING)
+            {
+                error("LENGTH can only take in arguments of type String");
+            }
+            result = new ResultValue(SubClassif.INTEGER, (param.value.toString().length()));
+        }
+        else
+        {
+            // Check if function was formed correctly
+            while (iParenCounter > 0)
+            {
+                if (scan.currentToken.tokenStr.equals(";"))
+                {
+                    error("LENGTH was malformed");
+                }
+
+                if (scan.currentToken.tokenStr.equals(")"))
+                {
+                    iParenCounter--;
+                }
+                else if (scan.currentToken.tokenStr.equals("("))
+                {
+                    iParenCounter--;
+                }
+
+                if (scan.currentToken.primClassif == Classif.SEPARATOR
+                    && scan.nextToken.primClassif == Classif.SEPARATOR)
+                {
+                    if (!scan.currentToken.tokenStr.equals(")")
+                        && scan.nextToken.tokenStr.equals(";"))
+                    {
+                        error("No arguments between "
+                           + scan.currentToken.tokenStr
+                           + " " + scan.nextToken.tokenStr);
+                    }
+                }
+                scan.getNext();
+            }
+        }
+        return result;
+    }
+
+    private ResultValue spacesFunc(boolean bExec) throws Exception
+    {
+        scan.getNext();
+
+        int iParenCounter = 0;
+        if (!scan.currentToken.tokenStr.equals("("))
+        {
+            error("Missing left paren");
+        }
+        iParenCounter++;
+
+        ResultValue param;
+        ResultValue result = null;
+        scan.getNext();
+
+        if (bExec)
+        {
+            param = expr(bExec);
+            param = ResultValue.convertType(SubClassif.STRING, param);
+            if (!scan.currentToken.tokenStr.equals(")"))
+            {
+                error("Missing right paren");
+            }
+            else if (param.iDatatype != SubClassif.STRING)
+            {
+                error("SPACES can only take in arguments of type String")
+            }
+            boolean bHasSpaces = true;
+            String scValue = param.value.toString();
+
+            for (int i = 0; i < scValue.length(); i++)
+            {
+                if (scValue.charAt(i) != ' '
+                    && scValue.charAt(i) != '\t'
+                    && scValue.charAt(i) != '\n')
+                {
+                    bHasSpaces = false;
+                }
+            }
+            if (bHasSpaces)
+            {
+                result = new ResultValue(SubClassif.BOOLEAN, "T");
+            }
+            else
+            {
+                result = new ResultValue(SubClassif.BOOLEAN, "F");
+            }
+        }
+        else
+        {
+            while (iParenCounter > 0)
+            {
+                if (scan.currentToken.tokenStr.equals(";"))
+                {
+                    error("SPACES was malformed");
+                }
+
+                if (scan.currentToken.tokenStr.equals(")"))
+                {
+                    iParenCounter--;
+                }
+                else if (scan.currentToken.tokenStr.equals("("))
+                {
+                    iParenCounter++;
+                }
+
+                if (scan.currentToken.primClassif == Classif.SEPARATOR
+                    && scan.nextToken.primClassif == Classif.SEPARATOR)
+                {
+                    if (!scan.currentToken.tokenStr.equals(")")
+                        && scan.nextToken.tokenStr.equals(";"))
+                    {
+                        error("No arguments between "
+                            + scan.currentToken.tokenStr
+                            + " " + scan.nextToken.tokenStr);
+                    }
+                }
+                scan.getNext();
+            }
+        }
+        return result;
+    }
+
+    /**
+     *
+     * @param bExec
+     * @return
+     * @throws Exception
+     */
+    private ResultValue maxElemFunc(boolean bExec) throws Exception
+    {
+        scan.getNext();
+
+        int iParenCounter = 0;
+        if (!scan.currentToken.tokenStr.equals("("))
+        {
+            error("Missing left paren");
+        }
+        iParenCounter++;
+
+        ResultValue result = null;
+        scan.getNext();
+
+        if (bExec)
+        {
+            // TODO: create this func in ResultValue
+            result = convertTokenToResultValue();
+            if (result.value instanceof PickleArray)
+            {
+                scan.getNext();
+                if (!scan.currentToken.tokenStr.equals(")"))
+                {
+                    error("Missing right paren");
+                }
+                return ((PickleArray) result.value).getMaxElem();
+            }
+            else
+            {
+                error("MAXELEM can only take in an array as an argument");
+            }
+        }
+        else
+        {
+            while (iParenCounter > 0)
+            {
+                if (scan.currentToken.tokenStr.equals(";"))
+                {
+                    error("MAXELEM was malformed");
+                }
+
+                if (scan.currentToken.tokenStr.equals(")"))
+                {
+                    iParenCounter--;
+                }
+                else if (scan.currentToken.tokenStr.equals("("))
+                {
+                    iParenCounter++;
+                }
+
+                if (scan.currentToken.primClassif == Classif.SEPARATOR
+                        && scan.nextToken.primClassif == Classif.SEPARATOR)
+                {
+                    if (!scan.currentToken.tokenStr.equals(")")
+                            && scan.nextToken.tokenStr.equals(";"))
+                    {
+                        error("No arguments between "
+                            + scan.currentToken.tokenStr
+                            + " " + scan.nextToken.tokenStr);
+                    }
+                }
+                scan.getNext();
+            }
+        }
+        return result;
+    }
+
+    private ResultValue elemFunc(boolean bExec) throws Exception
+    {
+        scan.getNext();
+
+        int iParenCounter = 0;
+        if (!scan.currentToken.tokenStr.equals("("))
+        {
+            error("Missing left paren");
+        }
+        iParenCounter++;
+
+        ResultValue result = null;
+        scan.getNext();
+
+        if (bExec)
+        {
+            // TODO: create this func in ResultValue
+            result = convertTokenToResultValue();
+            if (result.value instanceof PickleArray)
+            {
+                scan.getNext();
+                if (!scan.currentToken.tokenStr.equals(")"))
+                {
+                    error("Missing right paren");
+                }
+                return ((PickleArray) result.value).getElem();
+            }
+            else
+            {
+                error("ELEM can only take in an array as an argument");
+            }
+        }
+        else
+        {
+            while (iParenCounter > 0)
+            {
+                if (scan.currentToken.tokenStr.equals(";"))
+                {
+                    error("ELEM was malformed");
+                }
+
+                if (scan.currentToken.tokenStr.equals(")"))
+                {
+                    iParenCounter--;
+                }
+                else if (scan.currentToken.tokenStr.equals("("))
+                {
+                    iParenCounter++;
+                }
+
+                if (scan.currentToken.primClassif == Classif.SEPARATOR
+                        && scan.nextToken.primClassif == Classif.SEPARATOR)
+                {
+                    if (!scan.currentToken.tokenStr.equals(")")
+                            && scan.nextToken.tokenStr.equals(";"))
+                    {
+                        error("No arguments between "
+                                + scan.currentToken.tokenStr
+                                + " " + scan.nextToken.tokenStr);
+                    }
+                }
+                scan.getNext();
+            }
+        }
+        return result;
+    }
+
+
     //////////
     // Eval //
     //////////
@@ -441,10 +777,10 @@ public class Parser {
      * An expression can also be within parenthesis, like while () <--
      *
      * Ends scan on SEPARATOR token that terminated the expression
-     *
+     * @param bExec used for functions
      * @return The ResultValue of the expression
      */
-    ResultValue expr() throws Exception {
+    ResultValue expr(boolean bExec) throws Exception {
         // Only supports one operator until program 4
         ResultValue expr = null;
 
@@ -510,6 +846,18 @@ public class Parser {
         // Expression is only one operand
         if(scan.currentToken.primClassif == Classif.SEPARATOR) {
             return resOperand1;
+        }
+
+        // If currentToken is a FUNCTION, use bExec
+        if (scan.currentToken.primClassif == Classif.FUNCTION)
+        {
+            // Get the ResultValue from callBuiltInFunc and make it into a token
+            ResultValue builtInFuncResultValue = callBuiltInFunc(bExec);
+            Token builtInFuncToken = new Token(builtInFuncResultValue.value.toString());
+            builtInFuncToken.primClassif = Classif.OPERAND;
+            builtInFuncToken.dclType = builtInFuncResultValue.iDatatype;
+
+            // TODO: Deal with adding to infixExpression
         }
 
         // Get second operand if there is one using nextToken lookahead
