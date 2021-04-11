@@ -2,6 +2,7 @@ package pickle;
 
 import pickle.exception.InvalidNumberException;
 import pickle.exception.InvalidOperationException;
+import pickle.exception.ResultValueConversionException;
 
 /**
  * A wrapper for the results of expressions
@@ -450,6 +451,129 @@ public class ResultValue
 				+ operation + " operations");
 		}
 		return new ResultValue(resultType, result);
+	}
+
+	/**
+	 * Convert given value to a certain data type
+	 * @param iTargetType
+	 * @param valueToConvert
+	 * @return
+	 * @throws Exception
+	 */
+	public static ResultValue convertType(int iTargetType, ResultValue valueToConvert) throws Exception
+	{
+		ResultValue returnVal = null;
+
+		if (valueToConvert == null)
+		{
+			throw new NullPointerException("Tried to convert a null ResultValue object");
+		}
+		else if (valueToConvert.value == null)
+		{
+			throw new NullPointerException("Value in ResultValue is null");
+		}
+		else if (valueToConvert.value instanceof PickleArray)
+		{
+			throw new ResultValueConversionException("Can only convert primitive types");
+		}
+
+		switch (iTargetType)
+		{
+			case SubClassif.INTEGER:
+				if (valueToConvert.iDatatype == SubClassif.BOOLEAN)
+				{
+					throw new ResultValueConversionException("Cannot convert Bool to Integer");
+				}
+				else if (valueToConvert.iDatatype == SubClassif.INTEGER)
+				{
+					returnVal = new ResultValue(valueToConvert.iDatatype
+						, new Numeric(((Numeric) valueToConvert.value).stringValue, valueToConvert.iDatatype));
+				}
+				else if (valueToConvert.iDatatype == SubClassif.FLOAT)
+				{
+					returnVal = new ResultValue(SubClassif.INTEGER
+						, "" + ((Numeric) valueToConvert.value).intValue);
+				}
+				else if (valueToConvert.iDatatype == SubClassif.STRING)
+				{
+					// Might be a better way to convert from a string, but it'll do for now
+					returnVal= new ResultValue(SubClassif.INTEGER
+						, "" + new Numeric("" + new Numeric(
+							((StringBuilder) valueToConvert.value).toString()
+								, SubClassif.FLOAT).intValue, SubClassif.INTEGER).intValue);
+				}
+				break;
+			case SubClassif.FLOAT:
+				if (valueToConvert.iDatatype == SubClassif.BOOLEAN)
+				{
+					throw new ResultValueConversionException("Cannot convert Bool to Float");
+				}
+				else if (valueToConvert.iDatatype == SubClassif.INTEGER)
+				{
+					returnVal = new ResultValue(SubClassif.FLOAT
+						, "" + ((Numeric) valueToConvert.value).floatValue);
+				}
+				else if (valueToConvert.iDatatype == SubClassif.FLOAT)
+				{
+					returnVal = new ResultValue(valueToConvert.iDatatype
+						, new Numeric(((Numeric) valueToConvert.value).stringValue
+							, valueToConvert.iDatatype));
+				}
+				else if (valueToConvert.iDatatype == SubClassif.STRING)
+				{
+					returnVal = new ResultValue(SubClassif.FLOAT
+						, "" + new Numeric("" + new Numeric(
+							((StringBuilder) valueToConvert.value).toString()
+								, SubClassif.FLOAT).floatValue, SubClassif.FLOAT).floatValue);
+				}
+				else
+				{
+					throw new ResultValueConversionException("Could not convert ResultValue to type Float");
+				}
+				break;
+			case SubClassif.STRING:
+				if (valueToConvert.iDatatype == SubClassif.STRING)
+				{
+					returnVal = new ResultValue(SubClassif.STRING
+						, new StringBuilder(((StringBuilder) valueToConvert.value).toString()));
+				}
+				else if(valueToConvert.iDatatype == SubClassif.BOOLEAN)
+				{
+					if(((Boolean) valueToConvert.value).booleanValue())
+					{
+						returnVal = new ResultValue(SubClassif.STRING, new StringBuilder("T"));
+					}
+					else
+					{
+						returnVal = new ResultValue(SubClassif.STRING, new StringBuilder("F"));
+					}
+				}
+				else if(valueToConvert.iDatatype == SubClassif.FLOAT ||
+					valueToConvert.iDatatype == SubClassif.INTEGER)
+				{
+					returnVal = new ResultValue(SubClassif.STRING,
+						new StringBuilder(((Numeric) valueToConvert.value).stringValue));
+				}
+				else
+				{
+					throw new ResultValueConversionException("could not convert the ResultValue to String");
+				}
+				break;
+			case SubClassif.BOOLEAN:
+				if(valueToConvert.iDatatype == SubClassif.BOOLEAN)
+				{
+					returnVal = new ResultValue(SubClassif.BOOLEAN
+						, new Boolean (((Boolean) valueToConvert.value).booleanValue()));
+				}
+				else
+				{
+					throw new ResultValueConversionException("Cannot convert ResultValue to a Boolean value");
+				}
+				break;
+			default:
+				throw new ResultValueConversionException("Could not convert the ResultValue to type Boolean");
+		}
+		return returnVal;
 	}
 
 	/**
