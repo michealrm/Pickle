@@ -63,6 +63,9 @@ public class SymbolTable {
         globalSymbolTable.putSymbol("String", new STControl("String", Classif.CONTROL, SubClassif.DECLARE));
         globalSymbolTable.putSymbol("Bool", new STControl("Bool", Classif.CONTROL, SubClassif.DECLARE));
         globalSymbolTable.putSymbol("Date", new STControl("Date", Classif.CONTROL, SubClassif.DECLARE));
+        globalSymbolTable.putSymbol("Int[", new STControl("Int", Classif.CONTROL, SubClassif.DECLARE));
+        globalSymbolTable.putSymbol("Float[", new STControl("Float", Classif.CONTROL, SubClassif.DECLARE));
+        globalSymbolTable.putSymbol("String[", new STControl("String", Classif.CONTROL, SubClassif.DECLARE));
 
         globalSymbolTable.putSymbol("and", new STEntry("and", Classif.OPERATOR));
         globalSymbolTable.putSymbol("or", new STEntry("or", Classif.OPERATOR));
