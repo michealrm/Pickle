@@ -231,7 +231,7 @@ public class Parser {
         // Instantiation and assignment
         else if(scan.currentToken.tokenStr.equals("=")) {
             scan.getNext();
-            assign(variableStr, expr());
+            assign(variableStr, expr(true));
         }
         // Error
         else {
@@ -259,7 +259,7 @@ public class Parser {
 
         String operatorStr = scan.currentToken.tokenStr;
         scan.getNext();
-        ResultValue exprToAssign = expr();
+        ResultValue exprToAssign = expr(true);
         switch(operatorStr) {
             case "=":
                 res = assign(variableName, exprToAssign);
@@ -291,7 +291,7 @@ public class Parser {
     void ifStmt(boolean bExec) throws Exception {
         if(bExec) {
             scan.getNext(); // Skip past the "if" to the opening parenthesis of the condition expression
-            ResultValue resCond = evalCond("if");
+            ResultValue resCond = evalCond(bExec, "if");
             if(Boolean.parseBoolean(String.valueOf(resCond.value))) {
                 if(!scan.currentToken.tokenStr.equals(":"))
                     errorWithCurrent("Expected ':' after if");
@@ -360,7 +360,7 @@ public class Parser {
             // Go back to start of expression for evalCond
             scan.goTo(iStartSourceLineNr, iStartColPos);
 
-            ResultValue resCond = evalCond("while");
+            ResultValue resCond = evalCond(bExec, "while");
             while((Boolean)resCond.value) {
                 if (!scan.currentToken.tokenStr.equals(":"))
                     errorWithCurrent("Expected ':' after while");
@@ -375,7 +375,7 @@ public class Parser {
 
                 // Jump back to beginning
                 scan.goTo(iStartSourceLineNr, iStartColPos);
-                resCond = evalCond("while");
+                resCond = evalCond(bExec, "while");
             }
             // Jump to endwhile
             scan.goTo(iEndSourceLineNr, iEndColPos);
@@ -442,7 +442,7 @@ public class Parser {
             errorWithCurrent("Expected '(' for builtin function 'print'");
         do {
             scan.getNext();
-            ResultValue msgPart = expr();
+            ResultValue msgPart = expr(true);
             switch(msgPart.iDatatype) {
                 case INTEGER:
                 case FLOAT:
@@ -567,7 +567,7 @@ public class Parser {
             }
             else if (param.iDatatype != SubClassif.STRING)
             {
-                error("SPACES can only take in arguments of type String")
+                error("SPACES can only take in arguments of type String");
             }
             boolean bHasSpaces = true;
             String scValue = param.value.toString();
@@ -777,10 +777,10 @@ public class Parser {
      * An expression can also be within parenthesis, like while () <--
      *
      * Ends scan on SEPARATOR token that terminated the expression
-     * @param bExec used for functions
+     * @param bExecFuncs used for functions
      * @return The ResultValue of the expression
      */
-    ResultValue expr(boolean bExec) throws Exception {
+    ResultValue expr(boolean bExecFuncs) throws Exception {
         // Only supports one operator until program 4
         ResultValue expr = null;
 
@@ -852,7 +852,7 @@ public class Parser {
         if (scan.currentToken.primClassif == Classif.FUNCTION)
         {
             // Get the ResultValue from callBuiltInFunc and make it into a token
-            ResultValue builtInFuncResultValue = callBuiltInFunc(bExec);
+            ResultValue builtInFuncResultValue = callBuiltInFunc(bExecFuncs);
             Token builtInFuncToken = new Token(builtInFuncResultValue.value.toString());
             builtInFuncToken.primClassif = Classif.OPERAND;
             builtInFuncToken.dclType = builtInFuncResultValue.iDatatype;
@@ -911,8 +911,8 @@ public class Parser {
 
 
 
-    ResultValue evalCond(String flowType) throws Exception {
-        ResultValue expr = expr();
+    ResultValue evalCond(boolean bExecFunc, String flowType) throws Exception {
+        ResultValue expr = expr(bExecFunc);
         if(expr.iDatatype != SubClassif.BOOLEAN)
             error("%s condition must yield a Bool", flowType);
         return expr;
@@ -1068,6 +1068,10 @@ public class Parser {
         }
 
         skipAfter(";");
+    }
+
+    private ResultValue convertTokenToResultValue() {
+        return null; // TODO: Jose
     }
 
     // Exceptions

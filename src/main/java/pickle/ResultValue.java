@@ -460,7 +460,7 @@ public class ResultValue
 	 * @return
 	 * @throws Exception
 	 */
-	public static ResultValue convertType(int iTargetType, ResultValue valueToConvert) throws Exception
+	public static ResultValue convertType(SubClassif iTargetType, ResultValue valueToConvert) throws Exception
 	{
 		ResultValue returnVal = null;
 
@@ -479,7 +479,7 @@ public class ResultValue
 
 		switch (iTargetType)
 		{
-			case SubClassif.INTEGER:
+			case INTEGER:
 				if (valueToConvert.iDatatype == SubClassif.BOOLEAN)
 				{
 					throw new ResultValueConversionException("Cannot convert Bool to Integer");
@@ -503,7 +503,7 @@ public class ResultValue
 								, SubClassif.FLOAT).intValue, SubClassif.INTEGER).intValue);
 				}
 				break;
-			case SubClassif.FLOAT:
+			case FLOAT:
 				if (valueToConvert.iDatatype == SubClassif.BOOLEAN)
 				{
 					throw new ResultValueConversionException("Cannot convert Bool to Float");
@@ -531,7 +531,7 @@ public class ResultValue
 					throw new ResultValueConversionException("Could not convert ResultValue to type Float");
 				}
 				break;
-			case SubClassif.STRING:
+			case STRING:
 				if (valueToConvert.iDatatype == SubClassif.STRING)
 				{
 					returnVal = new ResultValue(SubClassif.STRING
@@ -559,7 +559,7 @@ public class ResultValue
 					throw new ResultValueConversionException("could not convert the ResultValue to String");
 				}
 				break;
-			case SubClassif.BOOLEAN:
+			case BOOLEAN:
 				if(valueToConvert.iDatatype == SubClassif.BOOLEAN)
 				{
 					returnVal = new ResultValue(SubClassif.BOOLEAN
