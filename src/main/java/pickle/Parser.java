@@ -3,13 +3,16 @@ package pickle;
 import pickle.exception.ParserException;
 import pickle.exception.ScannerTokenFormatException;
 import pickle.st.STEntry;
+import pickle.st.STIdentifier;
 
 import javax.xml.transform.Result;
+import java.util.HashMap;
 import java.util.Stack;
 
 public class Parser {
 
     public Scanner scan;
+    private HashMap<String, Object> storage;
     private Stack<String> flowStack = new Stack<>();
 
     public static int currentIfLine;
@@ -18,6 +21,7 @@ public class Parser {
 
     public Parser(Scanner scanner) throws Exception {
         scan = scanner;
+        this.storage = new HashMap<String, Object>();
         scan.getNext(); // Call initial getNext() to get first token
     }
 
@@ -1070,8 +1074,54 @@ public class Parser {
         skipAfter(";");
     }
 
-    private ResultValue convertTokenToResultValue() {
-        return null; // TODO: Jose
+    private ResultValue convertTokenToResultValue() throws Exception{
+        STIdentifier identifier = null;
+        ResultValue res = null;
+        if(scan.currentToken.primClassif == Classif.IDENTIFIER)
+        {
+            identifier = (STIdentifier) scan.symbolTable.getSymbol(scan.currentToken.tokenStr);
+            if(identifier == null)
+            {
+                error("variable is undeclared or undefined in this scope");
+            }
+            res = new ResultValue(scan.currentToken.dclType, storage.get(scan.currentToken.tokenStr));
+            //res = new ResultValue(identifier.dclType, storage.get(scan.currentToken.tokenStr));
+        }
+        else if(scan.currentToken.primClassif == Classif.OPERAND)
+        {
+            switch(scan.currentToken.dclType)
+            {
+                case SubClassif.INTEGER:
+                    res = new ResultValue(scan.currentToken.dclType, new Numeric(scan.currentToken.tokenStr, SubClassif.INTEGER));
+                    break;
+                case SubClassif.FLOAT:
+                    res = new ResultValue(scan.currentToken.dclType, new Numeric(scan.currentToken.tokenStr, SubClassif.FLOAT));
+                    break;
+                case SubClassif.BOOLEAN:
+                    if(scan.currentToken.tokenStr.equals("T"))
+                    {
+                        res = new ResultValue(scan.currentToken.dclType, new Boolean(true));
+                    }
+                    else if(scan.currentToken.tokenStr.equals("F"))
+                    {
+                        res = new ResultValue(scan.currentToken.dclType, new Boolean(false));
+                    }
+                    else
+                    {
+                        error("token's primClassif is OPERAND and subClassif is BOOLEAN but " +
+                                "tokenStr " + scan.currentToken.tokenStr + " could not be resolved " +
+                                "to a boolean value");
+                    }
+                    break;
+                case SubClassif.STRING:
+                    res = new ResultValue(scan.currentToken.dclType, new StringBuilder(scan.currentToken.tokenStr));
+                    break;
+                default:
+                    error("operand is of unhandled type");
+            }
+        }
+
+        return res;
     }
 
     // Exceptions
