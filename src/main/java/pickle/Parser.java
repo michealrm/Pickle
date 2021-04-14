@@ -133,26 +133,6 @@ public class Parser {
             return res;
         }
 
-        // Check for FLOW token
-        switch(scan.currentToken.tokenStr) {
-            case "while":
-                flowStack.push("while");
-                whileStmt(bExec);
-                break;
-            case "if":
-                flowStack.push("if");
-                ifStmt(bExec);
-        }
-
-        // Check for END
-        if(scan.currentToken.dclType == SubClassif.END) {
-            ResultValue res = new ResultValue(SubClassif.END, scan.currentToken.tokenStr);
-            res.scTerminatingStr = scan.currentToken.tokenStr;
-            // DO NOT skip past endX;. We need this if XStmt for exception handling
-
-            return res;
-        }
-
         if(bExec) {
             if(scan.currentToken.primClassif == Classif.EOF) {
                 // executeStatements will check for EOF, we just need to get out of this function
@@ -358,6 +338,11 @@ public class Parser {
                 // Assign statement
                 assignmentStmt();
             }
+        } else {
+            if(!scan.nextToken.tokenStr.equals(";"))
+                errorWithCurrent("Expected a ';' after an assignment statement");
+            scan.getNext();
+            scan.getNext();
         }
 
         return new ResultValue(SubClassif.EMPTY, "");
@@ -377,7 +362,7 @@ public class Parser {
 
         scan.getNext();
         if(scan.currentToken.primClassif != Classif.OPERATOR)
-            error("Expected assignment operator for assignment statement");
+            errorWithCurrent("Expected assignment operator for assignment statement");
 
         String operatorStr = scan.currentToken.tokenStr;
         scan.getNext();
@@ -913,6 +898,35 @@ public class Parser {
             // TODO: Fix expr
         }
 
+        /*
+        Stack<Token> out = new Stack<>();
+        Stack<Token> stack = new Stack<>();
+        Token popped;
+
+        while(scan.currentToken.primClassif != Classif.SEPARATOR
+                && !scan.currentToken.tokenStr.equals("to")
+                && !scan.currentToken.tokenStr.equals("by")) {
+            switch(scan.currentToken.primClassif) {
+                case OPERAND:
+                    out.push(scan.currentToken);
+                    break;
+                case OPERATOR:
+                    while(!stack.isEmpty()) {
+                        if(scan.currentToken.preced() > stack.peek().stkPreced())
+                            break;
+                        out.push(stack.pop());
+                    }
+                    stack.push(scan.currentToken);
+            }
+            scan.getNext();
+        }
+
+        while(!stack.isEmpty())
+            out.push(stack.pop());
+
+        while(!out.isEmpty())
+            System.out.println(out.pop());
+*/
         // Check for unary minus
         Numeric unaryMinusOn = null;
         if(scan.currentToken.tokenStr.equals("-")) {

@@ -3,7 +3,7 @@
 print("p4Array.txt");
 Int iSimp = 50;
 print ("iSimp=", iSimp);
-
+if iSimp <
 print("Array C with elements printed using constant subscripts");
 Int iCM[10] = 10, 20, 30, 40, 50, 60;
 print("\tC", iCM[9], iCM[1], iCM[2]);
