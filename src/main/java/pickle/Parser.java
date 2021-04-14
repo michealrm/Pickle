@@ -139,7 +139,7 @@ public class Parser {
 
             return res;
         }
-        
+
         if(bExec) {
             if(scan.currentToken.primClassif == Classif.EOF) {
                 // executeStatements will check for EOF, we just need to get out of this function
@@ -559,7 +559,7 @@ public class Parser {
                     errorWithCurrent("Expected operand after 'for' iterator variable");
                 }
 
-                if (scan.nextToken.primClassif == Classif.OPERAND) { // If we found another operand, it's an expression.
+                if (scan.nextToken.primClassif == Classif.OPERATOR) { // If we found another operand, it's an expression.
                     scan.iColPos = iStartOperandColPos;
 
                     StorageManager.storeVariable(iteratorVariable, expr(true));    // Store the evaluated expression
@@ -583,7 +583,7 @@ public class Parser {
                     errorWithCurrent("Expected operand after 'for' limit");
                 }
 
-                if (scan.nextToken.primClassif == Classif.OPERAND) { // If we found another operand, it's an expression.
+                if (scan.nextToken.primClassif == Classif.OPERATOR) { // If we found another operand, it's an expression.
                     scan.iColPos = iStartOperandColPos;
 
                     StorageManager.storeVariable("0tempLimit", expr(true));    // Store the evaluated expression
@@ -607,7 +607,7 @@ public class Parser {
                     errorWithCurrent("Expected operand after 'for' increment");
                 }
 
-                if (scan.nextToken.primClassif == Classif.OPERAND) { // If we found another operand, it's an expression.
+                if (scan.nextToken.primClassif == Classif.OPERATOR) { // If we found another operand, it's an expression.
                     scan.iColPos = iStartOperandColPos;
 
                     StorageManager.storeVariable("0tempIncrement", expr(true));    // Store the evaluated expression
