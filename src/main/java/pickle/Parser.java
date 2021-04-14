@@ -1091,13 +1091,13 @@ public class Parser {
         {
             switch(scan.currentToken.dclType)
             {
-                case SubClassif.INTEGER:
+                case INTEGER:
                     res = new ResultValue(scan.currentToken.dclType, new Numeric(scan.currentToken.tokenStr, SubClassif.INTEGER));
                     break;
-                case SubClassif.FLOAT:
+                case FLOAT:
                     res = new ResultValue(scan.currentToken.dclType, new Numeric(scan.currentToken.tokenStr, SubClassif.FLOAT));
                     break;
-                case SubClassif.BOOLEAN:
+                case BOOLEAN:
                     if(scan.currentToken.tokenStr.equals("T"))
                     {
                         res = new ResultValue(scan.currentToken.dclType, new Boolean(true));
@@ -1113,7 +1113,7 @@ public class Parser {
                                 "to a boolean value");
                     }
                     break;
-                case SubClassif.STRING:
+                case STRING:
                     res = new ResultValue(scan.currentToken.dclType, new StringBuilder(scan.currentToken.tokenStr));
                     break;
                 default:
@@ -1127,13 +1127,14 @@ public class Parser {
     // Exceptions
 
     public void error(String fmt) throws Exception {
-        throw new ParserException(scan.iSourceLineNr, fmt, scan.sourceFileNm);
+        throw new ParserException(scan.iSourceLineNr, scan.iColPos, fmt, scan.sourceFileNm);
     }
 
     public void error(String fmt, Object... varArgs) throws Exception
     {
         String diagnosticTxt = String.format(fmt, varArgs);
         throw new ParserException(scan.iSourceLineNr
+                , scan.iColPos
                 , diagnosticTxt
                 , scan.sourceFileNm);
     }
