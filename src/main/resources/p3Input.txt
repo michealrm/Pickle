@@ -1,6 +1,3 @@
-String a;
-a = "hello";
-
 print("p3Input.txt");
 Int i = 1;
 Float pi;

@@ -274,6 +274,9 @@ public class Scanner {
             // EOF
             token.primClassif = Classif.EOF;
 
+        } else if (token.tokenStr.equals("Int[") || token.tokenStr.equals("Float[") || token.tokenStr.equals("String[")) {
+            token.primClassif = Classif.CONTROL;
+            token.dclType = SubClassif.DECLARE;
         } else if(token.tokenStr.equals("debug")) {
             token.primClassif = Classif.DEBUG;
             token.dclType = SubClassif.DEBUG;
