@@ -453,6 +453,8 @@ public class ResultValue
 		return new ResultValue(resultType, result);
 	}
 
+
+
 	/**
 	 * Convert given value to a certain data type
 	 * @param iTargetType
