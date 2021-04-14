@@ -1214,7 +1214,7 @@ public class Parser {
         // null (-> NPE) because default case in switch (where resOperand1 would be null) results in an Exception
 
         scan.getNext(); // On either 2nd operand or separator since max operands is 2
-        if(!scan.isSeparator(scan.currentToken.tokenStr) && !scan.isSeparator(scan.nextToken.tokenStr))
+        if(!scan.isSeparator(scan.currentToken.tokenStr) && !scan.isSeparator(scan.nextToken.tokenStr) && !scan.currentToken.tokenStr.equals("by") && !scan.nextToken.tokenStr.equals("by") && !scan.currentToken.tokenStr.equals(":") && !scan.nextToken.tokenStr.equals(":"))
             errorWithCurrent("Expected expression to end with a SEPARATOR (e.g. ';', ',')");
         else
             scan.getNext(); // End on SEPARATOR
