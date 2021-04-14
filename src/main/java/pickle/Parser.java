@@ -5,7 +5,6 @@ import pickle.exception.ScannerTokenFormatException;
 import pickle.st.STEntry;
 import pickle.st.STIdentifier;
 
-import javax.xml.transform.Result;
 import java.util.HashMap;
 import java.util.Stack;
 
@@ -140,31 +139,7 @@ public class Parser {
 
             return res;
         }
-
-        // Check for FLOW token
-        switch(scan.currentToken.tokenStr) {
-            case "while":
-                flowStack.push("while");
-                whileStmt(bExec);
-                break;
-            case "for":
-                flowStack.push("for");
-                forStmt(bExec);
-                break;
-            case "if":
-                flowStack.push("if");
-                ifStmt(bExec);
-        }
-
-        // Check for END
-        if(scan.currentToken.dclType == SubClassif.END) {
-            ResultValue res = new ResultValue(SubClassif.END, scan.currentToken.tokenStr);
-            res.scTerminatingStr = scan.currentToken.tokenStr;
-            // DO NOT skip past endX;. We need this if XStmt for exception handling
-
-            return res;
-        }
-
+        
         if(bExec) {
             if(scan.currentToken.primClassif == Classif.EOF) {
                 // executeStatements will check for EOF, we just need to get out of this function
@@ -209,7 +184,11 @@ public class Parser {
 
     /**
      * Reads a declare statement starting at a DECLARE token, ending at the character after the semicolon
-     * @return The ResultValue wrapper
+     *
+     * Note: declareStmt() was reworked to call assignmentStmt() when current token = variable name after it has
+     * put the variable in the symbol table. FOR ARRAYS, the parsing is done within declareStmt() since we can't have
+     *
+     * @return An empty ResultValue
      * @throws Exception
      */
     private ResultValue declareStmt() throws Exception {
@@ -222,41 +201,161 @@ public class Parser {
             error("Expected a variable for the target of a declaration");
         String variableStr = scan.currentToken.tokenStr;
 
-        scan.getNext();
-        // Only instantiation, no assignment
-        if(scan.currentToken.tokenStr.equals(";")) {
-            switch(typeStr) {
-                case "Int":
-                    assign(variableStr, new ResultValue(SubClassif.INTEGER, 0));
-                    scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.INTEGER));
-                    break;
-                case "Float":
-                    assign(variableStr, new ResultValue(SubClassif.FLOAT, 0.0));
-                    scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.FLOAT));
-                    break;
-                case "Bool":
-                    assign(variableStr, new ResultValue(SubClassif.BOOLEAN, false));
-                    scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.BOOLEAN));
-                    break;
-                case "String":
-                    assign(variableStr, new ResultValue(SubClassif.STRING, ""));
-                    scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.STRING));
-                    break;
-                default:
-                    error("Unsupported type %s", typeStr);
+        // Array
+        if(scan.nextToken.tokenStr.equals("[")) {
+            int iArrayLen = 0;
+
+            scan.getNext(); // Skip to '['
+            scan.getNext(); // Skip past '[' to either expr or ']'
+            typeStr += "["; // Make, for example, Int -> Int[
+
+            // Array Length
+            // It's okay if this (iArrLen) is zero if the array is not unbounded (ex: Int arr[] = 1,2,3;, even though
+            // 0 is reserved for unbounded, because in the branch for the list of values, we initially have length=0,
+            // but at the end we set the length to the index, which is the same length as the list of values.
+            if(!scan.currentToken.tokenStr.equals("]")) {
+                ResultValue arrLenExpr = expr(true);
+                if(arrLenExpr.iDatatype != SubClassif.INTEGER)
+                    error("Array index must be an integer");
+                iArrayLen = ((Numeric)arrLenExpr.value).intValue;
+                // Now on the ']'
             }
-        }
-        // Instantiation and assignment
-        else if(scan.currentToken.tokenStr.equals("=")) {
+            if(!scan.currentToken.tokenStr.equals("]"))
+                errorWithCurrent("Expected a ']' to close " + typeStr);
+            scan.getNext(); // Skip past ']' to either = or ';'
+
+            // Instantiation only
+            if(scan.currentToken.tokenStr.equals(";")) {
+                // Put variable in symbol table, then create and assign PickleArray
+                switch(typeStr) {
+                    case "Int[":
+                        scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.INTEGERARR));
+                        assign(variableStr, new ResultValue(SubClassif.INTEGERARR, new PickleArray(SubClassif.INTEGER, iArrayLen)));
+                        break;
+                    case "Float[":
+                        scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.FLOATARR));
+                        assign(variableStr, new ResultValue(SubClassif.FLOATARR, new PickleArray(SubClassif.FLOAT, iArrayLen)));
+                        break;
+                    case "String[":
+                        scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.STRINGARR));
+                        assign(variableStr, new ResultValue(SubClassif.STRINGARR, new PickleArray(SubClassif.STRING, iArrayLen)));
+                        break;
+                }
+            // Assignment to either to another array or a list of values
+            } else if(scan.currentToken.tokenStr.equals("=")) {
+                // Assignment to another variable
+                if(scan.nextToken.dclType == SubClassif.IDENTIFIER) {
+                    scan.getNext(); // Skip to ';'
+
+                    if(!scan.currentToken.tokenStr.equals(";"))
+                        errorWithCurrent("Expected ';' after array assignment");
+
+                    String sourceTypeStr = null;
+                    STEntry sourceSTEntry = scan.symbolTable.getSymbol(scan.currentToken.tokenStr);
+                    if(sourceSTEntry == null)
+                        errorWithCurrent("Source variable " + scan.currentToken.tokenStr + " was not found in " +
+                                "symbol table for assignment.");
+
+                    // Check that source and destination are the same type
+                    SubClassif sourceDclType = sourceSTEntry.dclType;
+                    if(sourceDclType == SubClassif.INTEGERARR)
+                        sourceTypeStr = "Int[";
+                    if(sourceDclType == SubClassif.FLOATARR)
+                        sourceTypeStr = "Float[";
+                    if(sourceDclType == SubClassif.STRINGARR)
+                        sourceTypeStr = "String[";
+
+                    if(!typeStr.equals(sourceTypeStr))
+                        errorWithCurrent("Invalid source type for assignment. Destination variable %s was type %s" +
+                                ", but source variable %s was type %s", variableStr, typeStr, scan.currentToken.tokenStr, sourceTypeStr);
+
+                    assign(variableStr, getVariableValue(scan.currentToken.tokenStr));
+                }
+                // Assignment to a list of variables
+                else {
+                    // currentToken is on the first value
+
+                    // iArrayLen initially 0 (reserved for unbounded), we'll set it after we read in the values
+                    PickleArray arr = null;
+                    if(typeStr.equals("Int["))
+                        arr = new PickleArray(SubClassif.INTEGER, iArrayLen);
+                    if(typeStr.equals("Float["))
+                        arr = new PickleArray(SubClassif.FLOAT, iArrayLen);
+                    if(typeStr.equals("String["))
+                        arr = new PickleArray(SubClassif.STRING, iArrayLen);
+                    int i = 0;
+
+                    do {
+                        scan.getNext(); // Skip past '=' or ','
+                        ResultValue arrElement = expr(true);
+                        if(typeStr.equals("Int[") && arrElement.iDatatype != SubClassif.INTEGER)
+                            errorWithCurrent("Expected an integer for integer array declaration/assignment");
+                        if(typeStr.equals("Float[") && arrElement.iDatatype != SubClassif.FLOAT)
+                            errorWithCurrent("Expected an float for float array declaration/assignment");
+                        if(typeStr.equals("String[") && arrElement.iDatatype != SubClassif.STRING)
+                            errorWithCurrent("Expected an string for string array declaration/assignment");
+
+                        arr.set(i, arrElement);
+                        i++;
+                        // expr() will advance to the ','
+                    } while(scan.currentToken.tokenStr.equals(","));
+
+                    if(!scan.currentToken.tokenStr.equals(";"))
+                        errorWithCurrent("Since current token is not a ',', we Expected ';' after array assignment");
+
+                    scan.getNext(); // Skip to next statement
+                }
+            } else {
+                error("You must either instantiate with or without '=' assignment.");
+            }
+        } else if(scan.nextToken.primClassif == Classif.OPERATOR) {
+            // Check that variable is not yet instantiated
+
+            // When a variable has already been instantiated, simply update its variable with the new type and value
+            //if(scan.symbolTable.getSymbol(variableStr) != null)
+            //    error("\"" + variableStr + "\" has already been instantiated");
+
+            // Put variable in the symbol table
+
+            // Only instantiation, no assignment
+            if(scan.currentToken.tokenStr.equals(";")) {
+                switch(typeStr) {
+                    case "Int":
+                        scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.INTEGER));
+                        break;
+                    case "Float":
+                        scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.FLOAT));
+                        break;
+                    case "String":
+                        scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.STRING));
+                        break;
+                    case "Bool":
+                        scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.BOOLEAN));
+                        break;
+                    case "Int[":
+                        scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.INTEGERARR));
+                        break;
+                    case "Float[":
+                        scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.FLOATARR));
+                        break;
+                    case "String[":
+                        scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.STRINGARR));
+                        break;
+                    default:
+                        error("Unsupported declare type " + typeStr);
+                }
+
+                // Assign statement
+                assignmentStmt();
+            }
+        } else {
+            if(!scan.nextToken.tokenStr.equals(";"))
+                errorWithCurrent("Expected a ';' after an assignment statement");
             scan.getNext();
-            assign(variableStr, expr(true));
+            scan.getNext();
         }
-        // Error
-        else {
-            errorWithCurrent("Expected an assignment (ex: Float f = 1.0;) or only declaration (ex: Float f;)");
-        }
-        scan.getNext(); // Skip past ';' to next statement - This is where the next statement is obtained
-        return null;
+
+        return new ResultValue(SubClassif.EMPTY, "");
     }
 
     /**
@@ -273,7 +372,7 @@ public class Parser {
 
         scan.getNext();
         if(scan.currentToken.primClassif != Classif.OPERATOR)
-            error("Expected assignment operator for assignment statement");
+            errorWithCurrent("Expected assignment operator for assignment statement");
 
         String operatorStr = scan.currentToken.tokenStr;
         scan.getNext();
@@ -988,6 +1087,35 @@ public class Parser {
             // TODO: Fix expr
         }
 
+        /*
+        Stack<Token> out = new Stack<>();
+        Stack<Token> stack = new Stack<>();
+        Token popped;
+
+        while(scan.currentToken.primClassif != Classif.SEPARATOR
+                && !scan.currentToken.tokenStr.equals("to")
+                && !scan.currentToken.tokenStr.equals("by")) {
+            switch(scan.currentToken.primClassif) {
+                case OPERAND:
+                    out.push(scan.currentToken);
+                    break;
+                case OPERATOR:
+                    while(!stack.isEmpty()) {
+                        if(scan.currentToken.preced() > stack.peek().stkPreced())
+                            break;
+                        out.push(stack.pop());
+                    }
+                    stack.push(scan.currentToken);
+            }
+            scan.getNext();
+        }
+
+        while(!stack.isEmpty())
+            out.push(stack.pop());
+
+        while(!out.isEmpty())
+            System.out.println(out.pop());
+*/
         // Check for unary minus
         Numeric unaryMinusOn = null;
         if(scan.currentToken.tokenStr.equals("-")) {
