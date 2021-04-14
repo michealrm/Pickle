@@ -18,6 +18,8 @@ public enum SubClassif
     // CONTROL's subclassifications
     FLOW("FLOW"),           // flow statement (e.g., if)
     END("END"),            // end statement (e.g., endif)
+    FOR_LIMIT("FOR_LIMIT"), // For "to"
+    FOR_INCREMENT("FOR_INCREMENT"), // For "by"
     DECLARE("DECLARE"),        // declare statement (e.g., Int)
     // FUNCTION's subclassfications
     BUILTIN("BUILTIN"),        // builtin function (e.g., print)

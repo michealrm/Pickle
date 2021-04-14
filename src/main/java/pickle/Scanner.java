@@ -274,7 +274,15 @@ public class Scanner {
             // EOF
             token.primClassif = Classif.EOF;
 
-        } else if (token.tokenStr.equals("Int[") || token.tokenStr.equals("Float[") || token.tokenStr.equals("String[")) {
+        } else if(token.tokenStr.equals("to")) {
+            token.primClassif = Classif.CONTROL;
+            token.dclType = SubClassif.FOR_LIMIT;
+        }
+        else if(token.tokenStr.equals("by")) {
+            token.primClassif = Classif.CONTROL;
+            token.dclType = SubClassif.FOR_INCREMENT;
+        }
+        else if (token.tokenStr.equals("Int[") || token.tokenStr.equals("Float[") || token.tokenStr.equals("String[")) {
             token.primClassif = Classif.CONTROL;
             token.dclType = SubClassif.DECLARE;
         } else if(token.tokenStr.equals("debug")) {
@@ -455,7 +463,14 @@ public class Scanner {
                         return Character.isLetterOrDigit(c); // The terminating token should be whitespace, so false will be returned when whitespace is encountered
                 }
             case CONTROL:
-                return containsIn(token.tokenStr + c, SymbolTable.globalSymbolTable.hm);
+                switch (token.dclType) {
+                    case FOR_LIMIT:
+                        return c == 'o';
+                    case FOR_INCREMENT:
+                        return c == 'y';
+                    default:
+                        return containsIn(token.tokenStr + c, SymbolTable.globalSymbolTable.hm);
+                }
         }
     }
 
