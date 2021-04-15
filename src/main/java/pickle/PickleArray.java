@@ -4,15 +4,17 @@ import java.util.ArrayList;
 
 public class PickleArray {
 
-    private ArrayList<ResultValue> arrayList;
+    public ArrayList<ResultValue> arrayList;
 
     public int length; //0 = unbounded, > 0 = array length
     private ResultValue defaultValue;
+    public SubClassif type;
 
     public PickleArray(SubClassif type, int length) throws Exception {
         arrayList = new ArrayList<>();
         this.length = length;
 
+        this.type = type;
         if(type == SubClassif.INTEGER)
             defaultValue = new ResultValue(SubClassif.INTEGER, new Numeric("0", SubClassif.INTEGER));
         if(type == SubClassif.FLOAT)
@@ -38,6 +40,15 @@ public class PickleArray {
         while(index >= arrayList.size())
             arrayList.add(defaultValue);
         arrayList.set(index, value);
+    }
+
+    /**
+     * Fills the whole array, up to `length`, to `value`. Useful for scalar assignments like arr = 5
+     * @param value
+     */
+    public void fill(ResultValue value) {
+        for(int i = 0; i < length; i++)
+            arrayList.set(i, value);
     }
 
     public ResultValue get(int index) {
