@@ -13,4 +13,8 @@ public class StorageManager {
     public static ResultValue retrieveVariable(String symbol) {
         return storageManager.get(symbol);
     }
+
+    public static ResultValue deleteVariable(String symbol) {
+        return storageManager.remove(symbol);
+    }
 }
