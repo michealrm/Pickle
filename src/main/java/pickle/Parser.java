@@ -272,6 +272,7 @@ public class Parser {
                         assign(variableStr, new ResultValue(SubClassif.STRINGARR, new PickleArray(SubClassif.STRING, iArrayLen)));
                         break;
                 }
+                scan.getNext(); // Skip past ';' to next statement
             // Assignment to either to another array or a list of values
             } else if(scan.currentToken.tokenStr.equals("=")) {
                 scan.getNext(); // Skip to either identifier, first value in list of values, first value of expr() for fill
@@ -1197,6 +1198,8 @@ public class Parser {
      * @return The ResultValue of the expression
      */
     ResultValue expr(boolean bExec) throws Exception {
+        if(scan.iSourceLineNr == 29)
+            System.out.println();
         saveLocationForRange();
         // First we'll handle if `bExec` == false
         if(!bExec) {
@@ -1276,9 +1279,11 @@ public class Parser {
                                     foundLParen = true;
                                     break;
                                 }
+                                out.push(popped);
                             }
                             if(!foundLParen)
                                 break outer;
+                            break;
                         default:
                             error("Token %s, a separator, must either be a '(' or ')'", t.tokenStr);
                     }
@@ -1311,7 +1316,7 @@ public class Parser {
         } else {
             error("Token %s cannot be evaluated in an expression", out.pop().tokenStr);
         }
-        return operand1.executeOperation(operand2, operation);
+        return operand2.executeOperation(operand1, operation);
     }
 
     private boolean continuesExpr(Token t) {
