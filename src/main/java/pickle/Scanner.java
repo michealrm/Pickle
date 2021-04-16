@@ -345,7 +345,6 @@ public class Scanner {
             token.primClassif = Classif.SEPARATOR;
 
         } else if(isSeparator(token)) {
-
             // Separator
           token.primClassif = Classif.SEPARATOR;
 

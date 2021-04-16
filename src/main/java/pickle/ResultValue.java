@@ -27,8 +27,7 @@ public class ResultValue
 
 	// Constructor
 	public ResultValue() {}
-	
-	
+
 	/**
 	* Start classifying variables and perform certain operations.
 	* <p>

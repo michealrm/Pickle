@@ -3,9 +3,11 @@ package pickle;
 import pickle.exception.ParserException;
 import pickle.exception.ScannerTokenFormatException;
 import pickle.st.STEntry;
+import pickle.st.STFunction;
 import pickle.st.STIdentifier;
 
 import javax.xml.transform.Result;
+import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Stack;
 
@@ -18,6 +20,10 @@ public class Parser {
     public static int currentIfLine;
     public static int currentWhileLine;
     public static boolean onStmtLine = false;
+
+    // Useful in functions like expr() to print all tokens in a range in error messages
+    public static int savedRangeStartLine = 0;
+    public static int savedRangeStartCol = 0;
 
     public Parser(Scanner scanner) throws Exception {
         scan = scanner;
@@ -443,38 +449,80 @@ public class Parser {
         String variableName = scan.currentToken.tokenStr;
 
         scan.getNext();
-        if(scan.currentToken.primClassif != Classif.OPERATOR)
-            errorWithCurrent("Expected assignment operator for assignment statement");
+        // Either on '[' or assignment operator
 
-        String operatorStr = scan.currentToken.tokenStr;
-        scan.getNext();
-        ResultValue exprToAssign = expr(true);
-        switch(operatorStr) {
-            case "=":
-                res = assign(variableName, exprToAssign);
-                break;
-            case "-=":
-                assign(variableName, getVariableValue(variableName).executeOperation(exprToAssign, "-="));
-                // TODO: Add line, col number, and parameter num in executeOperation's exception handling (like Parser.error())
-                break;
-            case "+=":
-                assign(variableName, getVariableValue(variableName).executeOperation(exprToAssign, "+="));
-                break;
-            default:
-                error("Expected assignment operator for assignment statement");
+        if(scan.currentToken.tokenStr.equals("[")) {
+            int index = -1;
+            scan.getNext();
+            ResultValue expr = expr(true);
+            if(expr.iDatatype != SubClassif.INTEGER)
+                error("Array subscript expression must evaluate to an integer");
+            index = ((Numeric)expr.value).intValue;
+
+            if(!scan.currentToken.tokenStr.equals("]"))
+                errorWithCurrent("Expected array subscript to end with a ']'");
+
+            scan.getNext();
+
+            if(!scan.currentToken.tokenStr.equals("="))
+                errorWithCurrent("Expected '=' assignment to array reference assignment");
+
+            scan.getNext();
+
+            expr = expr(true); // Value to copy into array reference
+
+            // If array can't hold expr()'s type
+            SubClassif arrType = scan.symbolTable.getSymbol(variableName).dclType;
+            if(!((arrType == SubClassif.INTEGERARR && expr.iDatatype == SubClassif.INTEGER)
+                    || (arrType == SubClassif.FLOATARR && expr.iDatatype == SubClassif.FLOAT)
+                    || (arrType == SubClassif.STRINGARR && expr.iDatatype == SubClassif.STRING)))
+                error("Value of array reference assignment had type %s, but array has type %s", expr.iDatatype.toString(), arrType.toString());
+
+            // Set value
+            PickleArray arr = ((PickleArray) getVariableValue(variableName).value);
+            arr.set(index, expr);
+
+            if(!scan.currentToken.tokenStr.equals(";"))
+                errorWithCurrent("Expected array reference assignment to end with a ';'");
+
+            scan.getNext(); // Skip to next statement
+
+            return expr;
         }
+        else {
+            if (scan.currentToken.primClassif != Classif.OPERATOR)
+                errorWithCurrent("Expected assignment operator for assignment statement");
 
-        if(!scan.currentToken.tokenStr.equals(";"))
-            errorWithCurrent("Expected a ';' to terminate assignment");
-        scan.getNext();
+            String operatorStr = scan.currentToken.tokenStr;
+            scan.getNext();
+            ResultValue exprToAssign = expr(true);
+            switch(operatorStr) {
+                case "=":
+                    res = assign(variableName, exprToAssign);
+                    break;
+                case "-=":
+                    assign(variableName, getVariableValue(variableName).executeOperation(exprToAssign, "-="));
+                    // TODO: Add line, col number, and parameter num in executeOperation's exception handling (like Parser.error())
+                    break;
+                case "+=":
+                    assign(variableName, getVariableValue(variableName).executeOperation(exprToAssign, "+="));
+                    break;
+                default:
+                    error("Expected assignment operator for assignment statement");
+            }
 
-        // Debug statement
-        if (scan.scanDebug.bShowAssign && res != null)
-        {
-            System.out.println( String.format("... Assign result into '%s' is '%s'", variableName, res.toString()));
+            if(!scan.currentToken.tokenStr.equals(";"))
+                errorWithCurrent("Expected a ';' to terminate assignment");
+            scan.getNext();
+
+            // Debug statement
+            if (scan.scanDebug.bShowAssign && res != null)
+            {
+                System.out.println( String.format("... Assign result into '%s' is '%s'", variableName, res.toString()));
+            }
+
+            return res;
         }
-
-        return res;
     }
 
     void ifStmt(boolean bExec) throws Exception {
@@ -1149,6 +1197,7 @@ public class Parser {
      * @return The ResultValue of the expression
      */
     ResultValue expr(boolean bExec) throws Exception {
+        saveLocationForRange();
         // First we'll handle if `bExec` == false
         if(!bExec) {
             while(continuesExpr(scan.currentToken))
@@ -1160,11 +1209,48 @@ public class Parser {
         Stack<Token> out = new Stack<>();
         Stack<Token> stack = new Stack<>();
         boolean foundLParen = false;
+        outer:
         while(continuesExpr(scan.currentToken)) {
             // Evaluate starting from currentToken. Converts results from things like array references or variables into a Token
-            Token t = evalElement();
+            Token t = scan.currentToken;
 
-            switch(scan.currentToken.primClassif) {
+            // If array, call expr() on it and use the ResultValue as Token t, leaving currentToken on the ']' since
+            // we call scan.getNext() at the end of the while
+            if(scan.nextToken.tokenStr.equals("[")) {
+                ResultValue indexResult = null;
+                String variableName = scan.currentToken.tokenStr;
+                STEntry stEntry = scan.symbolTable.getSymbol(variableName);
+
+                if(stEntry == null)
+                    errorWithCurrent("Variable \"%s\" not found in symbol table");
+                if(!isArray(stEntry))
+                    errorWithCurrent("%s with type %s cannot be subscripted because it is not an array", variableName, stEntry.dclType);
+
+                scan.getNext(); // Skip to '['
+                scan.getNext(); // Skip to first item in index
+
+                indexResult = expr(true);
+
+                if(indexResult.iDatatype != SubClassif.INTEGER)
+                    error("Index evaluated to %s, which is not an integer");
+
+                if(!scan.currentToken.tokenStr.equals("]"))
+                    errorWithCurrent("Expected for array subscript to end with a ']'");
+
+                PickleArray arr = ((PickleArray)getVariableValue(variableName).value);
+                ResultValue value = arr.get(((Numeric)indexResult.value).intValue);
+                t = new Token(value.toString());
+                scan.setClassification(t);
+
+                // Don't skip past the ']', we'll do that at the end of the while loop
+            }
+            else if(scan.currentToken.dclType == SubClassif.IDENTIFIER) {
+                ResultValue value = getVariableValue(scan.currentToken.tokenStr);
+                t = new Token(value.value.toString());
+                scan.setClassification(t);
+            }
+
+            switch(t.primClassif) {
                 case OPERAND:
                     out.push(t);
                     break;
@@ -1176,6 +1262,7 @@ public class Parser {
                         out.push(popped);
                     }
                     stack.push(t);
+                    break;
                 case SEPARATOR:
                     switch(t.tokenStr) {
                         case "(":
@@ -1191,10 +1278,9 @@ public class Parser {
                                 }
                             }
                             if(!foundLParen)
-                                error("Found a ')' that was not opened");
+                                break outer;
                         default:
-                            errorWithCurrent("but when reading an expression, the only separators are '(' or ')'" +
-                                    " (excluding array references)");
+                            error("Token %s, a separator, must either be a '(' or ')'", t.tokenStr);
                     }
             }
             scan.getNext();
@@ -1202,11 +1288,30 @@ public class Parser {
 
         while(!stack.isEmpty())
             out.push(stack.pop());
+        try {
+            return getOperand(out);
+        } catch(EmptyStackException e) {
+            errorWithRange("Known bug: Expression ", " had an empty stack in postfix evaluation");
+            return null;
+        }
+    }
 
-        while(!out.isEmpty())
-            System.out.println(out.pop());
-
-        return new ResultValue(SubClassif.INTEGER, new Numeric("0", SubClassif.INTEGER)); // TODO: Temp
+    private ResultValue getOperand(Stack<Token> out) throws Exception {
+        String operation = null;
+        ResultValue operand1 = null;
+        ResultValue operand2 = null;
+        //if(out.isEmpty())
+        //    error("getOperand was called to evaluate postfix, but out was empty");
+        if(out.peek().primClassif == Classif.OPERAND)
+            return tokenToResultValue(out.pop());
+        else if(out.peek().primClassif == Classif.OPERATOR) {
+            operation = out.pop().tokenStr;
+            operand1 = getOperand(out);
+            operand2 = getOperand(out);
+        } else {
+            error("Token %s cannot be evaluated in an expression", out.pop().tokenStr);
+        }
+        return operand1.executeOperation(operand2, operation);
     }
 
     private boolean continuesExpr(Token t) {
@@ -1216,12 +1321,32 @@ public class Parser {
                 || t.tokenStr.equals(")");
     }
 
+    private ResultValue tokenToResultValue(Token t) throws Exception {
+        switch(t.dclType) {
+            case INTEGER:
+            case FLOAT:
+                return new ResultValue(t.dclType, new Numeric(t.tokenStr, t.dclType));
+            case BOOLEAN:
+                return new ResultValue(SubClassif.BOOLEAN, t.tokenStr.equals("T"));
+            case STRING:
+                return new ResultValue(SubClassif.STRING, t.tokenStr);
+        }
+        error("Token %s cannot be converted to a ResultValue", t.tokenStr);
+        return new ResultValue(SubClassif.EMPTY, "");
+    }
 
     ResultValue evalCond(boolean bExecFunc, String flowType) throws Exception {
         ResultValue expr = expr(bExecFunc);
         if(expr.iDatatype != SubClassif.BOOLEAN)
             error("%s condition must yield a Bool", flowType);
         return expr;
+    }
+
+    private boolean isArray(STEntry stEntry) {
+        return stEntry.dclType == SubClassif.INTEGERARR
+                || stEntry.dclType == SubClassif.FLOATARR
+                || stEntry.dclType == SubClassif.BOOLEANARR
+                || stEntry.dclType == SubClassif.STRINGARR;
     }
 
     /*private void evalDebug() throws Exception {
@@ -1447,6 +1572,11 @@ public class Parser {
         return res;
     }
 
+    public void saveLocationForRange() {
+        savedRangeStartLine = scan.iSourceLineNr;
+        savedRangeStartCol = scan.iColPos;
+    }
+
     // Exceptions
 
     public void error(String fmt) throws Exception {
@@ -1460,6 +1590,23 @@ public class Parser {
                 , scan.iColPos
                 , diagnosticTxt
                 , scan.sourceFileNm);
+    }
+
+    /**
+     * Prints tokens through a range
+     * Use savedLocationForRange() to save, tokens before currentToken will be printed
+     */
+    public void errorWithRange(String before, String after) throws Exception {
+        StringBuilder sb = new StringBuilder();
+
+        int iEndLine = scan.iSourceLineNr;
+        int iEndCol = scan.iColPos - 1; // To not print currentToken
+        scan.goTo(savedRangeStartLine, savedRangeStartCol);
+        while(scan.iSourceLineNr <= iEndLine && scan.iColPos <= iEndCol) {
+            sb.append(scan.currentToken.tokenStr);
+            scan.getNext();
+        }
+        error("%s%s%s", before, sb.toString(), after);
     }
 
     /**

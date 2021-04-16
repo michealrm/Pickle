@@ -208,4 +208,8 @@ public class Token
         }
         System.out.printf("\n");
     }
+
+    public String toString() {
+        return tokenStr;
+    }
 }

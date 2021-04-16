@@ -22,8 +22,7 @@ import pickle.Scanner;
 
 public class Pickle
 {
-    public static void main(String[] args) 
-    {
+    public static void main(String[] args) throws Exception {
         //System.out.println("run:");
 
         // Create the Global SymbolTable
@@ -34,7 +33,6 @@ public class Pickle
 
         // Create the Scanner
         Scanner scan = new Scanner(args[0], symbolTable);
-
 
         try {
             // Create the Parser
