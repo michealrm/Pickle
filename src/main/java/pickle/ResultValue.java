@@ -17,6 +17,7 @@ import pickle.exception.ResultValueConversionException;
  */
 public class ResultValue
 {
+	public Classif iPrimClassif;
 	public SubClassif iDatatype;
 	public Object value;
 	public boolean isNumber = false;
@@ -75,6 +76,56 @@ public class ResultValue
 			isNumber = false;
 		}
 	}
+
+	/**
+	 * Start classifying variables and perform certain operations.
+	 * <p>
+	 * @param iClassif: the classification of the object
+	 * @param iType: the datatype of the object
+	 * @param val: the value of the object
+	 */
+	public ResultValue(Classif iClassif, SubClassif iType, Object val) throws Exception
+	{
+		iPrimClassif = iClassif;
+		iDatatype = iType;
+		value = val;
+
+		// Check if type is a number type
+		if (iDatatype == SubClassif.INTEGER || iDatatype == SubClassif.FLOAT)
+		{
+			if ( !(val instanceof Numeric) )
+			{
+				value = new Numeric( val.toString(), iDatatype);
+			}
+			isNumber = true;
+		}
+
+		// Check if type is an identifier type
+		else if (iDatatype == SubClassif.IDENTIFIER)
+		{
+			if (val instanceof Numeric)
+			{
+				iDatatype = ((Numeric) val).type;
+			}
+			else if (val instanceof String)
+			{
+				iDatatype = SubClassif.STRING;
+			}
+			else if (val instanceof Boolean)
+			{
+				iDatatype = SubClassif.BOOLEAN;
+			}
+			else
+			{
+				throw new InvalidNumberException("Invalid datatype detected");
+			}
+		}
+		else
+		{
+			isNumber = false;
+		}
+	}
+
 	/**
 	* Begin to execute operation according to operands and whatever operators are given
 	* @param rightOperand: a ResultValue that is to the right of the operation param
