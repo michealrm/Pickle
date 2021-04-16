@@ -5,6 +5,7 @@ import pickle.exception.ScannerTokenFormatException;
 import pickle.st.STEntry;
 import pickle.st.STIdentifier;
 
+import javax.xml.transform.Result;
 import java.util.HashMap;
 import java.util.Stack;
 
@@ -1144,39 +1145,57 @@ public class Parser {
      * An expression can also be within parenthesis, like while () <--
      *
      * Ends scan on SEPARATOR token that terminated the expression
-     * @param bExecFuncs used for functions
+     * @param bExec used for functions
      * @return The ResultValue of the expression
      */
-    ResultValue expr(boolean bExecFuncs) throws Exception {
-        // Only supports one operator until program 4
-        ResultValue expr = null;
-
-        // We're only supporting one set of parenthesis around
-        if(scan.currentToken.tokenStr.equals("(")) {
-            scan.getNext();
-            //ResultValue innerExprValue = expr(); // TODO: Make sure that expr() will stop when it hits a separator
-            // TODO: Fix expr
+    ResultValue expr(boolean bExec) throws Exception {
+        // First we'll handle if `bExec` == false
+        if(!bExec) {
+            while(continuesExpr(scan.currentToken))
+                scan.getNext();
+            return new ResultValue(SubClassif.EMPTY, "");
         }
 
-        /*
+        // Convert infix to postfix to evaluate
         Stack<Token> out = new Stack<>();
         Stack<Token> stack = new Stack<>();
-        Token popped;
+        boolean foundLParen = false;
+        while(continuesExpr(scan.currentToken)) {
+            // Evaluate starting from currentToken. Converts results from things like array references or variables into a Token
+            Token t = evalElement();
 
-        while(scan.currentToken.primClassif != Classif.SEPARATOR
-                && !scan.currentToken.tokenStr.equals("to")
-                && !scan.currentToken.tokenStr.equals("by")) {
             switch(scan.currentToken.primClassif) {
                 case OPERAND:
-                    out.push(scan.currentToken);
+                    out.push(t);
                     break;
                 case OPERATOR:
                     while(!stack.isEmpty()) {
-                        if(scan.currentToken.preced() > stack.peek().stkPreced())
+                        if(t.preced() > stack.peek().stkPreced())
                             break;
-                        out.push(stack.pop());
+                        Token popped = stack.pop();
+                        out.push(popped);
                     }
-                    stack.push(scan.currentToken);
+                    stack.push(t);
+                case SEPARATOR:
+                    switch(t.tokenStr) {
+                        case "(":
+                            stack.push(t);
+                            break;
+                        case ")":
+                            foundLParen = false;
+                            while(!stack.isEmpty()) {
+                                Token popped = stack.pop();
+                                if(popped.tokenStr.equals("(")) {
+                                    foundLParen = true;
+                                    break;
+                                }
+                            }
+                            if(!foundLParen)
+                                error("Found a ')' that was not opened");
+                        default:
+                            errorWithCurrent("but when reading an expression, the only separators are '(' or ')'" +
+                                    " (excluding array references)");
+                    }
             }
             scan.getNext();
         }
@@ -1186,145 +1205,16 @@ public class Parser {
 
         while(!out.isEmpty())
             System.out.println(out.pop());
-*/
-        // Check for unary minus
-        Numeric unaryMinusOn = null;
-        if(scan.currentToken.tokenStr.equals("-")) {
-            scan.getNext(); // Now we should be on either an IDENTIFIER or an INT or FLOAT
-            switch(scan.currentToken.dclType) {
-                case INTEGER:
-                    unaryMinusOn = new Numeric(scan.currentToken.tokenStr, scan.currentToken.dclType);
-                    expr = new ResultValue(SubClassif.INTEGER, unaryMinusOn.unaryMinus());
-                    break;
-                case FLOAT:
-                    unaryMinusOn = new Numeric(scan.currentToken.tokenStr, scan.currentToken.dclType);
-                    expr = new ResultValue(SubClassif.FLOAT, unaryMinusOn.unaryMinus());
-                    break;
-                case IDENTIFIER:
-                    String variableName = scan.currentToken.tokenStr;
-                    ResultValue variableValue = getVariableValue(variableName);
-                    if(!variableValue.isNumber) {
-                        errorWithCurrent("Expected a variable with a numeric value for unary minus");
-                    }
-                    unaryMinusOn = (Numeric)variableValue.value;
-                    expr = new ResultValue(unaryMinusOn.type, unaryMinusOn.unaryMinus());
-                    break;
-                default:
-                    errorWithCurrent("Expected a INTEGER, FLOAT, or IDENTIFIER for unary minus");
-            }
-            scan.getNext();
-            return expr;
-        }
-        // Get operand one
-        ResultValue resOperand1 = null;
-        switch(scan.currentToken.dclType) {
-            case INTEGER:
-                resOperand1 = new ResultValue(SubClassif.INTEGER, new Numeric(scan.currentToken.tokenStr, scan.currentToken.dclType));
-                break;
-            case FLOAT:
-                resOperand1 = new ResultValue(SubClassif.FLOAT, new Numeric(scan.currentToken.tokenStr, scan.currentToken.dclType));
-                break;
-            case STRING:
-                resOperand1 = new ResultValue(SubClassif.STRING, scan.currentToken.tokenStr);
-                break;
-            case BOOLEAN:
-                resOperand1 = new ResultValue(SubClassif.BOOLEAN, scan.currentToken.tokenStr.equals("T"));
-                break;
-            case IDENTIFIER:
-                String variableName = scan.currentToken.tokenStr;
-                STEntry stEntry = scan.symbolTable.getSymbol(variableName);
 
-                if(stEntry == null)
-                    errorWithCurrent("Didn't find " + variableName + " in the symbol table");
-
-                if((stEntry.dclType == SubClassif.INTEGERARR
-                        || stEntry.dclType == SubClassif.FLOATARR
-                        || stEntry.dclType == SubClassif.STRINGARR)
-                        && scan.nextToken.tokenStr.equals("[")) {
-                    scan.getNext();
-                    scan.getNext();
-                    ResultValue index = expr(true);
-
-                    if(index.iDatatype != SubClassif.INTEGER)
-                        errorWithCurrent("Expected expression that results in an INTEGER for an array subscript");
-
-                    resOperand1 = ((PickleArray)getVariableValue(variableName).value).get(((Numeric)index.value).intValue);
-                } else {
-                    resOperand1 = StorageManager.retrieveVariable(scan.currentToken.tokenStr);
-                }
-                break;
-            default:
-                errorWithCurrent("Expected a token that can be evaluated in an expression");
-        }
-
-        scan.getNext(); // Now we're on the operator
-
-        // Expression is only one operand
-        if(scan.currentToken.primClassif == Classif.SEPARATOR) {
-            return resOperand1;
-        }
-
-        // If currentToken is a FUNCTION, use bExec
-        if (scan.currentToken.primClassif == Classif.FUNCTION)
-        {
-            // Get the ResultValue from callBuiltInFunc and make it into a token
-            ResultValue builtInFuncResultValue = callBuiltInFunc(bExecFuncs);
-            Token builtInFuncToken = new Token(builtInFuncResultValue.value.toString());
-            builtInFuncToken.primClassif = Classif.OPERAND;
-            builtInFuncToken.dclType = builtInFuncResultValue.iDatatype;
-
-            // TODO: Deal with adding to infixExpression
-        }
-
-        // Get second operand if there is one using nextToken lookahead
-        ResultValue resOperand2 = null;
-        switch(scan.nextToken.dclType) {
-            case INTEGER:
-                resOperand2 = new ResultValue(SubClassif.INTEGER, new Numeric(scan.nextToken.tokenStr, scan.nextToken.dclType));
-                break;
-            case FLOAT:
-                resOperand2 = new ResultValue(SubClassif.FLOAT, new Numeric(scan.nextToken.tokenStr, scan.nextToken.dclType));
-                break;
-            case STRING:
-                resOperand2 = new ResultValue(SubClassif.STRING, scan.nextToken.tokenStr);
-                break;
-            case BOOLEAN:
-                resOperand2 = new ResultValue(SubClassif.BOOLEAN, scan.nextToken.tokenStr);
-                break;
-            case IDENTIFIER:
-                resOperand2 = StorageManager.retrieveVariable(scan.nextToken.tokenStr);
-                break;
-            default:
-                // We'll catch the error when we switch the operator
-                // We need this ResultValue classification for the unary minus (separator follows minus)
-                resOperand2 = new ResultValue(scan.nextToken.dclType, scan.nextToken.tokenStr);
-        }
-
-        String operator = scan.currentToken.tokenStr;
-        expr = resOperand1.executeOperation(resOperand2, operator); // Note: IDE lies, resOperand1 won't be
-        // null (-> NPE) because default case in switch (where resOperand1 would be null) results in an Exception
-
-        scan.getNext(); // On either 2nd operand or separator since max operands is 2
-        if(!scan.isSeparator(scan.currentToken.tokenStr) && !scan.isSeparator(scan.nextToken.tokenStr) && !scan.currentToken.tokenStr.equals("by") && !scan.nextToken.tokenStr.equals("by") && !scan.currentToken.tokenStr.equals(":") && !scan.nextToken.tokenStr.equals(":"))
-            errorWithCurrent("Expected expression to end with a SEPARATOR (e.g. ';', ',')");
-        else
-            scan.getNext(); // End on SEPARATOR
-
-        // Debug statement
-        if (scan.scanDebug.bShowExpr)
-        {
-            if(expr.toString() == "true") {
-                System.out.println(String.format("\n... %s %s %s is T", expr.leftOpGlobal, expr.operationGlobal, expr.rightOpGlobal ));
-            } else if(expr.toString() == "false"){
-                System.out.println(String.format("\n... %s %s %s is F", expr.leftOpGlobal, expr.operationGlobal, expr.rightOpGlobal));
-            } else {
-                System.out.println(String.format("\n... %s %s %s is %s", expr.leftOpGlobal, expr.operationGlobal, expr.rightOpGlobal, expr.toString()));
-            }
-        }
-
-        return expr;
+        return new ResultValue(SubClassif.INTEGER, new Numeric("0", SubClassif.INTEGER)); // TODO: Temp
     }
 
+    private boolean continuesExpr(Token t) {
+        return t.primClassif == Classif.OPERATOR
+                || t.primClassif == Classif.OPERAND
+                || t.tokenStr.equals("(")
+                || t.tokenStr.equals(")");
+    }
 
 
     ResultValue evalCond(boolean bExecFunc, String flowType) throws Exception {
