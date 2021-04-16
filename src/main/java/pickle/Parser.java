@@ -5,8 +5,10 @@ import pickle.exception.ScannerTokenFormatException;
 import pickle.st.STEntry;
 import pickle.st.STFunction;
 import pickle.st.STIdentifier;
+import pickle.st.SymbolTable;
 
 import javax.xml.transform.Result;
+import java.util.ArrayList;
 import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Stack;
@@ -1198,8 +1200,6 @@ public class Parser {
      * @return The ResultValue of the expression
      */
     ResultValue expr(boolean bExec) throws Exception {
-        if(scan.iSourceLineNr == 29)
-            System.out.println();
         saveLocationForRange();
         // First we'll handle if `bExec` == false
         if(!bExec) {
@@ -1212,7 +1212,7 @@ public class Parser {
         Stack<Token> out = new Stack<>();
         Stack<Token> stack = new Stack<>();
         boolean foundLParen = false;
-        outer:
+        infix_to_postfix_loop:
         while(continuesExpr(scan.currentToken)) {
             // Evaluate starting from currentToken. Converts results from things like array references or variables into a Token
             Token t = scan.currentToken;
@@ -1251,9 +1251,17 @@ public class Parser {
                 ResultValue value = getVariableValue(scan.currentToken.tokenStr);
                 t = new Token(value.value.toString());
                 scan.setClassification(t);
+                // Arrays will be kept as identifiers until they need to be passed into something
+                // Then we'll simply grab getVariableValue and pass into built in function
+                // So, if setClassification does nothing, put the identifier on the stack
+                if(t.primClassif == Classif.EMPTY && t.dclType == SubClassif.EMPTY)
+                    t = scan.currentToken;
             }
 
             switch(t.primClassif) {
+                case FUNCTION:
+                    stack.push(t);
+                    break;
                 case OPERAND:
                     out.push(t);
                     break;
@@ -1280,13 +1288,19 @@ public class Parser {
                                     break;
                                 }
                                 out.push(popped);
+
+                                if(!stack.isEmpty() && stack.peek().primClassif == Classif.FUNCTION)
+                                    out.push(stack.pop());
                             }
                             if(!foundLParen)
-                                break outer;
+                                break infix_to_postfix_loop;
                             break;
                         default:
                             error("Token %s, a separator, must either be a '(' or ')'", t.tokenStr);
                     }
+                    break;
+                default:
+                    errorWithCurrent("Couldn't classy %s to add to the stack", t.tokenStr);
             }
             scan.getNext();
         }
@@ -1296,7 +1310,8 @@ public class Parser {
         try {
             return getOperand(out);
         } catch(EmptyStackException e) {
-            errorWithRange("Known bug: Expression ", " had an empty stack in postfix evaluation");
+            errorWithRange("Interpreter error: Expression ", " had an empty stack in postfix evaluation " +
+                    "when trying to grab an operand");
             return null;
         }
     }
@@ -1313,17 +1328,91 @@ public class Parser {
             operation = out.pop().tokenStr;
             operand1 = getOperand(out);
             operand2 = getOperand(out);
+            return operand2.executeOperation(operand1, operation);
+        } else if(out.peek().primClassif == Classif.FUNCTION) {
+            // TODO: This is only for built in functions right now
+            Token funcToken = out.pop();
+            STEntry stEntry = SymbolTable.globalSymbolTable.getSymbol(funcToken.tokenStr);
+            if(stEntry == null)
+                error("Function %s was not found in the symbol table", funcToken.tokenStr);
+            if(!(stEntry instanceof STFunction))
+                error(funcToken.tokenStr + " was found in the symbol table, but is not a function");
+            STFunction stFunction = (STFunction) stEntry;
+            ArrayList<ResultValue> parms = new ArrayList<>();
+            for(int i = 0; i < stFunction.numArgs; i++)
+                parms.add(getOperand(out));
+            return callFunction(stFunction, parms);
         } else {
             error("Token %s cannot be evaluated in an expression", out.pop().tokenStr);
+            return new ResultValue(SubClassif.EMPTY, "");
         }
-        return operand2.executeOperation(operand1, operation);
+    }
+
+    public ResultValue callFunction(STFunction stFunction, ArrayList<ResultValue> parms) throws Exception {
+        if(stFunction.numArgs != -1 && stFunction.numArgs != parms.size())
+            error("Function %s requires %d arguments, but you entered %d", stFunction.tokenStr, stFunction.numArgs, parms.size());
+            ResultValue arrRV;
+            PickleArray arr;
+            ResultValue strRV;
+            String str;
+                switch(stFunction.tokenStr) {
+                    case "ELEM":
+                        // parms will be a PickleArray
+                        arrRV = parms.get(0);
+                        if(!isArray(arrRV.iDatatype))
+                            error("Function ELEM only takes in arrays.");
+                        arr = ((PickleArray) arrRV.value);
+                        return funcELEM(arr);
+                    case "MAXELEM":
+                        // parms will be a PickleArray
+                        arrRV = parms.get(0);
+                        if(!isArray(arrRV.iDatatype))
+                            error("Function MAXELEM only takes in arrays.");
+                        arr = ((PickleArray) arrRV.value);
+                        return funcMAXELEM(arr);
+                    case "LENGTH":
+                        // parms will be a string
+                        strRV = parms.get(0);
+                        if(strRV.iDatatype != SubClassif.STRING)
+                            error("Function LENGTH only takes in one string.");
+                        str = ((String)strRV.value);
+                        return funcLENGTH(str);
+                    case "SPACES":
+                        // parms will be a string
+                        strRV = parms.get(0);
+                        if(strRV.iDatatype != SubClassif.STRING)
+                            error("Function SPACES only takes in one string.");
+                        str = ((String)strRV.value);
+                        return funcSPACES(str);
+                    default:
+                        error("STFunction was passed in, but %s is not a supported function for callFunction, " +
+                                "used in expr()'s eval of postfix");
+                        return new ResultValue(SubClassif.EMPTY, "");
+        }
+    }
+
+    public ResultValue funcELEM(PickleArray arr) throws Exception {
+        return arr.getElem();
+    }
+
+    public ResultValue funcMAXELEM(PickleArray arr) throws Exception {
+        return arr.getMaxElem();
+    }
+
+    public ResultValue funcLENGTH(String str) throws Exception {
+        return new ResultValue(SubClassif.INTEGER, new Numeric(String.valueOf(str.length()), SubClassif.INTEGER));
+    }
+
+    public ResultValue funcSPACES(String str) throws Exception {
+        return new ResultValue(SubClassif.BOOLEAN, str.contains(" ") ? "T" : "F");
     }
 
     private boolean continuesExpr(Token t) {
         return t.primClassif == Classif.OPERATOR
                 || t.primClassif == Classif.OPERAND
                 || t.tokenStr.equals("(")
-                || t.tokenStr.equals(")");
+                || t.tokenStr.equals(")")
+                || t.primClassif == Classif.FUNCTION;
     }
 
     private ResultValue tokenToResultValue(Token t) throws Exception {
@@ -1335,6 +1424,8 @@ public class Parser {
                 return new ResultValue(SubClassif.BOOLEAN, t.tokenStr.equals("T"));
             case STRING:
                 return new ResultValue(SubClassif.STRING, t.tokenStr);
+            case IDENTIFIER:
+                return getVariableValue(t.tokenStr);
         }
         error("Token %s cannot be converted to a ResultValue", t.tokenStr);
         return new ResultValue(SubClassif.EMPTY, "");
@@ -1348,10 +1439,14 @@ public class Parser {
     }
 
     private boolean isArray(STEntry stEntry) {
-        return stEntry.dclType == SubClassif.INTEGERARR
-                || stEntry.dclType == SubClassif.FLOATARR
-                || stEntry.dclType == SubClassif.BOOLEANARR
-                || stEntry.dclType == SubClassif.STRINGARR;
+        return isArray(stEntry.dclType);
+    }
+
+    private boolean isArray(SubClassif dclType) {
+        return dclType == SubClassif.INTEGERARR
+                || dclType == SubClassif.FLOATARR
+                || dclType == SubClassif.BOOLEANARR
+                || dclType == SubClassif.STRINGARR;
     }
 
     /*private void evalDebug() throws Exception {

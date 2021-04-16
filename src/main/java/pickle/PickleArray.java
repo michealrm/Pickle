@@ -36,7 +36,7 @@ public class PickleArray {
 
     public ResultValue getElem() throws Exception{
         return new ResultValue(SubClassif.INTEGER
-            , new Numeric(Integer.toString(this.iElem), SubClassif.INTEGER));
+            , new Numeric(String.valueOf(arrayList.size()), SubClassif.INTEGER));
     }
 
     public void set(int index, ResultValue value) {

@@ -56,7 +56,11 @@ public class SymbolTable {
         globalSymbolTable.putSymbol("while", new STControl("while", Classif.CONTROL, SubClassif.FLOW));
         globalSymbolTable.putSymbol("endwhile", new STControl("endwhile", Classif.CONTROL, SubClassif.END));
 
-        globalSymbolTable.putSymbol("print", new STFunction("print", Classif.FUNCTION, SubClassif.VAR_ARGS, SubClassif.VOID, SubClassif.BUILTIN));
+        globalSymbolTable.putSymbol("print", new STFunction("print", Classif.FUNCTION, -1, SubClassif.VOID, SubClassif.BUILTIN));
+        globalSymbolTable.putSymbol("LENGTH", new STFunction("LENGTH", Classif.FUNCTION, 1, SubClassif.BUILTIN));
+        globalSymbolTable.putSymbol("SPACES", new STFunction("SPACES", Classif.FUNCTION, 1,SubClassif.BUILTIN));
+        globalSymbolTable.putSymbol("ELEM", new STFunction("ELEM", Classif.FUNCTION, 1,SubClassif.BUILTIN));
+        globalSymbolTable.putSymbol("MAXELEM", new STFunction("MAXELEM", Classif.FUNCTION, 1,SubClassif.BUILTIN));
 
         globalSymbolTable.putSymbol("Int", new STControl("Int", Classif.CONTROL, SubClassif.DECLARE));
         globalSymbolTable.putSymbol("Float", new STControl("Float", Classif.CONTROL, SubClassif.DECLARE));
