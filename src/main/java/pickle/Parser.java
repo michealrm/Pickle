@@ -1541,7 +1541,7 @@ public class Parser {
                     }
                     else
                     {
-                        error("token's primClassif is OPERAND and subClassif is BOOLEAN but " +
+                        error("Token's Classif is OPERAND and SubClassif is BOOLEAN but " +
                                 "tokenStr " + scan.currentToken.tokenStr + " could not be resolved " +
                                 "to a boolean value");
                     }

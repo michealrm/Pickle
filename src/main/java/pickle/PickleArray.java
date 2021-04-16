@@ -9,6 +9,7 @@ public class PickleArray {
     public int length; //0 = unbounded, > 0 = array length
     private ResultValue defaultValue;
     public SubClassif type;
+    public int iElem = 0; // the element in an array
 
     public PickleArray(SubClassif type, int length) throws Exception {
         arrayList = new ArrayList<>();
@@ -28,12 +29,14 @@ public class PickleArray {
 
     }
 
-    public ResultValue getMaxElem() {
-        return null;
+    public ResultValue getMaxElem() throws Exception {
+        return new ResultValue(SubClassif.INTEGER
+            , new Numeric(Integer.toString(this.length), SubClassif.INTEGER));
     }
 
-    public ResultValue getElem() {
-        return null;
+    public ResultValue getElem() throws Exception{
+        return new ResultValue(SubClassif.INTEGER
+            , new Numeric(Integer.toString(this.iElem), SubClassif.INTEGER));
     }
 
     public void set(int index, ResultValue value) {
