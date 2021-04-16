@@ -45,6 +45,74 @@ public class Token
         this("");   // invoke the other constructor
     }
 
+    public int preced() {
+        switch(tokenStr) {
+            case "(":
+                return 15;
+            // How about unary minus?
+            case "^":
+                return 11;
+            case "*":
+            case "/":
+                return 9;
+            case "+":
+            case "-":
+                return 8;
+            case "#":
+                return 7;
+            case "<":
+            case ">":
+            case "<=":
+            case ">=":
+            case "==":
+            case "!=":
+
+            case "in":
+            case "notin":
+                return 6;
+            case "not":
+                return 5;
+            case "and":
+            case "or":
+                return 4;
+        }
+        return 0; // Calling functions will need to deal with token with no precedence. But this value is open to change
+    }
+
+    public int stkPreced() {
+        switch(tokenStr) {
+            case "(":
+                return 2;
+            // How about unary minus?
+            case "^":
+                return 10;
+            case "*":
+            case "/":
+                return 9;
+            case "+":
+            case "-":
+                return 8;
+            case "#":
+                return 7;
+            case "<":
+            case ">":
+            case "<=":
+            case ">=":
+            case "==":
+            case "!=":
+
+            case "in":
+            case "notin":
+                return 6;
+            case "not":
+                return 5;
+            case "and":
+            case "or":
+                return 4;
+        }
+        return 0; // Calling functions will need to deal with token with no precedence. But this value is open to change
+    }
+
     /**
      * Prints the primary classification, sub-classification, and token string
      * <p>
@@ -139,5 +207,9 @@ public class Token
                 System.out.printf("%02X", (int) ch);
         }
         System.out.printf("\n");
+    }
+
+    public String toString() {
+        return tokenStr;
     }
 }

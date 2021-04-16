@@ -8,24 +8,21 @@ import java.util.ArrayList;
 public class STFunction extends STEntry {
 
     SubClassif returnType = SubClassif.EMPTY;
-    //SubClassif definedBy = SubClassif.EMPTY;
+    SubClassif definedBy = SubClassif.EMPTY;
     ArrayList<String> parmList = new ArrayList<String>();
-    Object numArgs;
+    public int numArgs; // ** -1 is VAR ARGS **
     SymbolTable symbolTable;
 
-    public STFunction(String symbol, Classif primClassif, Object numArgs, SubClassif returnType) {
+    public STFunction(String symbol, Classif primClassif, int numArgs, SubClassif definedBy) {
         super(symbol, primClassif);
         this.numArgs = numArgs;
+        this.definedBy = definedBy;
+    }
+
+    public STFunction(String symbol, Classif primClassif, int numArgs, SubClassif returnType, SubClassif definedBy) {
+        this(symbol, primClassif, numArgs, definedBy);
         this.returnType = returnType;
     }
 
-    public STFunction(String symbol, Classif primClassif, Object numArgs, SubClassif returnType, SubClassif definedBy) {
-        this(symbol, primClassif, numArgs, returnType);
-        this.dclType = definedBy;
-    }
 
-    public STFunction(String symbol, Classif primClassif, Object numArgs, SubClassif returnType, SubClassif structDef, ArrayList<String> parmList) {
-        this(symbol, primClassif, numArgs, returnType);
-        this.parmList = parmList;
-    }
 }

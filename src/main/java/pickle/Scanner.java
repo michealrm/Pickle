@@ -345,7 +345,6 @@ public class Scanner {
             token.primClassif = Classif.SEPARATOR;
 
         } else if(isSeparator(token)) {
-
             // Separator
           token.primClassif = Classif.SEPARATOR;
 
@@ -443,6 +442,7 @@ public class Scanner {
                         && c == '=')
                         || (token.tokenStr.equals("+") && c == '+')
                         || (token.tokenStr.equals("-") && c == '-')
+                        || SymbolTable.globalSymbolTable.getSymbol(token.tokenStr + c) != null // Operators like in, notin
                         || (token.tokenStr.equals("/") && c == '/'); // Comment
             case SEPARATOR:
                 return isTokenWhitespace(token) && isCharWhitespace(c);
