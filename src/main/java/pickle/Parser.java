@@ -1480,6 +1480,11 @@ public class Parser {
                 // Don't skip past the ']', we'll do that at the end of the while loop
             }
             else if(scan.currentToken.dclType == SubClassif.IDENTIFIER) {
+                boolean unaryMinus = false;
+                if(t.tokenStr.startsWith("-")) {
+                    unaryMinus = true;
+                    t.tokenStr = t.tokenStr.substring(1);
+                }
                 ResultValue value = getVariableValue(scan.currentToken.tokenStr);
                 if(value.iDatatype == SubClassif.STRING) {
                     t = new Token("\"" + value.value.toString() + "\"");
@@ -1490,6 +1495,9 @@ public class Parser {
                     t = new Token(value.value.toString());
                     scan.setClassification(t);
                 }
+
+                if(unaryMinus)
+                    t.tokenStr = '-' + t.tokenStr;
                 // Arrays will be kept as identifiers until they need to be passed into something
                 // Then we'll simply grab getVariableValue and pass into built in function
                 // So, if setClassification does nothing, put the identifier on the stack
