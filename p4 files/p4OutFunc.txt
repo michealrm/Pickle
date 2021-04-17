@@ -10,7 +10,7 @@ weirdM has max elements of 3  and 3  are populated
 concat name= Joe King length= 8
 concat name= Lee King length= 8
 1+LENGTH('Lee King')*2= 17
-str=  SPACES(str)= true
-str=   SPACES(str)= true
-str=   LENGTH(SPACES(str))= 4
-x= 15
+str=  SPACES(str)= T
+str=   SPACES(str)= T
+str=   LENGTH(SPACES(str))= 1
+x= 15 
