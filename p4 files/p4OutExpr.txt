@@ -1,15 +1,15 @@
-p4Expr.txt
-constants: 3 + 4 * 5 = 23
-variables: 3 + 4 * 5 = 23
-constants: 2 * 3 + 4 = 10
-mix: 2* 3 + 4 = 10
-12 / 4 * 3 =  9
-4 + (5 - 6) * 2 = 2
-2 ^ 2 ^ 3 =  256
-two + (12-4*2/4) - 1 = 11
-right: 12 > 9
-right: string 12 > 9 is F
-strC is Climb every mountain
-x= 21
-x= 15
+p4Expr.txt 
+constants: 3 + 4 * 5 = 23 
+variables: 3 + 4 * 5 = 23 
+constants: 2 * 3 + 4 = 10 
+mix: 2* 3 + 4 = 10 
+12 / 4 * 3 =  9 
+4 + (5 - 6) * 2 = 2 
+2 ^ 2 ^ 3 =  256 
+two + (12-4*2/4) - 1 = 11 
+right: 12 > 9 
+right: string 12 > 9 is F 
+strC is Climb every mountain 
+x= 21 
+x= 15 
 x= 28

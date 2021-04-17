@@ -1,16 +1,16 @@
-p4Func.txt
-name= Anita length= 5
-name= Anita Byte length= 10
-concat name= Joe King length= 8
-gradeM has max elements of 10  and 3  are populated
-temperatureM has max elements of 6  and 6  are populated
-nameM has max elements of 20  and 0  are populated
-arrayM has max elements of 25  and 0  are populated
-weirdM has max elements of 3  and 3  are populated
-concat name= Joe King length= 8
-concat name= Lee King length= 8
-1+LENGTH('Lee King')*2= 17
-str=  SPACES(str)= T
-str=   SPACES(str)= T
-str=   LENGTH(SPACES(str))= 1
+p4Func.txt 
+name= Anita length= 5 
+name= Anita Byte length= 10 
+concat name= Joe King length= 8 
+gradeM has max elements of 10  and 3  are populated 
+temperatureM has max elements of 6  and 6  are populated 
+nameM has max elements of 20  and 0  are populated 
+arrayM has max elements of 25  and 0  are populated 
+weirdM has max elements of 3  and 3  are populated 
+concat name= Joe King length= 8 
+concat name= Lee King length= 8 
+1+LENGTH('Lee King')*2= 17 
+str=  SPACES(str)= T 
+str=   SPACES(str)= T 
+str=   LENGTH(SPACES(str))= 1 
 x= 15

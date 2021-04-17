@@ -11,6 +11,7 @@ print("concat name=", name#' '#"King", "length=", LENGTH(name#' '#"King"));
 
 Float gradeM[10] = 100, 99, 70.5;  // max elements of 10, but 
                                    // only 3 populated
+								   
 print("gradeM has max elements of", MAXELEM(gradeM)
     , " and", ELEM(gradeM), " are populated");
 
