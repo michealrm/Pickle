@@ -1027,7 +1027,7 @@ public class Parser {
             // Go back to start of expression for evalCond
             scan.goTo(iStartSourceLineNr, iStartColPos);
             //System.out.println(StorageManager.retrieveVariable(iteratorVariable).iDatatype);
-            if(StorageManager.retrieveVariable(iteratorVariable).iDatatype == SubClassif.STRING) {
+            if(StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.STRING) {
                 //System.out.println(StorageManager.retrieveVariable(iteratorVariable).toString());
                 //System.out.println(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()));
                 //System.out.println(iteratorVariable);
@@ -1065,7 +1065,7 @@ public class Parser {
                     //System.out.println(StorageManager.retrieveVariable(iteratorVariable));
                     //System.out.println(StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value instanceof PickleArray);
                     // Store the new value in the iterator variable
-                    StorageManager.storeVariable(iteratorVariable, new ResultValue(StorageManager.retrieveVariable(iteratorVariable).iDatatype, ((PickleArray) StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value).arrayList.get(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()))));
+                    StorageManager.storeVariable(iteratorVariable, new ResultValue(StorageManager.retrieveVariable(iteratorVariable).iDatatype, ((PickleArray) StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value).get(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()))));
 
                     // Increment the position
                     StorageManager.storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) + 1));
