@@ -1,0 +1,8 @@
+String count = "1234";
+String t = "Test";
+for n in count:
+	print(n);
+	for c in t:
+		print(c);
+	endfor;
+endfor;

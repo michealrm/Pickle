@@ -186,7 +186,7 @@ public class Parser {
 
                             break;
 
-                        } else {
+                        } else if (scan.nextToken.tokenStr.equals(":")) {
                             errorWithCurrent("Invalid 'for' statement syntax");
                         }
                     }
@@ -911,11 +911,17 @@ public class Parser {
 
                 scan.getNext();
 
-                if (scan.currentToken.primClassif == Classif.OPERAND || scan.currentToken.dclType == SubClassif.STRING) {
+                //System.out.println(scan.currentToken.tokenStr);
+                //System.out.println(StorageManager.retrieveVariable(scan.currentToken.tokenStr).iDatatype);
+                //System.out.println(((PickleArray) StorageManager.retrieveVariable(scan.currentToken.tokenStr).value).type);
 
+                //if (scan.currentToken.primClassif == Classif.OPERAND || scan.currentToken.dclType == SubClassif.STRING) {
+                if (StorageManager.retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.STRING) {
                     if (StorageManager.retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exist
                         StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, ""));
                     }
+
+                    //System.out.println(scan.currentToken.dclType);
 
                     if (scan.currentToken.dclType != SubClassif.IDENTIFIER && scan.currentToken.dclType != SubClassif.STRING) {
                         errorWithCurrent("Expected identifier for 'for' iterator variable");
@@ -929,13 +935,36 @@ public class Parser {
                         StorageManager.storeVariable(currentForStmtDepth + "tempIteratorObject", StorageManager.retrieveVariable(scan.currentToken.tokenStr));
                         scan.getNext();
                     }
-                } else if (scan.currentToken.dclType == SubClassif.FIXED_ARRAY
-                        || scan.currentToken.dclType == SubClassif.UNBOUNDED_ARRAY
-                        || scan.currentToken.dclType == SubClassif.INTEGERARR
-                        || scan.currentToken.dclType == SubClassif.FLOATARR
-                        || scan.currentToken.dclType == SubClassif.STRINGARR
-                        || scan.currentToken.dclType == SubClassif.BOOLEANARR
-                        || scan.currentToken.dclType == SubClassif.DATEARR) {
+                } else if (StorageManager.retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.FIXED_ARRAY
+                        || StorageManager.retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.UNBOUNDED_ARRAY
+                        || StorageManager.retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.INTEGERARR
+                        || StorageManager.retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.FLOATARR
+                        || StorageManager.retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.STRINGARR
+                        || StorageManager.retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.BOOLEANARR
+                        || StorageManager.retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.DATEARR) {
+
+
+
+                    if (StorageManager.retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exist
+                        StorageManager.storeVariable(iteratorVariable, new ResultValue( ((PickleArray) StorageManager.retrieveVariable(scan.currentToken.tokenStr).value).type, 0));
+                    }
+
+                    //System.out.println(scan.currentToken.dclType);
+                    if (StorageManager.retrieveVariable(iteratorVariable).iDatatype != ((PickleArray) StorageManager.retrieveVariable(scan.currentToken.tokenStr).value).type) {
+                        errorWithCurrent("Expected identifier for 'for' iterator variable");
+                    }
+
+                    /*if (scan.nextToken.primClassif == Classif.OPERATOR) { // If we found another operator, it's an expression
+
+                        StorageManager.storeVariable(currentForStmtDepth + "tempIteratorObject", expr(true));    // Store the evaluated expression
+                    }   // expr() should land us on the ":" position
+                    else {
+                        StorageManager.storeVariable(currentForStmtDepth + "tempIteratorObject", StorageManager.retrieveVariable(scan.currentToken.tokenStr));
+                        scan.getNext();
+                    }*/
+
+                    StorageManager.storeVariable(currentForStmtDepth + "tempIteratorObject", StorageManager.retrieveVariable(scan.currentToken.tokenStr));
+                    scan.getNext();
 
                 } else {
                     errorWithCurrent("Incorrect type for 'for each' iterator object");
@@ -977,9 +1006,6 @@ public class Parser {
                 //System.out.println(StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value.toString());
                 while(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").value.toString()) < StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value.toString().length()) {
 
-                    //System.out.println(StorageManager.retrieveVariable(iteratorVariable));
-                    //System.out.println(StorageManager.retrieveVariable((currentForStmtDepth + "iteratorPosition")));
-
                     // Store the new value in the iterator variable
                     StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value.toString().charAt(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").value.toString()))));
 
@@ -996,13 +1022,34 @@ public class Parser {
                     // Jump back to beginning
                     scan.goTo(iStartSourceLineNr, iStartColPos);
                 }
-            } else if ( scan.currentToken.dclType == SubClassif.FIXED_ARRAY
-                    || scan.currentToken.dclType == SubClassif.UNBOUNDED_ARRAY
-                    || scan.currentToken.dclType == SubClassif.INTEGERARR
-                    || scan.currentToken.dclType == SubClassif.FLOATARR
-                    || scan.currentToken.dclType == SubClassif.STRINGARR
-                    || scan.currentToken.dclType == SubClassif.BOOLEANARR
-                    || scan.currentToken.dclType == SubClassif.DATEARR) {
+            } else if ( StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.FIXED_ARRAY
+                    || StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.UNBOUNDED_ARRAY
+                    || StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.INTEGERARR
+                    || StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.FLOATARR
+                    || StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.STRINGARR
+                    || StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.BOOLEANARR
+                    || StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.DATEARR) {
+
+                while(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").value.toString()) < ( (PickleArray) StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value).arrayList.size()) {
+
+                    //System.out.println(StorageManager.retrieveVariable(iteratorVariable));
+                    //System.out.println(StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value instanceof PickleArray);
+                    // Store the new value in the iterator variable
+                    StorageManager.storeVariable(iteratorVariable, new ResultValue(StorageManager.retrieveVariable(iteratorVariable).iDatatype, ((PickleArray) StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value).arrayList.get(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").value.toString()))));
+
+                    // Increment the position
+                    StorageManager.storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").value.toString()) + 1));
+
+                    ResultValue resTemp = executeStatements(true);
+
+                    if (!resTemp.scTerminatingStr.equals("endfor"))
+                        errorWithCurrent("Expected an 'endfor' for a 'for'");
+                    iEndSourceLineNr = scan.iSourceLineNr;
+                    iEndColPos = scan.iColPos;
+
+                    // Jump back to beginning
+                    scan.goTo(iStartSourceLineNr, iStartColPos);
+                }
 
             }
 
@@ -1016,9 +1063,6 @@ public class Parser {
                 errorWithCurrent("Expected';' after a 'endfor'");
             scan.getNext(); // Skip past ';'
         } else {
-            // Delete temporary limit and increment variables in the StorageManager
-            StorageManager.deleteVariable(currentForStmtDepth + "tempLimit");
-            StorageManager.deleteVariable(currentForStmtDepth + "tempIncrement");
 
             // expr() has already been called outside this if/else, so we should be on ':'
             if (!scan.currentToken.tokenStr.equals(":"))
