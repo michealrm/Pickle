@@ -504,11 +504,11 @@ public class Parser {
                     res = assign(variableName, exprToAssign);
                     break;
                 case "-=":
-                    assign(variableName, getVariableValue(variableName).executeOperation(exprToAssign, "-="));
+                    assign(variableName, getVariableValue(variableName).executeOperation(exprToAssign, "-"));
                     // TODO: Add line, col number, and parameter num in executeOperation's exception handling (like Parser.error())
                     break;
                 case "+=":
-                    assign(variableName, getVariableValue(variableName).executeOperation(exprToAssign, "+="));
+                    assign(variableName, getVariableValue(variableName).executeOperation(exprToAssign, "+"));
                     break;
                 default:
                     error("Expected assignment operator for assignment statement");
@@ -1200,6 +1200,8 @@ public class Parser {
      * @return The ResultValue of the expression
      */
     ResultValue expr(boolean bExec) throws Exception {
+        if(scan.iSourceLineNr == 29)
+            System.out.println();
         saveLocationForRange();
         // First we'll handle if `bExec` == false
         if(!bExec) {
