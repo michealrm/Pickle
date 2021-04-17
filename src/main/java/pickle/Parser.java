@@ -141,56 +141,60 @@ public class Parser {
         }
 
         // Check for FLOW token
-        switch(scan.currentToken.tokenStr) {
-            case "while":
-                flowStack.push("while");
-                whileStmt(bExec);   // Will change the token position
-                break;
-            case "for":
-                flowStack.push("for");
-                ++currentForStmtDepth;
+        while(scan.currentToken.tokenStr.equals("while")
+                || scan.currentToken.tokenStr.equals("for")
+                || scan.currentToken.tokenStr.equals("if")) {
+            switch (scan.currentToken.tokenStr) {
+                case "while":
+                    flowStack.push("while");
+                    whileStmt(bExec);   // Will change the token position
+                    break;
+                case "for":
+                    flowStack.push("for");
+                    ++currentForStmtDepth;
 
-                int iStartSourceLineNr = scan.iSourceLineNr; // Save position at the condition to loop back
-                int iStartColPos = scan.iColPos;
+                    int iStartSourceLineNr = scan.iSourceLineNr; // Save position at the condition to loop back
+                    int iStartColPos = scan.iColPos;
 
-                while(!scan.nextToken.tokenStr.equals(":")) {   // Examine the type of for loop
-                    scan.getNext();
+                    while (!scan.nextToken.tokenStr.equals(":")) {   // Examine the type of for loop
+                        scan.getNext();
 
-                    if(scan.nextToken.tokenStr.equals("to")) {
+                        if (scan.nextToken.tokenStr.equals("to")) {
 
-                        // Go back to start of expression for evalCond
-                        scan.goTo(iStartSourceLineNr, iStartColPos);
+                            // Go back to start of expression for evalCond
+                            scan.goTo(iStartSourceLineNr, iStartColPos);
 
-                        forStmt(bExec);   // Will change the token position
+                            forStmt(bExec);   // Will change the token position
 
-                        break;
+                            break;
 
-                    } else if(scan.nextToken.tokenStr.equals("in")) {
+                        } else if (scan.nextToken.tokenStr.equals("in")) {
 
-                        // Go back to start of expression for evalCond
-                        scan.goTo(iStartSourceLineNr, iStartColPos);
+                            // Go back to start of expression for evalCond
+                            scan.goTo(iStartSourceLineNr, iStartColPos);
 
-                        forEachStmt(bExec);   // Will change the token position
+                            forEachStmt(bExec);   // Will change the token position
 
-                        break;
+                            break;
 
-                    } else if(scan.nextToken.tokenStr.equals(":")){
-                        errorWithCurrent("Invalid 'for' statement syntax");
+                        } else if (scan.nextToken.tokenStr.equals(":")) {
+                            errorWithCurrent("Invalid 'for' statement syntax");
+                        }
                     }
-                }
-                break;
-            case "if":
-                flowStack.push("if");
-                ifStmt(bExec);   // Will change the token position
-        }
+                    break;
+                case "if":
+                    flowStack.push("if");
+                    ifStmt(bExec);   // Will change the token position
+            }
 
-        // Check for END
-        if(scan.currentToken.dclType == SubClassif.END) {
-            ResultValue res = new ResultValue(SubClassif.END, scan.currentToken.tokenStr);
-            res.scTerminatingStr = scan.currentToken.tokenStr;
-            // DO NOT skip past endX;. We need this if XStmt for exception handling
+            // Check for END
+            if (scan.currentToken.dclType == SubClassif.END) {
+                ResultValue res = new ResultValue(SubClassif.END, scan.currentToken.tokenStr);
+                res.scTerminatingStr = scan.currentToken.tokenStr;
+                // DO NOT skip past endX;. We need this if XStmt for exception handling
 
-            return res;
+                return res;
+            }
         }
 
         if(bExec) {
@@ -905,7 +909,9 @@ public class Parser {
                     if (StorageManager.retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exist
                         StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, ""));
                     }
+
                     //System.out.println(scan.currentToken.dclType);
+
                     if (scan.currentToken.dclType != SubClassif.IDENTIFIER && scan.currentToken.dclType != SubClassif.STRING) {
                         errorWithCurrent("Expected identifier for 'for' iterator variable");
                     }
@@ -1502,6 +1508,11 @@ public class Parser {
                 // Don't skip past the ']', we'll do that at the end of the while loop
             }
             else if(scan.currentToken.dclType == SubClassif.IDENTIFIER) {
+                boolean unaryMinus = false;
+                if(t.tokenStr.startsWith("-")) {
+                    unaryMinus = true;
+                    t.tokenStr = t.tokenStr.substring(1);
+                }
                 ResultValue value = getVariableValue(scan.currentToken.tokenStr);
                 if(value.iDatatype == SubClassif.STRING) {
                     t = new Token("\"" + value.value.toString() + "\"");
@@ -1512,6 +1523,9 @@ public class Parser {
                     t = new Token(value.value.toString());
                     scan.setClassification(t);
                 }
+
+                if(unaryMinus)
+                    t.tokenStr = '-' + t.tokenStr;
                 // Arrays will be kept as identifiers until they need to be passed into something
                 // Then we'll simply grab getVariableValue and pass into built in function
                 // So, if setClassification does nothing, put the identifier on the stack
@@ -1647,7 +1661,7 @@ public class Parser {
                         return funcSPACES(str);
                     default:
                         error("STFunction was passed in, but %s is not a supported function for callFunction, " +
-                                "used in expr()'s eval of postfix");
+                                "used in expr()'s eval of postfix", stFunction.tokenStr);
                         return new ResultValue(SubClassif.EMPTY, "");
         }
     }
