@@ -1,0 +1,78 @@
+p4Array.txt
+iSimp= 50
+9 9 9 9
+Array C with elements printed using constant subscripts
+	C 0 20 30
+Array B with expressions for subscripts
+	B 10 200 30
+Array B with elements replaced
+	B.2 10 100 200
+Array F with arrays of arrays
+F 10 20 3 40 3 50
+iAM originally does not have any elements
+iAm number of elements is 10
+	A 100
+for loop for val in iCM
+	 10
+	 20
+	 30
+	 40
+	 50
+	 60
+	 0
+	 0
+	 0
+	 0
+counting for loop
+	 10
+	 20
+	 30
+	 40
+	 50
+	 60
+	 0
+	 0
+	 0
+	 0
+counting for loop by 2, implicit variable k
+	 10
+	 30
+	 50
+	 0
+	 0
+Unsorted array
+	 60
+	 30
+	 20
+	 10
+	 5
+	 50
+	 70
+	 25
+	 35
+	 45
+	 15
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+	 0
+Nested for loops, sorting the array
+Line 76 Col 18 Interpreter error: Expression notbChange had an empty stack in postfix evaluation when trying to grab an operand, File: src/main/resources/p4Array.txt
+	at pickle.Parser.error(Parser.java:2002)
+	at pickle.Parser.errorWithRange(Parser.java:2022)
+	at pickle.Parser.expr(Parser.java:1622)
+	at pickle.Parser.evalCond(Parser.java:1748)
+	at pickle.Parser.ifStmt(Parser.java:601)
+	at pickle.Parser.executeStmt(Parser.java:196)
+	at pickle.Parser.executeStatements(Parser.java:56)
+	at pickle.Parser.forStmt(Parser.java:856)
+	at pickle.Parser.executeStmt(Parser.java:176)
+	at pickle.Parser.executeStatements(Parser.java:56)
+	at pickle.Pickle.main(Pickle.java:42)
+
+Process finished with exit code 0
