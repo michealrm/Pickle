@@ -95,10 +95,6 @@ public class Scanner {
         nextToken = new Token(nextPos[0], nextPos[1]);
         int[] advancedPos = advanceTokenPos(nextToken);
 
-        if(isLastTokenOperatorOrSeparator && currentToken.tokenStr.equals("-")) {
-            getNext();
-            currentToken.tokenStr = '-' + currentToken.tokenStr;
-        }
         while(currentToken.tokenStr.equals("//"))
             getNext();
         // Skip whitespace tokens
@@ -106,6 +102,11 @@ public class Scanner {
             //System.out.println(nextToken.iSourceLineNr);
             nextToken = new Token(advancedPos[0], advancedPos[1]);
             advancedPos = advanceTokenPos(nextToken);
+        }
+
+        if(isLastTokenOperatorOrSeparator && currentToken.tokenStr.equals("-")) {
+            getNext();
+            currentToken.tokenStr = '-' + currentToken.tokenStr;
         }
 
         if (scanDebug.bShowToken)
@@ -151,12 +152,16 @@ public class Scanner {
                 if(PRINT_CURRENT_TOKEN_LINE) {
                     printLine(iLineNumber);
                 }
-                int[] nextPos = skipEmptyLine(iLineNumber, iColNumber);
+                int[] nextPos = skipEmptyLines(iLineNumber, iColNumber);
                 sourceLineBefore = iLineNumber;
                 iLineNumber = nextPos[0];
                 iColNumber = nextPos[1];
 
                 if (sourceLineBefore != iLineNumber) {
+                    if(iLineNumber >= sourceLineM.size()) {
+                        t.primClassif = Classif.EOF;
+                        return null;
+                    }
                     textCharM = sourceLineM.get(iLineNumber).toCharArray();
                 }
 
@@ -228,7 +233,7 @@ public class Scanner {
         if(iLineNumber >= sourceLineM.size())
             return packagePositions(iLineNumber, iColNumber);
 
-        int[] pos = skipEmptyLine(iLineNumber, iColNumber);
+        int[] pos = skipEmptyLines(iLineNumber, iColNumber);
         iLineNumber = pos[0];
         iColNumber = pos[1];
 
@@ -246,8 +251,8 @@ public class Scanner {
         return ret;
     }
 
-    private int[] skipEmptyLine(int r, int c) {
-        if(r < sourceLineM.size() && sourceLineM.get(r).length() == 0) {
+    private int[] skipEmptyLines(int r, int c) {
+        while(r < sourceLineM.size() && sourceLineM.get(r).length() == 0) {
             r++;
             c = 0;
         }

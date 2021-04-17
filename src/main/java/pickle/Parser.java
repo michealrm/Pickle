@@ -1530,10 +1530,9 @@ public class Parser {
                                     break;
                                 }
                                 out.push(popped);
-
-                                if(!stack.isEmpty() && stack.peek().primClassif == Classif.FUNCTION)
-                                    out.push(stack.pop());
                             }
+                            if(!stack.isEmpty() && stack.peek().primClassif == Classif.FUNCTION)
+                                out.push(stack.pop());
                             if(!foundLParen)
                                 break infix_to_postfix_loop;
                             break;
@@ -1542,7 +1541,7 @@ public class Parser {
                     }
                     break;
                 default:
-                    errorWithCurrent("Couldn't classy %s to add to the stack", t.tokenStr);
+                    errorWithCurrent("Couldn't classify %s to add to the stack", t.tokenStr);
             }
             scan.getNext();
         }
