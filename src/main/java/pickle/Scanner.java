@@ -420,13 +420,15 @@ public class Scanner {
      * @return
      */
     public boolean continuesToken(Token token, char c) throws Exception {
+        if(token.tokenStr.equals("not"))
+            System.out.println();
         Token copy = new Token(token.tokenStr + c);
         setClassification(copy);    // Classify the currently built token.tokenStr (The copy is one character ahead of token.tokeStr), which should build into the correct classification
         // We don't just want any minus before a number to be converted to an int. Example: 3 - 5
         // So don't change types if the tokenStr is a -
         // The - will be added in getNext
         // But classification, without changing classifs below, should return INT for a number like -5
-        if(copy.primClassif != Classif.EMPTY && copy.dclType != token.dclType && !token.tokenStr.equals("-")) {
+        if(copy.primClassif != Classif.EMPTY && copy.dclType != token.dclType && !token.tokenStr.equals("-") && token.primClassif != Classif.OPERATOR) {
             token.primClassif = copy.primClassif;
             token.dclType = copy.dclType;
         }

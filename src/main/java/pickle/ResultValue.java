@@ -137,7 +137,8 @@ public class ResultValue
 		Object result;
 		SubClassif resultType = iDatatype;
 
-		rightOpGlobal = rightOperand.value.toString();
+		if(rightOperand != null)
+			rightOpGlobal = rightOperand.value.toString();
 		leftOpGlobal = value.toString();
 		operationGlobal = operation;
 		
@@ -651,6 +652,8 @@ public class ResultValue
 	@Override
 	public String toString()
 	{
+		if(iDatatype == SubClassif.BOOLEAN && value instanceof Boolean)
+			return String.valueOf(value).equals("true") ? "T" : "F";
 		return value.toString();
 	}
 }

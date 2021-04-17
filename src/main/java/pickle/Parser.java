@@ -1517,7 +1517,8 @@ public class Parser {
         while(continuesExpr(scan.currentToken)) {
             // Evaluate starting from currentToken. Converts results from things like array references or variables into a Token
             Token t = scan.currentToken;
-
+            if(t.tokenStr.equals("not"))
+                System.out.println();
             // If array, call expr() on it and use the ResultValue as Token t, leaving currentToken on the ']' since
             // we call scan.getNext() at the end of the while
             if(scan.nextToken.tokenStr.equals("[")) {
@@ -1583,7 +1584,7 @@ public class Parser {
                     t.primClassif = Classif.OPERAND;
                     t.dclType = SubClassif.STRING;
                 } else {
-                    t = new Token(value.value.toString());
+                    t = new Token(value.toString());
                     scan.setClassification(t);
                 }
 
@@ -1663,6 +1664,10 @@ public class Parser {
             return tokenToResultValue(out.pop());
         else if(out.peek().primClassif == Classif.OPERATOR) {
             operation = out.pop().tokenStr;
+            if(operation.equals("not")) {
+                operand1 = getOperand(out);
+                return operand1.executeOperation(null, "not");
+            }
             operand1 = getOperand(out);
             operand2 = getOperand(out);
             return operand2.executeOperation(operand1, operation);
