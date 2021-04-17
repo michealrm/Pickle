@@ -1169,7 +1169,7 @@ public class Parser {
                 case BOOLEAN:
                 case STRING:
                 case IDENTIFIER:
-                    msg.append(msgPart.value);
+                    msg.append(msgPart.toString());
                     break;
                 default:
                     error("Unsupported type %s in print function \"%s\"", msgPart.iDatatype, msgPart.value);
@@ -1721,7 +1721,7 @@ public class Parser {
                         strRV = parms.get(0);
                         // Convert operand to string
                         if(strRV.iDatatype != SubClassif.STRING) {
-                            strRV = new ResultValue(SubClassif.STRING, String.valueOf(strRV.value));
+                            strRV = new ResultValue(SubClassif.STRING, strRV.toString());
                         }
                         str = ((String)strRV.value);
                         return funcLENGTH(str);
