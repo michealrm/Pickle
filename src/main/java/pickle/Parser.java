@@ -1176,9 +1176,12 @@ public class Parser {
                 case STRINGARR:
                     PickleArray arr = ((PickleArray)msgPart.value);
                     StringBuilder sb = new StringBuilder();
-                    if(arr.highestPopulatedValue != 0)
+                    if(arr.highestPopulatedValue != 0 && !arr.arrayList.get(0).isNull)
                         sb.append(arr.get(0));
                     for(int i = 1; i <= arr.highestPopulatedValue; i++) {
+                        //System.out.println(arr.arrayList.get(i).isNull);
+                        if(arr.arrayList.get(i).isNull)
+                            continue;
                         sb.append(" ");
                         sb.append(arr.get(i));
                     }
@@ -1573,8 +1576,12 @@ public class Parser {
                         if( ( ((Numeric) indexResult.value).intValue - arr.highestPopulatedValue) > 1) {
 
                             // Fill array up to the highest referenced index
-                            for(int i = arr.highestPopulatedValue; i < ((Numeric) indexResult.value).intValue; i++)
+                            for(int i = arr.highestPopulatedValue; i < ((Numeric) indexResult.value).intValue; i++) {
                                 arr.arrayList.add(arr.defaultValue);
+                                arr.arrayList.get(arr.arrayList.size()).isNull = true;
+                                System.out.println(arr.arrayList.get(arr.arrayList.size() - 1).toString());
+                                System.out.println(arr.arrayList.get(i).isNull);
+                            }
                         }
                     }
 

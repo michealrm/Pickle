@@ -18,9 +18,9 @@ public class PickleArray {
 
         this.type = type;
         if(type == SubClassif.INTEGER)
-            defaultValue = new ResultValue(SubClassif.INTEGER, new Numeric("0", SubClassif.INTEGER));
+            defaultValue = new ResultValue(SubClassif.INTEGER, new Numeric("0", SubClassif.INTEGER), true);
         if(type == SubClassif.FLOAT)
-            defaultValue = new ResultValue(SubClassif.FLOAT, new Numeric("0", SubClassif.FLOAT));
+            defaultValue = new ResultValue(SubClassif.FLOAT, new Numeric("0", SubClassif.FLOAT), true);
         if(type == SubClassif.STRING)
             defaultValue = new ResultValue(SubClassif.STRING, "");
     }

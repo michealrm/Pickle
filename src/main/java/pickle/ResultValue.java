@@ -21,6 +21,7 @@ public class ResultValue
 	public SubClassif iDatatype;
 	public Object value;
 	public boolean isNumber = false;
+	public boolean isNull = false;
 	public static String scTerminatingStr;
 	public static String leftOpGlobal;
 	public static String rightOpGlobal;
@@ -50,6 +51,55 @@ public class ResultValue
 			isNumber = true;
 		}
 		
+		// Check if type is an identifier type
+		else if (iDatatype == SubClassif.IDENTIFIER)
+		{
+			if (val instanceof Numeric)
+			{
+				iDatatype = ((Numeric) val).type;
+			}
+			else if (val instanceof String)
+			{
+				iDatatype = SubClassif.STRING;
+			}
+			else if (val instanceof Boolean)
+			{
+				iDatatype = SubClassif.BOOLEAN;
+			}
+			else
+			{
+				throw new InvalidNumberException("Invalid datatype detected");
+			}
+		}
+		else
+		{
+			isNumber = false;
+		}
+	}
+
+	/**
+	 * Start classifying variables and perform certain operations.
+	 * <p>
+	 * @param iType: the datatype of the object
+	 * @param val: the value of the object
+	 * @param isNull: validity of the object
+	 */
+	public ResultValue(SubClassif iType, Object val, boolean isNull) throws Exception
+	{
+		iDatatype = iType;
+		value = val;
+		this.isNull = isNull;
+
+		// Check if type is a number type
+		if (iDatatype == SubClassif.INTEGER || iDatatype == SubClassif.FLOAT)
+		{
+			if ( !(val instanceof Numeric) )
+			{
+				value = new Numeric( val.toString(), iDatatype);
+			}
+			isNumber = true;
+		}
+
 		// Check if type is an identifier type
 		else if (iDatatype == SubClassif.IDENTIFIER)
 		{
