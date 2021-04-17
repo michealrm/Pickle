@@ -1714,8 +1714,10 @@ public class Parser {
                     case "LENGTH":
                         // parms will be a string
                         strRV = parms.get(0);
-                        if(strRV.iDatatype != SubClassif.STRING)
-                            error("Function LENGTH only takes in one string.");
+                        // Convert operand to string
+                        if(strRV.iDatatype != SubClassif.STRING) {
+                            strRV = new ResultValue(SubClassif.STRING, String.valueOf(strRV.value));
+                        }
                         str = ((String)strRV.value);
                         return funcLENGTH(str);
                     case "SPACES":
@@ -1745,7 +1747,7 @@ public class Parser {
     }
 
     public ResultValue funcSPACES(String str) throws Exception {
-        return new ResultValue(SubClassif.BOOLEAN, str.contains(" ") ? "T" : "F");
+        return new ResultValue(SubClassif.BOOLEAN, str.contains(" ") || str.isEmpty());
     }
 
     private boolean continuesExpr(Token t) {

@@ -2,8 +2,15 @@ p4Func.txt
 name= Anita length= 5
 name= Anita Byte length= 10
 concat name= Joe King length= 8
-Line 13 Col 0 Unsupported statement type for token                                    . Classif: SEPARATOR/EMPTY, File: src/main/resources/p4Func.txt
-	at pickle.Parser.error(Parser.java:1996)
-	at pickle.Parser.executeStmt(Parser.java:233)
-	at pickle.Parser.executeStatements(Parser.java:56)
-	at pickle.Pickle.main(Pickle.java:42)
+gradeM has max elements of 10  and 3  are populated
+temperatureM has max elements of 6  and 6  are populated
+nameM has max elements of 20  and 0  are populated
+arrayM has max elements of 25  and 0  are populated
+weirdM has max elements of 3  and 3  are populated
+concat name= Joe King length= 8
+concat name= Lee King length= 8
+1+LENGTH('Lee King')*2= 17
+str=  SPACES(str)= true
+str=   SPACES(str)= true
+str=   LENGTH(SPACES(str))= 4
+x= 15
