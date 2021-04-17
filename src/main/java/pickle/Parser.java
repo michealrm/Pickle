@@ -1432,8 +1432,6 @@ public class Parser {
      * @return The ResultValue of the expression
      */
     ResultValue expr(boolean bExec) throws Exception {
-        if(scan.iSourceLineNr == 29)
-            System.out.println();
         saveLocationForRange();
         // First we'll handle if `bExec` == false
         if(!bExec) {
