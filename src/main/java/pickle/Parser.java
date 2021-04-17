@@ -1301,7 +1301,7 @@ public class Parser {
                     bHasSpaces = false;
                 }
             }
-            if (bHasSpaces)
+            if (scValue.isEmpty() || bHasSpaces)
             {
                 result = new ResultValue(SubClassif.BOOLEAN, "T");
             }
