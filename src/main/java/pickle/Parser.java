@@ -1178,7 +1178,7 @@ public class Parser {
                     StringBuilder sb = new StringBuilder();
                     if(arr.highestPopulatedValue != 0)
                         sb.append(arr.get(0));
-                    for(int i = 1; i < arr.highestPopulatedValue; i++) {
+                    for(int i = 1; i <= arr.highestPopulatedValue; i++) {
                         sb.append(" ");
                         sb.append(arr.get(i));
                     }

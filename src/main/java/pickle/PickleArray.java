@@ -39,6 +39,7 @@ public class PickleArray {
         while(index >= arrayList.size())
             arrayList.add(defaultValue);
         arrayList.set(index, value);
+        highestPopulatedValue = arrayList.size() - 1;
     }
 
     /**
