@@ -7,7 +7,8 @@ public class PickleArray {
     public ArrayList<ResultValue> arrayList;
 
     public int length; //0 = unbounded, > 0 = array length
-    private ResultValue defaultValue;
+    public int highestPopulatedValue = -1;
+    public ResultValue defaultValue;
     public SubClassif type;
     public int iElem = 0; // the element in an array
 
@@ -22,11 +23,6 @@ public class PickleArray {
             defaultValue = new ResultValue(SubClassif.FLOAT, new Numeric("0", SubClassif.FLOAT));
         if(type == SubClassif.STRING)
             defaultValue = new ResultValue(SubClassif.STRING, "");
-
-        // Fill array
-        for(int i = 0; i < length; i++)
-            arrayList.add(defaultValue);
-
     }
 
     public ResultValue getMaxElem() throws Exception {
@@ -36,7 +32,7 @@ public class PickleArray {
 
     public ResultValue getElem() throws Exception{
         return new ResultValue(SubClassif.INTEGER
-            , new Numeric(String.valueOf(arrayList.size()), SubClassif.INTEGER));
+            , new Numeric(String.valueOf(highestPopulatedValue + 1), SubClassif.INTEGER));
     }
 
     public void set(int index, ResultValue value) {
@@ -50,8 +46,13 @@ public class PickleArray {
      * @param value
      */
     public void fill(ResultValue value) {
-        for(int i = 0; i < length; i++)
-            arrayList.set(i, value);
+        if(length > 0) {
+            for (int i = 0; i < length; i++)
+                arrayList.add(i, value);
+        } else {
+            for (int i = 0; i < highestPopulatedValue; i++)
+                arrayList.add(i, value);
+        }
     }
 
     public ResultValue get(int index) {

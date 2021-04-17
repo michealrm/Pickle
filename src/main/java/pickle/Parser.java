@@ -389,6 +389,9 @@ public class Parser {
 
                     do {
                         ResultValue arrElement = expr(true);
+                        if(i > arr.highestPopulatedValue) {
+                            arr.highestPopulatedValue = i;
+                        }
                         if(typeStr.equals("Int[") && arrElement.iDatatype != SubClassif.INTEGER)
                             errorWithCurrent("Expected an integer for integer array declaration/assignment");
                         if(typeStr.equals("Float[") && arrElement.iDatatype != SubClassif.FLOAT && arrElement.iDatatype != SubClassif.INTEGER)
@@ -403,6 +406,8 @@ public class Parser {
                             break;
                         scan.getNext();
                     } while(true);
+
+                    //System.out.println("HIGHEST POPULATED ELEMENT" + arr.highestPopulatedValue);
 
                     if(!scan.currentToken.tokenStr.equals(";"))
                         errorWithCurrent("Since current token is not a ',', we Expected ';' after array assignment");
@@ -851,7 +856,11 @@ public class Parser {
             // Go back to start of expression for evalCond
             scan.goTo(iStartSourceLineNr, iStartColPos);
 
+            //System.out.println("SIZE " + Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "tempLimit").value.toString()));
+
             while(Integer.parseInt(StorageManager.retrieveVariable(iteratorVariable).value.toString()) < Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "tempLimit").value.toString())) {
+                //System.out.println("INDEX " + StorageManager.retrieveVariable(iteratorVariable).value.toString());
+
                 //System.out.println("VARIABLE: " + iteratorVariable + " " + StorageManager.retrieveVariable(iteratorVariable).iPrimClassif);
                 ResultValue resTemp = executeStatements(true);
 
@@ -1043,6 +1052,8 @@ public class Parser {
                     || StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.STRINGARR
                     || StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.BOOLEANARR
                     || StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.DATEARR) {
+
+                //System.out.println("SIZE " + ((PickleArray) StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value).arrayList.size());
 
                 while(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").value.toString()) < ( (PickleArray) StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value).arrayList.size()) {
 
@@ -1536,6 +1547,18 @@ public class Parser {
                 else {
                     PickleArray arr = ((PickleArray) getVariableValue(variableName).value);
                     ResultValue value = arr.get(index);
+
+                    if(((Numeric) indexResult.value).intValue > arr.highestPopulatedValue) {
+                        arr.highestPopulatedValue = ((Numeric) indexResult.value).intValue;
+
+                        if( ( ((Numeric) indexResult.value).intValue - arr.highestPopulatedValue) > 1) {
+
+                            // Fill array up to the highest referenced index
+                            for(int i = arr.highestPopulatedValue; i < ((Numeric) indexResult.value).intValue; i++)
+                                arr.arrayList.add(arr.defaultValue);
+                        }
+                    }
+
                     t = new Token(value.toString());
                     scan.setClassification(t);
                 }
