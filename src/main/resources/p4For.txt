@@ -1,5 +1,7 @@
 Int x = 5;
 
+Int i;
+
 for i = 1 to 2:
 
 	print("test");
