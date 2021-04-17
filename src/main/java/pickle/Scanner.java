@@ -79,6 +79,9 @@ public class Scanner {
      */
     public Token getNext() throws Exception {
 
+        boolean isLastTokenOperatorOrSeparator = false;
+        if(currentToken.primClassif == Classif.OPERATOR || currentToken.tokenStr.equals("(") || currentToken.tokenStr.equals("["))
+            isLastTokenOperatorOrSeparator = true;
         iSourceLineNr = nextToken.iSourceLineNr;
         iColPos = nextToken.iColPos;
         currentToken = nextToken;
@@ -93,13 +96,17 @@ public class Scanner {
         nextToken = new Token(nextPos[0], nextPos[1]);
         int[] advancedPos = advanceTokenPos(nextToken);
 
+        if(isLastTokenOperatorOrSeparator && currentToken.tokenStr.equals("-")) {
+            getNext();
+            currentToken.tokenStr = '-' + currentToken.tokenStr;
+        }
         // Skip whitespace tokens
         while(advancedPos != null && isTokenWhitespace(nextToken)) {
             //System.out.println(nextToken.iSourceLineNr);
             nextToken = new Token(advancedPos[0], advancedPos[1]);
             advancedPos = advanceTokenPos(nextToken);
         }
-        
+
         if (scanDebug.bShowToken)
         {
             currentToken.printToken();
@@ -365,6 +372,9 @@ public class Scanner {
             token.primClassif = Classif.OPERAND;
             token.dclType = SubClassif.BOOLEAN;
 
+        } else if(isOperator(token)) {
+            token.primClassif = Classif.OPERATOR;
+
         } else if(PickleUtil.isInt(token.tokenStr)) {
 
             // Int
@@ -376,9 +386,6 @@ public class Scanner {
             // Float
             token.primClassif = Classif.OPERAND;
             token.dclType = SubClassif.FLOAT;
-
-        } else if(isOperator(token)) {
-            token.primClassif = Classif.OPERATOR;
 
         }  else if(isValidIdentifier(token)) {  // This is the condition we hit a lot when scanning for new tokens and building up token.tokenStr
             // Identifier
@@ -397,7 +404,11 @@ public class Scanner {
     public boolean continuesToken(Token token, char c) throws Exception {
         Token copy = new Token(token.tokenStr + c);
         setClassification(copy);    // Classify the currently built token.tokenStr (The copy is one character ahead of token.tokeStr), which should build into the correct classification
-        if(copy.primClassif != Classif.EMPTY && copy.dclType != token.dclType) {
+        // We don't just want any minus before a number to be converted to an int. Example: 3 - 5
+        // So don't change types if the tokenStr is a -
+        // The - will be added in getNext
+        // But classification, without changing classifs below, should return INT for a number like -5
+        if(copy.primClassif != Classif.EMPTY && copy.dclType != token.dclType && !token.tokenStr.equals("-")) {
             token.primClassif = copy.primClassif;
             token.dclType = copy.dclType;
         }
@@ -475,18 +486,26 @@ public class Scanner {
     }
 
     private boolean isOperator(Token token) {
-        char c = token.tokenStr.charAt(0); // TODO: Add support for multi-character operators
-        switch(c) {
-            case '<':
-            case '>':
-            case '=':
-            case '+':
-            case '-':
-            case '*':
-            case '/':
-            case ':':
-            case '!':
-            case '^':
+        switch(token.tokenStr) {
+            case "<":
+            case ">":
+            case "<=":
+            case ">=":
+            case "=":
+            case "==":
+            case "+":
+            case "-":
+            case "+=":
+            case "-=":
+            case "*":
+            case "/":
+            case "*=":
+            case "/=":
+            case ":":
+            case "!":
+            case "^":
+            case "!=":
+            case "^=":
                 return true;
             default:
                 return false;
