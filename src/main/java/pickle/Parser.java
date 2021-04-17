@@ -165,7 +165,7 @@ public class Parser {
 
                         break;
 
-                    } /*else if(scan.nextToken.tokenStr.equals("in")) {
+                    } else if(scan.nextToken.tokenStr.equals("in")) {
 
                         // Go back to start of expression for evalCond
                         scan.goTo(iStartSourceLineNr, iStartColPos);
@@ -176,7 +176,7 @@ public class Parser {
 
                     } else {
                         errorWithCurrent("Invalid 'for' statement syntax");
-                    }*/
+                    }
                 }
                 break;
             case "if":
@@ -702,7 +702,7 @@ public class Parser {
 
                 if (StorageManager.retrieveVariable(scan.currentToken.tokenStr) == null) {   // Store the iterator variable if it doesn't already exit
                     scan.currentToken.primClassif = Classif.IDENTIFIER; // Set the classification to an identifier
-                    StorageManager.storeVariable(scan.currentToken.tokenStr, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0));
+                    StorageManager.storeVariable(scan.currentToken.tokenStr, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0));   // TODO: FIX BUG THAT DELETES NON-USER DECLARED ITERATOR VARIABLES FROM StorageManager
                 } else {
                     StorageManager.storeVariable(iteratorVariable, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0));
                 }
@@ -876,9 +876,9 @@ public class Parser {
 
             String iteratorVariable;
 
-            if(StorageManager.retrieveVariable(currentForStmtDepth + "tempLimit") == null) { // We must initialize the values first
+            if(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition") == null) {
 
-                int iStartOperandColPos;
+                StorageManager.storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, 0));
 
                 // ITERATOR VARIABLE
 
@@ -886,91 +886,46 @@ public class Parser {
 
                 iteratorVariable = scan.currentToken.tokenStr;
 
-                if (StorageManager.retrieveVariable(scan.currentToken.tokenStr) == null) {   // Store the iterator variable if it doesn't already exit
-                    scan.currentToken.primClassif = Classif.IDENTIFIER; // Set the classification to an identifier
-                    StorageManager.storeVariable(scan.currentToken.tokenStr, new ResultValue(SubClassif.INTEGER, 0));
+                scan.getNext();
+
+                if (!scan.currentToken.tokenStr.equals("in")) {
+                    errorWithCurrent("Expected 'in' after 'for each' iterator variable");
                 }
 
-                if (scan.currentToken.primClassif != Classif.IDENTIFIER) {
-                    errorWithCurrent("Expected identifier for 'for' iterator variable");
-                }
+                // ITERATION OBJECT VALUE
 
                 scan.getNext();
 
-                if (!scan.currentToken.tokenStr.equals("=")) {
-                    errorWithCurrent("Expected '=' after 'for' iterator variable");
-                }
+                if (scan.currentToken.primClassif == Classif.OPERAND || scan.currentToken.dclType == SubClassif.STRING) {
 
-                // ITERATOR INITIAL VALUE
-
-                iStartOperandColPos = scan.iColPos;
-
-                scan.getNext();
-
-                if (!(scan.currentToken.primClassif == Classif.OPERAND)) {
-                    errorWithCurrent("Expected operand after 'for' iterator variable");
-                }
-
-                if (scan.nextToken.primClassif == Classif.OPERATOR) { // If we found another operand, it's an expression.
-                    scan.iColPos = iStartOperandColPos;
-
-                    StorageManager.storeVariable(iteratorVariable, expr(true));    // Store the evaluated expression
-                }   // expr() should land us on the "to" position
-                else {
-                    StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.INTEGER, scan.currentToken.tokenStr));
-                    scan.getNext();
-                }
-
-                // LIMIT VALUE
-
-                if (!scan.currentToken.tokenStr.equals("to")) {
-                    errorWithCurrent("Expected 'to' for 'for' limit");
-                }
-
-                iStartOperandColPos = scan.iColPos;
-
-                scan.getNext();
-
-                if (!(scan.currentToken.primClassif == Classif.OPERAND)) {
-                    errorWithCurrent("Expected operand after 'for' limit");
-                }
-
-                if (scan.nextToken.primClassif == Classif.OPERATOR) { // If we found another operand, it's an expression.
-                    scan.iColPos = iStartOperandColPos;
-
-                    StorageManager.storeVariable(currentForStmtDepth + "tempLimit", expr(true));    // Store the evaluated expression
-                }   // expr() should land us on the "by" position
-                else {
-                    StorageManager.storeVariable(currentForStmtDepth + "tempLimit", new ResultValue(SubClassif.INTEGER, scan.currentToken.tokenStr));
-                    scan.getNext();
-                }
-
-                // INCREMENT VALUE
-
-                if (!scan.currentToken.tokenStr.equals("by")) {
-
-                    StorageManager.storeVariable(currentForStmtDepth + "tempIncrement", new ResultValue(SubClassif.INTEGER, "1"));
-
-                } else {
-
-                    iStartOperandColPos = scan.iColPos;
-
-                    scan.getNext();
-
-                    if (!(scan.currentToken.primClassif == Classif.OPERAND)) {
-                        errorWithCurrent("Expected operand after 'for' increment");
+                    if (StorageManager.retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exist
+                        StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, ""));
+                    }
+                    System.out.println(scan.currentToken.dclType);
+                    if (scan.currentToken.dclType != SubClassif.IDENTIFIER && scan.currentToken.dclType != SubClassif.STRING) {
+                        errorWithCurrent("Expected identifier for 'for' iterator variable");
                     }
 
-                    if (scan.nextToken.primClassif == Classif.OPERATOR) { // If we found another operand, it's an expression.
-                        scan.iColPos = iStartOperandColPos;
+                    if (scan.nextToken.primClassif == Classif.OPERATOR) { // If we found another operator, it's an expression
 
-                        StorageManager.storeVariable(currentForStmtDepth + "tempIncrement", expr(true));    // Store the evaluated expression
+                        StorageManager.storeVariable(currentForStmtDepth + "tempIteratorObject", expr(true));    // Store the evaluated expression
                     }   // expr() should land us on the ":" position
                     else {
-                        StorageManager.storeVariable(currentForStmtDepth + "tempIncrement", new ResultValue(SubClassif.INTEGER, scan.currentToken.tokenStr));
+                        StorageManager.storeVariable(currentForStmtDepth + "tempIteratorObject", StorageManager.retrieveVariable(scan.currentToken.tokenStr));
                         scan.getNext();
                     }
+                } else if (scan.currentToken.dclType == SubClassif.FIXED_ARRAY
+                        || scan.currentToken.dclType == SubClassif.UNBOUNDED_ARRAY
+                        || scan.currentToken.dclType == SubClassif.INTEGERARR
+                        || scan.currentToken.dclType == SubClassif.FLOATARR
+                        || scan.currentToken.dclType == SubClassif.STRINGARR
+                        || scan.currentToken.dclType == SubClassif.BOOLEANARR
+                        || scan.currentToken.dclType == SubClassif.DATEARR) {
+
+                } else {
+                    errorWithCurrent("Incorrect type for 'for each' iterator object");
                 }
+
 
                 if (!scan.currentToken.tokenStr.equals(":")) {
                     errorWithCurrent("Expected ':' to end 'for' statement)");
@@ -999,22 +954,44 @@ public class Parser {
             iEndColPos = scan.iColPos;
             // Go back to start of expression for evalCond
             scan.goTo(iStartSourceLineNr, iStartColPos);
+            //System.out.println(StorageManager.retrieveVariable(iteratorVariable).iDatatype);
+            if(StorageManager.retrieveVariable(iteratorVariable).iDatatype == SubClassif.STRING) {
+                //System.out.println(StorageManager.retrieveVariable(iteratorVariable).value.toString());
+                //System.out.println(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").value.toString()));
+                //System.out.println(iteratorVariable);
+                //System.out.println(StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value.toString());
+                while(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").value.toString()) < StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value.toString().length()) {
 
-            while(Integer.parseInt(StorageManager.retrieveVariable(iteratorVariable).value.toString()) <= Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "tempLimit").value.toString())) {
+                    //System.out.println(StorageManager.retrieveVariable(iteratorVariable));
+                    //System.out.println(StorageManager.retrieveVariable((currentForStmtDepth + "iteratorPosition")));
 
-                ResultValue resTemp = executeStatements(true);
+                    // Store the new value in the iterator variable
+                    StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value.toString().charAt(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").value.toString()))));
 
-                if (!resTemp.scTerminatingStr.equals("endfor"))
-                    errorWithCurrent("Expected an 'endfor' for a 'for'");
-                iEndSourceLineNr = scan.iSourceLineNr;
-                iEndColPos = scan.iColPos;
+                    // Increment the position
+                    StorageManager.storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").value.toString()) + 1));
 
-                // Jump back to beginning
-                scan.goTo(iStartSourceLineNr, iStartColPos);
+                    ResultValue resTemp = executeStatements(true);
 
-                // Add the increment to the iterator
-                StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.INTEGER, Integer.parseInt(StorageManager.retrieveVariable(iteratorVariable).value.toString()) + Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "tempIncrement").value.toString())));
+                    if (!resTemp.scTerminatingStr.equals("endfor"))
+                        errorWithCurrent("Expected an 'endfor' for a 'for'");
+                    iEndSourceLineNr = scan.iSourceLineNr;
+                    iEndColPos = scan.iColPos;
+
+                    // Jump back to beginning
+                    scan.goTo(iStartSourceLineNr, iStartColPos);
+                }
+            } else if ( scan.currentToken.dclType == SubClassif.FIXED_ARRAY
+                    || scan.currentToken.dclType == SubClassif.UNBOUNDED_ARRAY
+                    || scan.currentToken.dclType == SubClassif.INTEGERARR
+                    || scan.currentToken.dclType == SubClassif.FLOATARR
+                    || scan.currentToken.dclType == SubClassif.STRINGARR
+                    || scan.currentToken.dclType == SubClassif.BOOLEANARR
+                    || scan.currentToken.dclType == SubClassif.DATEARR) {
+
             }
+
+
             // Jump to endfor
             scan.goTo(iEndSourceLineNr, iEndColPos);
             if(!scan.currentToken.tokenStr.equals("endfor"))
@@ -1042,6 +1019,9 @@ public class Parser {
                 errorWithCurrent("Expected';' after an 'endfor'");
             scan.getNext(); // Skip past ';'
         }
+
+        StorageManager.deleteVariable(currentForStmtDepth + "iteratorPosition");
+        --currentForStmtDepth;
     }
 
     private void initializeTempForVariables() throws Exception {
