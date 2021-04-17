@@ -4,9 +4,6 @@ print("p4Array.txt");
 Int iSimp = 50;
 print ("iSimp=", iSimp);
 
-String a = "fdsfs";
-print(a);
-
 Int arr[5] = 1;
 Int arr[] = 1, 2, 3, 4;
 arr = 9;

@@ -1251,8 +1251,15 @@ public class Parser {
             }
             else if(scan.currentToken.dclType == SubClassif.IDENTIFIER) {
                 ResultValue value = getVariableValue(scan.currentToken.tokenStr);
-                t = new Token(value.value.toString());
-                scan.setClassification(t);
+                if(value.iDatatype == SubClassif.STRING) {
+                    t = new Token("\"" + value.value.toString() + "\"");
+                    t.tokenStr = t.tokenStr.substring(1, t.tokenStr.length() - 1);
+                    t.primClassif = Classif.OPERAND;
+                    t.dclType = SubClassif.STRING;
+                } else {
+                    t = new Token(value.value.toString());
+                    scan.setClassification(t);
+                }
                 // Arrays will be kept as identifiers until they need to be passed into something
                 // Then we'll simply grab getVariableValue and pass into built in function
                 // So, if setClassification does nothing, put the identifier on the stack
