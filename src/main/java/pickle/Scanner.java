@@ -252,10 +252,6 @@ public class Scanner {
         if(iLineNumber >= sourceLineM.size())
             return packagePositions(iLineNumber, iColNumber);
 
-        int[] pos = skipEmptyLines(iLineNumber, iColNumber);
-        iLineNumber = pos[0];
-        iColNumber = pos[1];
-
         // Increment
         int[] ret;
         if(sourceLineM.size() > iLineNumber) {
