@@ -111,11 +111,16 @@ public class Scanner {
 
         while(currentToken.tokenStr.equals("//"))
             getNext();
+
         // Skip whitespace tokens
         while(advancedPos != null && isTokenWhitespace(nextToken)) {
             //System.out.println(nextToken.iSourceLineNr);
             nextToken = new Token(advancedPos[0], advancedPos[1]);
             advancedPos = advanceTokenPos(nextToken);
+            if(nextToken.tokenStr.equals("//")) {
+                nextToken = new Token(advancedPos[0], advancedPos[1]);
+                advancedPos = advanceTokenPos(nextToken);
+            }
         }
 
         if(isLastTokenOperatorOrSeparator && currentToken.tokenStr.equals("-")) {
