@@ -111,11 +111,16 @@ public class Scanner {
 
         while(currentToken.tokenStr.equals("//"))
             getNext();
+
         // Skip whitespace tokens
         while(advancedPos != null && isTokenWhitespace(nextToken)) {
             //System.out.println(nextToken.iSourceLineNr);
             nextToken = new Token(advancedPos[0], advancedPos[1]);
             advancedPos = advanceTokenPos(nextToken);
+            if(nextToken.tokenStr.equals("//")) {
+                nextToken = new Token(advancedPos[0], advancedPos[1]);
+                advancedPos = advanceTokenPos(nextToken);
+            }
         }
 
         if(isLastTokenOperatorOrSeparator && currentToken.tokenStr.equals("-")) {
@@ -420,8 +425,6 @@ public class Scanner {
      * @return
      */
     public boolean continuesToken(Token token, char c) throws Exception {
-        if(token.tokenStr.equals("not"))
-            System.out.println();
         Token copy = new Token(token.tokenStr + c);
         setClassification(copy);    // Classify the currently built token.tokenStr (The copy is one character ahead of token.tokeStr), which should build into the correct classification
         // We don't just want any minus before a number to be converted to an int. Example: 3 - 5
@@ -586,6 +589,7 @@ public class Scanner {
             int[] pos = nextPos(iSourceLineNr, iColPos);
             iSourceLineNr = pos[0];
             iColPos = pos[1];
+            line = sourceLineM.get(iSourceLineNr);
         } while(line.isEmpty() || isCharWhitespace(line.charAt(iColPos)));
         int[] pos = new int[2];
         pos[0] = iSourceLineNr;
