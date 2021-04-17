@@ -392,12 +392,17 @@ public class Parser {
                         if(i > arr.highestPopulatedValue) {
                             arr.highestPopulatedValue = i;
                         }
-                        if(typeStr.equals("Int[") && arrElement.iDatatype != SubClassif.INTEGER)
-                            errorWithCurrent("Expected an integer for integer array declaration/assignment");
-                        if(typeStr.equals("Float[") && arrElement.iDatatype != SubClassif.FLOAT && arrElement.iDatatype != SubClassif.INTEGER)
-                            errorWithCurrent("Expected an float for float array declaration/assignment");
+
                         if(typeStr.equals("String[") && arrElement.iDatatype != SubClassif.STRING)
                             errorWithCurrent("Expected an string for string array declaration/assignment");
+
+                        // Convert string to numeric for numeric array
+                        if(!typeStr.equals("String[") && arrElement.iDatatype == SubClassif.STRING) {
+                            if(typeStr.equals("Int["))
+                                arr.set(i, new ResultValue(SubClassif.INTEGER, new Numeric((String)arrElement.value, SubClassif.INTEGER)));
+                            if(typeStr.equals("Float["))
+                                arr.set(i, new ResultValue(SubClassif.FLOAT, new Numeric((String)arrElement.value, SubClassif.FLOAT)));
+                        }
 
                         arr.set(i, arrElement);
                         i++;
