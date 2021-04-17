@@ -13,4 +13,4 @@ concat name= Lee King length= 8
 str=  SPACES(str)= T
 str=   SPACES(str)= T
 str=   LENGTH(SPACES(str))= 1
-x= 15 
+x= 15

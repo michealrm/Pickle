@@ -861,10 +861,10 @@ public class Parser {
             // Go back to start of expression for evalCond
             scan.goTo(iStartSourceLineNr, iStartColPos);
 
-            //System.out.println("SIZE " + Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "tempLimit").value.toString()));
+            //System.out.println("SIZE " + Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "tempLimit").toString()));
 
-            while(Integer.parseInt(StorageManager.retrieveVariable(iteratorVariable).value.toString()) < Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "tempLimit").value.toString())) {
-                //System.out.println("INDEX " + StorageManager.retrieveVariable(iteratorVariable).value.toString());
+            while(Integer.parseInt(StorageManager.retrieveVariable(iteratorVariable).toString()) < Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "tempLimit").toString())) {
+                //System.out.println("INDEX " + StorageManager.retrieveVariable(iteratorVariable).toString());
 
                 //System.out.println("VARIABLE: " + iteratorVariable + " " + StorageManager.retrieveVariable(iteratorVariable).iPrimClassif);
                 ResultValue resTemp = executeStatements(true);
@@ -878,12 +878,12 @@ public class Parser {
                 scan.goTo(iStartSourceLineNr, iStartColPos);
 
                 //System.out.println("Depth " + currentForStmtDepth);
-                //System.out.println("Iterator " + StorageManager.retrieveVariable(iteratorVariable).value.toString());
-                //System.out.println("Increment " + Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "tempIncrement").value.toString()));
+                //System.out.println("Iterator " + StorageManager.retrieveVariable(iteratorVariable).toString());
+                //System.out.println("Increment " + Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "tempIncrement").toString()));
                 //System.out.println();
 
                 // Add the increment to the iterator
-                StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.INTEGER, Integer.parseInt(StorageManager.retrieveVariable(iteratorVariable).value.toString()) + Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "tempIncrement").value.toString())));
+                StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.INTEGER, Integer.parseInt(StorageManager.retrieveVariable(iteratorVariable).toString()) + Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "tempIncrement").toString())));
             }
             // Jump to endfor
             scan.goTo(iEndSourceLineNr, iEndColPos);
@@ -1028,17 +1028,17 @@ public class Parser {
             scan.goTo(iStartSourceLineNr, iStartColPos);
             //System.out.println(StorageManager.retrieveVariable(iteratorVariable).iDatatype);
             if(StorageManager.retrieveVariable(iteratorVariable).iDatatype == SubClassif.STRING) {
-                //System.out.println(StorageManager.retrieveVariable(iteratorVariable).value.toString());
-                //System.out.println(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").value.toString()));
+                //System.out.println(StorageManager.retrieveVariable(iteratorVariable).toString());
+                //System.out.println(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()));
                 //System.out.println(iteratorVariable);
-                //System.out.println(StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value.toString());
-                while(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").value.toString()) < StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value.toString().length()) {
+                //System.out.println(StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").toString());
+                while(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) < StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").toString().length()) {
 
                     // Store the new value in the iterator variable
-                    StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value.toString().charAt(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").value.toString()))));
+                    StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").toString().charAt(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()))));
 
                     // Increment the position
-                    StorageManager.storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").value.toString()) + 1));
+                    StorageManager.storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) + 1));
 
                     ResultValue resTemp = executeStatements(true);
 
@@ -1060,15 +1060,15 @@ public class Parser {
 
                 //System.out.println("SIZE " + ((PickleArray) StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value).arrayList.size());
 
-                while(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").value.toString()) < ( (PickleArray) StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value).arrayList.size()) {
+                while(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) < ( (PickleArray) StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value).arrayList.size()) {
 
                     //System.out.println(StorageManager.retrieveVariable(iteratorVariable));
                     //System.out.println(StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value instanceof PickleArray);
                     // Store the new value in the iterator variable
-                    StorageManager.storeVariable(iteratorVariable, new ResultValue(StorageManager.retrieveVariable(iteratorVariable).iDatatype, ((PickleArray) StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value).arrayList.get(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").value.toString()))));
+                    StorageManager.storeVariable(iteratorVariable, new ResultValue(StorageManager.retrieveVariable(iteratorVariable).iDatatype, ((PickleArray) StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value).arrayList.get(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()))));
 
                     // Increment the position
-                    StorageManager.storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").value.toString()) + 1));
+                    StorageManager.storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) + 1));
 
                     ResultValue resTemp = executeStatements(true);
 
@@ -1171,6 +1171,20 @@ public class Parser {
                 case IDENTIFIER:
                     msg.append(msgPart.toString());
                     break;
+                case INTEGERARR:
+                case FLOATARR:
+                case STRINGARR:
+                    PickleArray arr = ((PickleArray)msgPart.value);
+                    StringBuilder sb = new StringBuilder();
+                    if(arr.highestPopulatedValue != 0)
+                        sb.append(arr.get(0));
+                    for(int i = 1; i < arr.highestPopulatedValue; i++) {
+                        sb.append(" ");
+                        sb.append(arr.get(i));
+                    }
+                    msg.append(sb.toString());
+                    break;
+
                 default:
                     error("Unsupported type %s in print function \"%s\"", msgPart.iDatatype, msgPart.value);
             }
@@ -1224,7 +1238,7 @@ public class Parser {
             {
                 error("LENGTH can only take in arguments of type String");
             }
-            result = new ResultValue(SubClassif.INTEGER, (param.value.toString().length()));
+            result = new ResultValue(SubClassif.INTEGER, (param.toString().length()));
         }
         else
         {
@@ -1290,7 +1304,7 @@ public class Parser {
                 error("SPACES can only take in arguments of type String");
             }
             boolean bHasSpaces = true;
-            String scValue = param.value.toString();
+            String scValue = param.toString();
 
             for (int i = 0; i < scValue.length(); i++)
             {
@@ -1517,8 +1531,7 @@ public class Parser {
         while(continuesExpr(scan.currentToken)) {
             // Evaluate starting from currentToken. Converts results from things like array references or variables into a Token
             Token t = scan.currentToken;
-            if(t.tokenStr.equals("not"))
-                System.out.println();
+
             // If array, call expr() on it and use the ResultValue as Token t, leaving currentToken on the ']' since
             // we call scan.getNext() at the end of the while
             if(scan.nextToken.tokenStr.equals("[")) {
@@ -1579,7 +1592,7 @@ public class Parser {
                 }
                 ResultValue value = getVariableValue(scan.currentToken.tokenStr);
                 if(value.iDatatype == SubClassif.STRING) {
-                    t = new Token("\"" + value.value.toString() + "\"");
+                    t = new Token("\"" + value.toString() + "\"");
                     t.tokenStr = t.tokenStr.substring(1, t.tokenStr.length() - 1);
                     t.primClassif = Classif.OPERAND;
                     t.dclType = SubClassif.STRING;
