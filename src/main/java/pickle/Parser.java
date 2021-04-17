@@ -141,56 +141,60 @@ public class Parser {
         }
 
         // Check for FLOW token
-        switch(scan.currentToken.tokenStr) {
-            case "while":
-                flowStack.push("while");
-                whileStmt(bExec);   // Will change the token position
-                break;
-            case "for":
-                flowStack.push("for");
-                ++currentForStmtDepth;
+        while(scan.currentToken.tokenStr.equals("while")
+                || scan.currentToken.tokenStr.equals("for")
+                || scan.currentToken.tokenStr.equals("if")) {
+            switch (scan.currentToken.tokenStr) {
+                case "while":
+                    flowStack.push("while");
+                    whileStmt(bExec);   // Will change the token position
+                    break;
+                case "for":
+                    flowStack.push("for");
+                    ++currentForStmtDepth;
 
-                int iStartSourceLineNr = scan.iSourceLineNr; // Save position at the condition to loop back
-                int iStartColPos = scan.iColPos;
+                    int iStartSourceLineNr = scan.iSourceLineNr; // Save position at the condition to loop back
+                    int iStartColPos = scan.iColPos;
 
-                while(!scan.nextToken.tokenStr.equals(":")) {   // Examine the type of for loop
-                    scan.getNext();
+                    while (!scan.nextToken.tokenStr.equals(":")) {   // Examine the type of for loop
+                        scan.getNext();
 
-                    if(scan.nextToken.tokenStr.equals("to")) {
+                        if (scan.nextToken.tokenStr.equals("to")) {
 
-                        // Go back to start of expression for evalCond
-                        scan.goTo(iStartSourceLineNr, iStartColPos);
+                            // Go back to start of expression for evalCond
+                            scan.goTo(iStartSourceLineNr, iStartColPos);
 
-                        forStmt(bExec);   // Will change the token position
+                            forStmt(bExec);   // Will change the token position
 
-                        break;
+                            break;
 
-                    } else if(scan.nextToken.tokenStr.equals("in")) {
+                        } else if (scan.nextToken.tokenStr.equals("in")) {
 
-                        // Go back to start of expression for evalCond
-                        scan.goTo(iStartSourceLineNr, iStartColPos);
+                            // Go back to start of expression for evalCond
+                            scan.goTo(iStartSourceLineNr, iStartColPos);
 
-                        forEachStmt(bExec);   // Will change the token position
+                            forEachStmt(bExec);   // Will change the token position
 
-                        break;
+                            break;
 
-                    } else {
-                        errorWithCurrent("Invalid 'for' statement syntax");
+                        } else {
+                            errorWithCurrent("Invalid 'for' statement syntax");
+                        }
                     }
-                }
-                break;
-            case "if":
-                flowStack.push("if");
-                ifStmt(bExec);   // Will change the token position
-        }
+                    break;
+                case "if":
+                    flowStack.push("if");
+                    ifStmt(bExec);   // Will change the token position
+            }
 
-        // Check for END
-        if(scan.currentToken.dclType == SubClassif.END) {
-            ResultValue res = new ResultValue(SubClassif.END, scan.currentToken.tokenStr);
-            res.scTerminatingStr = scan.currentToken.tokenStr;
-            // DO NOT skip past endX;. We need this if XStmt for exception handling
+            // Check for END
+            if (scan.currentToken.dclType == SubClassif.END) {
+                ResultValue res = new ResultValue(SubClassif.END, scan.currentToken.tokenStr);
+                res.scTerminatingStr = scan.currentToken.tokenStr;
+                // DO NOT skip past endX;. We need this if XStmt for exception handling
 
-            return res;
+                return res;
+            }
         }
 
         if(bExec) {
