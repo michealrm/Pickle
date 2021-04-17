@@ -140,6 +140,15 @@ public class Parser {
             }
         }
 
+        // Check for END
+        if (scan.currentToken.dclType == SubClassif.END) {
+            ResultValue res = new ResultValue(SubClassif.END, scan.currentToken.tokenStr);
+            res.scTerminatingStr = scan.currentToken.tokenStr;
+            // DO NOT skip past endX;. We need this if XStmt for exception handling
+
+            return res;
+        }
+
         // Check for FLOW token
         while(scan.currentToken.tokenStr.equals("while")
                 || scan.currentToken.tokenStr.equals("for")
@@ -456,7 +465,9 @@ public class Parser {
                 errorWithCurrent("Expected either a '=', assignment, or ';', declaration only for an array definition");
             }
         // Instantiation, no assignment
-        } else if(scan.currentToken.tokenStr.equals(";")) {
+        } else if(scan.nextToken.tokenStr.equals(";")) {
+            scan.getNext(); // Skip past variable name
+            scan.getNext(); // Skip past ';' to next statement
             switch (typeStr) {
                 case "Int":
                     scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.INTEGER));
@@ -468,7 +479,7 @@ public class Parser {
                     break;
                 case "String":
                     scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.STRING));
-                    assign(variableStr, new ResultValue(SubClassif.INTEGER, new Numeric("0", SubClassif.INTEGER)));
+                    assign(variableStr, new ResultValue(SubClassif.STRING, ""));
                     break;
                 case "Bool":
                     scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.BOOLEAN));
