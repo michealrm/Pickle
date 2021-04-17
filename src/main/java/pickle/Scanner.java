@@ -258,11 +258,13 @@ public class Scanner {
 
         // Increment
         int[] ret;
-        if(iColNumber + 1 >= sourceLineM.get(iLineNumber).length()) {
-            iLineNumber++;
-            iColNumber = 0;
-        } else {
-            iColNumber++;
+        if(sourceLineM.size() > iLineNumber) {
+            if (iColNumber + 1 >= sourceLineM.get(iLineNumber).length()) {
+                iLineNumber++;
+                iColNumber = 0;
+            } else {
+                iColNumber++;
+            }
         }
 
         ret = packagePositions(iLineNumber, iColNumber);    // The start and end position of the currently built token
@@ -589,7 +591,10 @@ public class Scanner {
             int[] pos = nextPos(iSourceLineNr, iColPos);
             iSourceLineNr = pos[0];
             iColPos = pos[1];
-            line = sourceLineM.get(iSourceLineNr);
+            if(iSourceLineNr >= sourceLineM.size())
+                break;
+            else
+                line = sourceLineM.get(iSourceLineNr);
         } while(line.isEmpty() || isCharWhitespace(line.charAt(iColPos)));
         int[] pos = new int[2];
         pos[0] = iSourceLineNr;
