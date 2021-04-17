@@ -901,7 +901,7 @@ public class Parser {
                     if (StorageManager.retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exist
                         StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, ""));
                     }
-                    System.out.println(scan.currentToken.dclType);
+
                     if (scan.currentToken.dclType != SubClassif.IDENTIFIER && scan.currentToken.dclType != SubClassif.STRING) {
                         errorWithCurrent("Expected identifier for 'for' iterator variable");
                     }
@@ -1613,7 +1613,7 @@ public class Parser {
                         return funcSPACES(str);
                     default:
                         error("STFunction was passed in, but %s is not a supported function for callFunction, " +
-                                "used in expr()'s eval of postfix");
+                                "used in expr()'s eval of postfix", stFunction.tokenStr);
                         return new ResultValue(SubClassif.EMPTY, "");
         }
     }

@@ -78,7 +78,6 @@ public class Scanner {
      * @return The token at iSourceLineNr and iColPos
      */
     public Token getNext() throws Exception {
-
         boolean isLastTokenOperatorOrSeparator = false;
         if(currentToken.primClassif == Classif.OPERATOR || currentToken.tokenStr.equals("(") || currentToken.tokenStr.equals("["))
             isLastTokenOperatorOrSeparator = true;
@@ -100,6 +99,8 @@ public class Scanner {
             getNext();
             currentToken.tokenStr = '-' + currentToken.tokenStr;
         }
+        while(currentToken.tokenStr.equals("//"))
+            getNext();
         // Skip whitespace tokens
         while(advancedPos != null && isTokenWhitespace(nextToken)) {
             //System.out.println(nextToken.iSourceLineNr);
@@ -162,10 +163,8 @@ public class Scanner {
                 t.tokenStr = t.tokenStr + textCharM[iColNumber];
 
                 // Skip comment
-                if (t.tokenStr.equals("/"))
+                if (t.tokenStr.equals("//"))
                 {
-                    t.tokenStr = ""; // For EMPTY continuesToken returns true, so we'll start reading a new token
-
                     iColNumber = textCharM.length;
                     int[] ret = nextChar(iLineNumber, iColNumber);
                     iLineNumber = ret[0];
@@ -506,6 +505,7 @@ public class Scanner {
             case "^":
             case "!=":
             case "^=":
+            case "//":
                 return true;
             default:
                 return false;
