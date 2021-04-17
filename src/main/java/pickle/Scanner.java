@@ -80,7 +80,7 @@ public class Scanner {
     public Token getNext() throws Exception {
 
         boolean isLastTokenOperatorOrSeparator = false;
-        if(currentToken.primClassif == Classif.OPERATOR || currentToken.primClassif == Classif.SEPARATOR)
+        if(currentToken.primClassif == Classif.OPERATOR || currentToken.tokenStr.equals("(") || currentToken.tokenStr.equals("["))
             isLastTokenOperatorOrSeparator = true;
         iSourceLineNr = nextToken.iSourceLineNr;
         iColPos = nextToken.iColPos;
