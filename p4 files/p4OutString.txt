@@ -1,0 +1,5 @@
+p4String.txt
+Replaced 'Pike' in slot 2 with 'p' giving Pipe
+Replaced 'dog house' in slot 0 with 'l' giving log house
+Replaced 'brace' in slot 4 with 'elet' giving bracelet
+sC= Maynard falling apart is M a d

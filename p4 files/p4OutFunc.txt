@@ -1,0 +1,9 @@
+p4Func.txt
+name= Anita length= 5
+name= Anita Byte length= 10
+concat name= Joe King length= 8
+Line 13 Col 0 Unsupported statement type for token                                    . Classif: SEPARATOR/EMPTY, File: src/main/resources/p4Func.txt
+	at pickle.Parser.error(Parser.java:1996)
+	at pickle.Parser.executeStmt(Parser.java:233)
+	at pickle.Parser.executeStatements(Parser.java:56)
+	at pickle.Pickle.main(Pickle.java:42)

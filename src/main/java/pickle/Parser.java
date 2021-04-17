@@ -391,7 +391,7 @@ public class Parser {
                         ResultValue arrElement = expr(true);
                         if(typeStr.equals("Int[") && arrElement.iDatatype != SubClassif.INTEGER)
                             errorWithCurrent("Expected an integer for integer array declaration/assignment");
-                        if(typeStr.equals("Float[") && arrElement.iDatatype != SubClassif.FLOAT)
+                        if(typeStr.equals("Float[") && arrElement.iDatatype != SubClassif.FLOAT && arrElement.iDatatype != SubClassif.INTEGER)
                             errorWithCurrent("Expected an float for float array declaration/assignment");
                         if(typeStr.equals("String[") && arrElement.iDatatype != SubClassif.STRING)
                             errorWithCurrent("Expected an string for string array declaration/assignment");
@@ -534,15 +534,23 @@ public class Parser {
             expr = expr(true); // Value to copy into array reference
 
             // If array can't hold expr()'s type
-            SubClassif arrType = scan.symbolTable.getSymbol(variableName).dclType;
-            if(!((arrType == SubClassif.INTEGERARR && expr.iDatatype == SubClassif.INTEGER)
-                    || (arrType == SubClassif.FLOATARR && expr.iDatatype == SubClassif.FLOAT)
-                    || (arrType == SubClassif.STRINGARR && expr.iDatatype == SubClassif.STRING)))
-                error("Value of array reference assignment had type %s, but array has type %s", expr.iDatatype.toString(), arrType.toString());
-
-            // Set value
-            PickleArray arr = ((PickleArray) getVariableValue(variableName).value);
-            arr.set(index, expr);
+            SubClassif type = scan.symbolTable.getSymbol(variableName).dclType;
+            if(type == SubClassif.STRING) {
+                if(expr.iDatatype != SubClassif.STRING)
+                    errorWithCurrent("Cannot assign %s to a STRING index", expr.value);
+                String exprStr = ((String)expr.value);
+                String str = ((String)getVariableValue(variableName).value);
+                str = str.substring(0, index) + exprStr + str.substring(Math.min(str.length(), index + exprStr.length()));
+                assign(variableName, new ResultValue(SubClassif.STRING, str));
+            } else if(type == SubClassif.INTEGERARR || type == SubClassif.FLOATARR || type == SubClassif.STRINGARR) {
+                if(!((type == SubClassif.INTEGERARR && expr.iDatatype == SubClassif.INTEGER)
+                        || (type == SubClassif.FLOATARR && expr.iDatatype == SubClassif.FLOAT)
+                        || (type == SubClassif.STRINGARR && expr.iDatatype == SubClassif.STRING)))
+                    error("Value of array reference assignment had type %s, but array has type %s", expr.iDatatype.toString(), type.toString());
+                // Set value
+                PickleArray arr = ((PickleArray) getVariableValue(variableName).value);
+                arr.set(index, expr);
+            }
 
             if(!scan.currentToken.tokenStr.equals(";"))
                 errorWithCurrent("Expected array reference assignment to end with a ';'");
@@ -1497,13 +1505,14 @@ public class Parser {
 
                 if(stEntry == null)
                     errorWithCurrent("Variable \"%s\" not found in symbol table");
-                if(!isArray(stEntry))
-                    errorWithCurrent("%s with type %s cannot be subscripted because it is not an array", variableName, stEntry.dclType);
+                if(!isArray(stEntry) && stEntry.dclType != SubClassif.STRING)
+                    errorWithCurrent("%s with type %s cannot be subscripted because it is not an array or string", variableName, stEntry.dclType);
 
                 scan.getNext(); // Skip to '['
                 scan.getNext(); // Skip to first item in index
 
                 indexResult = expr(true);
+                int index = ((Numeric) indexResult.value).intValue;
 
                 if(indexResult.iDatatype != SubClassif.INTEGER)
                     error("Index evaluated to %s, which is not an integer");
@@ -1511,10 +1520,19 @@ public class Parser {
                 if(!scan.currentToken.tokenStr.equals("]"))
                     errorWithCurrent("Expected for array subscript to end with a ']'");
 
-                PickleArray arr = ((PickleArray)getVariableValue(variableName).value);
-                ResultValue value = arr.get(((Numeric)indexResult.value).intValue);
-                t = new Token(value.toString());
-                scan.setClassification(t);
+                if(stEntry.dclType == SubClassif.STRING) {
+                    String str = ((String)getVariableValue(variableName).value);
+                    char value = str.charAt(index);
+                    t = new Token(String.valueOf(value));
+                    t.primClassif = Classif.OPERAND;
+                    t.dclType = SubClassif.STRING;
+                }
+                else {
+                    PickleArray arr = ((PickleArray) getVariableValue(variableName).value);
+                    ResultValue value = arr.get(index);
+                    t = new Token(value.toString());
+                    scan.setClassification(t);
+                }
 
                 // Don't skip past the ']', we'll do that at the end of the while loop
             }
@@ -1624,8 +1642,12 @@ public class Parser {
                 error(funcToken.tokenStr + " was found in the symbol table, but is not a function");
             STFunction stFunction = (STFunction) stEntry;
             ArrayList<ResultValue> parms = new ArrayList<>();
-            for(int i = 0; i < stFunction.numArgs; i++)
-                parms.add(getOperand(out));
+            for(int i = 0; i < stFunction.numArgs; i++) {
+                ResultValue rv = getOperand(out);
+                if(rv.value instanceof StringBuilder)
+                    rv.value = ((StringBuilder) rv.value).toString(); // TODO: Quick fix. Make sure we're not getting StringBuilder from getOperand in the future
+                parms.add(rv);
+            }
             return callFunction(stFunction, parms);
         } else {
             error("Token %s cannot be evaluated in an expression", out.pop().tokenStr);
@@ -1947,7 +1969,7 @@ public class Parser {
                     }
                     break;
                 case STRING:
-                    res = new ResultValue(scan.currentToken.dclType, new StringBuilder(scan.currentToken.tokenStr));
+                    res = new ResultValue(SubClassif.STRING, scan.currentToken.tokenStr);
                     break;
                 default:
                     error("operand is of unhandled type");
