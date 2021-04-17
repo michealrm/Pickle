@@ -483,7 +483,7 @@ public class Parser {
                     break;
                 case "Bool":
                     scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.BOOLEAN));
-                    assign(variableStr, new ResultValue(SubClassif.INTEGER, new Numeric("0", SubClassif.INTEGER)));
+                    assign(variableStr, new ResultValue(SubClassif.BOOLEAN, "F"));
                     break;
                 // Arrays handled above (if we see a '[' after the variable name
                 default:
@@ -743,6 +743,8 @@ public class Parser {
 
                 scan.getNext();
 
+
+
                 if (!(scan.currentToken.primClassif == Classif.OPERAND)) {
                     errorWithCurrent("Expected operand after 'for' iterator variable");
                 }
@@ -768,11 +770,15 @@ public class Parser {
 
                 scan.getNext();
 
-                if (!(scan.currentToken.primClassif == Classif.OPERAND)) {
+                //.out.println("TOKEN STRING " + scan.currentToken.tokenStr);
+                //System.out.println(scan.currentToken.primClassif);
+                //System.out.println(scan.currentToken.dclType);
+
+                if (scan.currentToken.primClassif != Classif.OPERAND && scan.currentToken.primClassif != Classif.FUNCTION) {
                     errorWithCurrent("Expected operand after 'for' limit");
                 }
 
-                if (scan.nextToken.primClassif == Classif.OPERATOR) { // If we found another operand, it's an expression.
+                if (scan.nextToken.primClassif == Classif.OPERATOR || scan.currentToken.primClassif == Classif.FUNCTION) { // If we found another operand, it's an expression.
                     scan.iColPos = iStartOperandColPos;
 
                     StorageManager.storeVariable(currentForStmtDepth + "tempLimit", expr(true));    // Store the evaluated expression
