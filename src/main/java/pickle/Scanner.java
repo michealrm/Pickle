@@ -91,7 +91,21 @@ public class Scanner {
 
         if(currentToken.primClassif == Classif.EOF)
             return currentToken;
-        int[] nextPos = advanceTokenPos(nextToken);
+
+        int[] nextPos;
+
+        if(nextToken.tokenStr.equals("//")) {
+            nextPos = new int[2];
+            nextPos[0] = nextToken.iSourceLineNr + 1;
+            nextPos[1] = 0;
+            nextToken = new Token(nextPos[0], nextPos[1]);
+
+            iSourceLineNr = nextToken.iSourceLineNr;
+            iColPos = nextToken.iColPos;
+            currentToken = nextToken;
+        } else {
+            nextPos = advanceTokenPos(nextToken);
+        }
         nextToken = new Token(nextPos[0], nextPos[1]);
         int[] advancedPos = advanceTokenPos(nextToken);
 
