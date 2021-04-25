@@ -1,8 +1,8 @@
 package pickle;
 
 public enum Status {
-    NO_EXEC,
-    EXEC,
+    IGNORE_EXEC,
+    EXECUTE,
     BREAK,
     CONTINUE,
     RETURN
