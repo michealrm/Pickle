@@ -1,0 +1,50 @@
+def Void A():
+    Int x;
+    Int y;
+    Int z;
+
+    def Void D():
+        Int w;
+        //halt "inside D";
+        print("D before assign", "x=", x, "y=", y, "z=", z);
+        x = 40;
+        y = 41;
+        w = 44;
+        print("D after assign", "x=", x, "y=", y, "z=", z);
+    enddef;  // end of D
+
+    def Void B():
+        Int z;
+        Int y;
+
+        def Void C():
+            Int y;
+            //halt "inside C";
+            x = 30;
+            y = 31;
+            z = 32;
+            print("C before", "x=", x, "y=", y, "z=", z);
+            D();
+            print("C after", "x=", x, "y=", y, "z=", z);
+        enddef; // end of C
+
+        //halt "inside B";
+        x = 20;
+        y = 21;
+        z = 22;
+        print("B before", "x=", x, "y=", y, "z=", z);
+        C();
+        print("B after", "x=", x, "y=", y, "z=", z);
+    enddef; // end of B
+
+    x = 10;
+    y = 11;
+    z = 12;
+    //halt "inside A" ;
+    print("A before", "x=", x, "y=", y, "z=", z);
+    B();
+    print("A after", "x=", x, "y=", y, "z=", z);
+enddef; // end of A
+print("p5ScopeEx4.txt");
+//halt "outside of A";
+A();
