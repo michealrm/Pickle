@@ -526,9 +526,6 @@ public class Parser {
             int index = -1;
             scan.getNext();
             ResultValue expr = expr(Status.EXECUTE);
-            if(expr.iDatatype != SubClassif.INTEGER)
-                error("Array subscript expression must evaluate to an integer");
-            index = ((Numeric)expr.value).intValue;
 
             // Slice
             if(scan.currentToken.tokenStr.equals("~")) {

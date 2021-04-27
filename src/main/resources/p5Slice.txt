@@ -1,9 +1,9 @@
-String name = "Micheal";
-String a = name[0~4];
-String b = name[4~7];
+String name = "alphabet neighborhood";
+String a = name[~5];
+String b = name[5~8];
 print(a);
 print(b);
-name[4~6] = "ae";
+name[~5] = "[]";
 print(name);
-name[0~4] = "";
+name[9~] = "[]";
 print(name);
