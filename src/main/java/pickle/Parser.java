@@ -1531,7 +1531,7 @@ public class Parser {
         Stack<Token> stack = new Stack<>();
         boolean foundLParen = false;
         infix_to_postfix_loop:
-        while(continuesExpr(scan.currentToken)) {
+        while(continuesExpr(scan.currentToken) && !scan.currentToken.tokenStr.equals("~")) {
             // Evaluate starting from currentToken. Converts results from things like array references or variables into a Token
             Token t = scan.currentToken;
 
@@ -1551,44 +1551,80 @@ public class Parser {
                 scan.getNext(); // Skip to first item in index
 
                 indexResult = expr(true);
-                int index = ((Numeric) indexResult.value).intValue;
 
-                if(indexResult.iDatatype != SubClassif.INTEGER)
-                    error("Index evaluated to %s, which is not an integer");
+                // Slice
+                if(scan.currentToken.tokenStr.equals("~")) {
+                    scan.getNext(); // Skip to ending index
+                    ResultValue resultValue = getVariableValue(variableName);
+                    if(resultValue.iDatatype != SubClassif.STRING)
+                        error("%s cannot be sliced because it's not a string.", variableName);
+                    String var = (String)resultValue.value;
 
-                if(!scan.currentToken.tokenStr.equals("]"))
-                    errorWithCurrent("Expected for array subscript to end with a ']'");
+                    int startIndex = 0;
+                    if(indexResult.iDatatype == SubClassif.INTEGER)
+                        startIndex = ((Numeric) indexResult.value).intValue;
 
-                if(stEntry.dclType == SubClassif.STRING) {
-                    String str = ((String)getVariableValue(variableName).value);
-                    char value = str.charAt(index);
-                    t = new Token(String.valueOf(value));
+                    int endIndex = var.length();
+                    indexResult = expr(true);
+                    if(indexResult.iDatatype == SubClassif.INTEGER)
+                        endIndex = ((Numeric) indexResult.value).intValue;
+
+                    if (!scan.currentToken.tokenStr.equals("]"))
+                        errorWithCurrent("Expected string slice to end with a ']'");
+                    // Keep on ']', so get next gets the next token after ending the slice
+
+                    // Bounds check
+                    if(startIndex < 0)
+                        error("Start index for a slice must be greater than / equal to 0");
+                    if(endIndex > var.length())
+                        error("End index for a slice must be less than / equal to the LENGTH(%s)", variableName);
+
+                    // Set the token
+                    t = new Token(var.substring(startIndex, endIndex));
                     t.primClassif = Classif.OPERAND;
                     t.dclType = SubClassif.STRING;
+
                 }
+                // Subscript
                 else {
-                    PickleArray arr = ((PickleArray) getVariableValue(variableName).value);
-                    ResultValue value = arr.get(index);
+                    if (indexResult.iDatatype != SubClassif.INTEGER)
+                        error("Index evaluated to %s, which is not an integer", indexResult.iDatatype);
 
-                    if(((Numeric) indexResult.value).intValue > arr.highestPopulatedValue) {
-                        arr.highestPopulatedValue = ((Numeric) indexResult.value).intValue;
+                    int index = ((Numeric) indexResult.value).intValue;
 
-                        if( ( ((Numeric) indexResult.value).intValue - arr.highestPopulatedValue) > 1) {
 
-                            // Fill array up to the highest referenced index
-                            for(int i = arr.highestPopulatedValue; i < ((Numeric) indexResult.value).intValue; i++) {
-                                arr.arrayList.add(arr.defaultValue);
-                                arr.arrayList.get(arr.arrayList.size()).isNull = true;
-                                System.out.println(arr.arrayList.get(arr.arrayList.size() - 1).toString());
-                                System.out.println(arr.arrayList.get(i).isNull);
+                    if (!scan.currentToken.tokenStr.equals("]"))
+                        errorWithCurrent("Expected array subscript to end with a ']'");
+
+                    if (stEntry.dclType == SubClassif.STRING) {
+                        String str = ((String) getVariableValue(variableName).value);
+                        char value = str.charAt(index);
+                        t = new Token(String.valueOf(value));
+                        t.primClassif = Classif.OPERAND;
+                        t.dclType = SubClassif.STRING;
+                    } else {
+                        PickleArray arr = ((PickleArray) getVariableValue(variableName).value);
+                        ResultValue value = arr.get(index);
+
+                        if (((Numeric) indexResult.value).intValue > arr.highestPopulatedValue) {
+                            arr.highestPopulatedValue = ((Numeric) indexResult.value).intValue;
+
+                            if ((((Numeric) indexResult.value).intValue - arr.highestPopulatedValue) > 1) {
+
+                                // Fill array up to the highest referenced index
+                                for (int i = arr.highestPopulatedValue; i < ((Numeric) indexResult.value).intValue; i++) {
+                                    arr.arrayList.add(arr.defaultValue);
+                                    arr.arrayList.get(arr.arrayList.size()).isNull = true;
+                                    System.out.println(arr.arrayList.get(arr.arrayList.size() - 1).toString());
+                                    System.out.println(arr.arrayList.get(i).isNull);
+                                }
                             }
                         }
+
+                        t = new Token(value.toString());
+                        scan.setClassification(t);
                     }
-
-                    t = new Token(value.toString());
-                    scan.setClassification(t);
                 }
-
                 // Don't skip past the ']', we'll do that at the end of the while loop
             }
             else if(scan.currentToken.dclType == SubClassif.IDENTIFIER) {
@@ -1678,8 +1714,8 @@ public class Parser {
         String operation = null;
         ResultValue operand1 = null;
         ResultValue operand2 = null;
-        //if(out.isEmpty())
-        //    error("getOperand was called to evaluate postfix, but out was empty");
+        if(out.isEmpty())
+            return new ResultValue(SubClassif.EMPTY, "");
         if(out.peek().primClassif == Classif.OPERAND)
             return tokenToResultValue(out.pop());
         else if(out.peek().primClassif == Classif.OPERATOR) {

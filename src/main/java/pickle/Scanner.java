@@ -529,6 +529,7 @@ public class Scanner {
             case "^=":
             case "//":
             case "#":
+            case "~":
                 return true;
             default:
                 return false;

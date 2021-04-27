@@ -1,0 +1,5 @@
+String name = "Micheal";
+String a = name[0~4];
+String b = name[4~7];
+print(a);
+print(b);
