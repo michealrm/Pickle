@@ -3,3 +3,7 @@ String a = name[0~4];
 String b = name[4~7];
 print(a);
 print(b);
+name[4~6] = "ae";
+print(name);
+name[0~4] = "";
+print(name);

@@ -527,47 +527,99 @@ public class Parser {
             int index = -1;
             scan.getNext();
             ResultValue expr = expr(true);
-            if(expr.iDatatype != SubClassif.INTEGER)
-                error("Array subscript expression must evaluate to an integer");
-            index = ((Numeric)expr.value).intValue;
 
-            if(!scan.currentToken.tokenStr.equals("]"))
-                errorWithCurrent("Expected array subscript to end with a ']'");
+            // Slice
+            if(scan.currentToken.tokenStr.equals("~")) {
+                scan.getNext(); // Skip to ending index
+                ResultValue resultValue = getVariableValue(variableName);
+                if(resultValue.iDatatype != SubClassif.STRING)
+                    error("%s cannot be sliced because it's not a string.", variableName);
+                String var = (String)resultValue.value;
 
-            scan.getNext();
+                int startIndex = 0;
+                if(expr.iDatatype == SubClassif.EMPTY)
+                    startIndex = 0;
+                else if(expr.iDatatype == SubClassif.INTEGER)
+                    startIndex = ((Numeric) expr.value).intValue;
+                else
+                    error("Expected string slice starting index to evaluate to an integer");
 
-            if(!scan.currentToken.tokenStr.equals("="))
-                errorWithCurrent("Expected '=' assignment to array reference assignment");
+                int endIndex = var.length();
+                expr = expr(true);
+                if(expr.iDatatype == SubClassif.EMPTY)
+                    endIndex = var.length();
+                else if(expr.iDatatype == SubClassif.INTEGER)
+                    endIndex = ((Numeric) expr.value).intValue;
+                else
+                    error("Expected string slice ending index to evaluate to an integer");
 
-            scan.getNext();
+                if (!scan.currentToken.tokenStr.equals("]"))
+                    errorWithCurrent("Expected string slice to end with a ']'");
+                scan.getNext(); // Skip to '='
 
-            expr = expr(true); // Value to copy into array reference
+                if(!scan.currentToken.tokenStr.equals("="))
+                    errorWithCurrent("Only '=' assignment supported for array slice");
+                scan.getNext(); // Skip past '='
 
-            // If array can't hold expr()'s type
-            SubClassif type = scan.symbolTable.getSymbol(variableName).dclType;
-            if(type == SubClassif.STRING) {
-                if(expr.iDatatype != SubClassif.STRING)
-                    errorWithCurrent("Cannot assign %s to a STRING index", expr.value);
-                String exprStr = ((String)expr.value);
-                String str = ((String)getVariableValue(variableName).value);
-                str = str.substring(0, index) + exprStr + str.substring(Math.min(str.length(), index + exprStr.length()));
-                assign(variableName, new ResultValue(SubClassif.STRING, str));
-            } else if(type == SubClassif.INTEGERARR || type == SubClassif.FLOATARR || type == SubClassif.STRINGARR) {
-                if(!((type == SubClassif.INTEGERARR && expr.iDatatype == SubClassif.INTEGER)
-                        || (type == SubClassif.FLOATARR && expr.iDatatype == SubClassif.FLOAT)
-                        || (type == SubClassif.STRINGARR && expr.iDatatype == SubClassif.STRING)))
-                    error("Value of array reference assignment had type %s, but array has type %s", expr.iDatatype.toString(), type.toString());
-                // Set value
-                PickleArray arr = ((PickleArray) getVariableValue(variableName).value);
-                arr.set(index, expr);
+                ResultValue strToAssign = expr(true);
+                scan.getNext(); // Skip to next statement
+
+                // Bounds check
+                if(startIndex < 0)
+                    error("Start index for a slice must be greater than / equal to 0");
+                if(endIndex > var.length())
+                    error("End index for a slice must be less than / equal to the LENGTH(%s)", variableName);
+
+                var = var.substring(0, startIndex) + strToAssign.value + var.substring(endIndex);
+                ResultValue retRV = new ResultValue(SubClassif.STRING, var);
+                assign(variableName, retRV);
+
+                return retRV;
             }
+            // Array subscript
+            else {
+                if (expr.iDatatype != SubClassif.INTEGER)
+                    error("Array subscript expression must evaluate to an integer");
+                index = ((Numeric) expr.value).intValue;
 
-            if(!scan.currentToken.tokenStr.equals(";"))
-                errorWithCurrent("Expected array reference assignment to end with a ';'");
+                if (!scan.currentToken.tokenStr.equals("]"))
+                    errorWithCurrent("Expected array subscript to end with a ']'");
 
-            scan.getNext(); // Skip to next statement
+                scan.getNext();
 
-            return expr;
+                if (!scan.currentToken.tokenStr.equals("="))
+                    errorWithCurrent("Expected '=' assignment to array reference assignment");
+
+                scan.getNext();
+
+                expr = expr(true); // Value to copy into array reference
+
+                // If array can't hold expr()'s type
+                SubClassif type = scan.symbolTable.getSymbol(variableName).dclType;
+                if (type == SubClassif.STRING) {
+                    if (expr.iDatatype != SubClassif.STRING)
+                        errorWithCurrent("Cannot assign %s to a STRING index", expr.value);
+                    String exprStr = ((String) expr.value);
+                    String str = ((String) getVariableValue(variableName).value);
+                    str = str.substring(0, index) + exprStr + str.substring(Math.min(str.length(), index + exprStr.length()));
+                    assign(variableName, new ResultValue(SubClassif.STRING, str));
+                } else if (type == SubClassif.INTEGERARR || type == SubClassif.FLOATARR || type == SubClassif.STRINGARR) {
+                    if (!((type == SubClassif.INTEGERARR && expr.iDatatype == SubClassif.INTEGER)
+                            || (type == SubClassif.FLOATARR && expr.iDatatype == SubClassif.FLOAT)
+                            || (type == SubClassif.STRINGARR && expr.iDatatype == SubClassif.STRING)))
+                        error("Value of array reference assignment had type %s, but array has type %s", expr.iDatatype.toString(), type.toString());
+                    // Set value
+                    PickleArray arr = ((PickleArray) getVariableValue(variableName).value);
+                    arr.set(index, expr);
+                }
+
+                if (!scan.currentToken.tokenStr.equals(";"))
+                    errorWithCurrent("Expected array reference assignment to end with a ';'");
+
+                scan.getNext(); // Skip to next statement
+
+                return expr;
+            }
         }
         else {
             if (scan.currentToken.primClassif != Classif.OPERATOR)
