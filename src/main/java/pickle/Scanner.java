@@ -316,7 +316,18 @@ public class Scanner {
         } else if(token.tokenStr.equals("debug")) {
             token.primClassif = Classif.DEBUG;
             token.dclType = SubClassif.DEBUG;
-        } /* else if(token.tokenStr.compareTo("def") == 0) {   // TODO 1: Add parameters as identifiers within the function symbol table
+        } else if(token.tokenStr.equals("break")) {
+            token.primClassif = Classif.CONTROL;
+            token.dclType = SubClassif.BREAK;
+        } else if(token.tokenStr.equals("continue")) {
+            token.primClassif = Classif.CONTROL;
+            token.dclType = SubClassif.CONTINUE;
+        } else if(token.tokenStr.equals("return")) {
+            token.primClassif = Classif.CONTROL;
+            token.dclType = SubClassif.RETURN;
+        }
+
+        /* else if(token.tokenStr.compareTo("def") == 0) {   // TODO 1: Add parameters as identifiers within the function symbol table
                                                             // TODO 2: Set STFunction numArgs in parser
             // Data for declaration of a function
 

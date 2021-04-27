@@ -7,7 +7,6 @@ import pickle.st.STFunction;
 import pickle.st.STIdentifier;
 import pickle.st.SymbolTable;
 
-import javax.xml.transform.Result;
 import java.util.ArrayList;
 import java.util.EmptyStackException;
 import java.util.HashMap;
@@ -41,11 +40,11 @@ public class Parser {
 
     /**
      *
-     * @param bExec
+     * @param iExecMode
      * @return The ResultValue evaluated from the statements. Will likely be EMPTY with an empty string value.
      *  The important part is that scTerminatingStr is set
      */
-    ResultValue executeStatements(boolean bExec) throws Exception {
+    ResultValue executeStatements(Status iExecMode) throws Exception {
         //System.out.println(forStmtDepth);
         ResultValue res;
         while(true) {
@@ -53,7 +52,7 @@ public class Parser {
                 scan.printLineDebug(scan.iSourceLineNr);
             }
             res = new ResultValue(SubClassif.EMPTY, "");
-            ResultValue resTemp = executeStmt(bExec);
+            ResultValue resTemp = executeStmt(iExecMode);
 
             // EOF
             if (scan.currentToken.primClassif == Classif.EOF)
@@ -125,7 +124,7 @@ public class Parser {
         return res;
     }
 
-    ResultValue executeStmt(boolean bExec) throws Exception {
+    ResultValue executeStmt(Status iExecMode) throws Exception {
         if (scan.scanDebug.bShowExpr) {
             switch (scan.currentToken.tokenStr) {
                 case "while":
@@ -156,7 +155,7 @@ public class Parser {
             switch (scan.currentToken.tokenStr) {
                 case "while":
                     flowStack.push("while");
-                    whileStmt(bExec);   // Will change the token position
+                    whileStmt(iExecMode);   // Will change the token position
                     break;
                 case "for":
                     flowStack.push("for");
@@ -173,7 +172,7 @@ public class Parser {
                             // Go back to start of expression for evalCond
                             scan.goTo(iStartSourceLineNr, iStartColPos);
 
-                            forStmt(bExec);   // Will change the token position
+                            forStmt(iExecMode);   // Will change the token position
 
                             break;
 
@@ -182,7 +181,7 @@ public class Parser {
                             // Go back to start of expression for evalCond
                             scan.goTo(iStartSourceLineNr, iStartColPos);
 
-                            forEachStmt(bExec);   // Will change the token position
+                            forEachStmt(iExecMode);   // Will change the token position
 
                             break;
 
@@ -193,7 +192,7 @@ public class Parser {
                     break;
                 case "if":
                     flowStack.push("if");
-                    ifStmt(bExec);   // Will change the token position
+                    ifStmt(iExecMode);   // Will change the token position
             }
 
             // Check for END
@@ -206,7 +205,7 @@ public class Parser {
             }
         }
 
-        if(bExec) {
+        if(iExecMode == Status.EXECUTE) {
             if(scan.currentToken.primClassif == Classif.EOF) {
                 // executeStatements will check for EOF, we just need to get out of this function
                 return new ResultValue(SubClassif.EMPTY, "");
@@ -218,7 +217,7 @@ public class Parser {
                 return assignmentStmt();
             }
             else if(scan.currentToken.primClassif == Classif.FUNCTION) {
-                callBuiltInFunc(bExec);
+                callBuiltInFunc(iExecMode);
             }
             // If file starts with a comment and currentToken is empty
             else if(scan.currentToken.primClassif == Classif.EMPTY && scan.currentToken.dclType == SubClassif.EMPTY)
@@ -300,7 +299,7 @@ public class Parser {
                     iArrayLen = 0;
                     scan.getNext();
                 } else {
-                    ResultValue arrLenExpr = expr(true);
+                    ResultValue arrLenExpr = expr(Status.EXECUTE);
                     if (arrLenExpr.iDatatype != SubClassif.INTEGER)
                         error("Array index must be an integer");
                     iArrayLen = ((Numeric) arrLenExpr.value).intValue;
@@ -388,7 +387,7 @@ public class Parser {
                     int i = 0;
 
                     do {
-                        ResultValue arrElement = expr(true);
+                        ResultValue arrElement = expr(Status.EXECUTE);
                         if(i > arr.highestPopulatedValue) {
                             arr.highestPopulatedValue = i;
                         }
@@ -432,7 +431,7 @@ public class Parser {
                     if(iArrayLen == -1 || iArrayLen == 0)
                         error("Cannot assign scalar to unbounded / array defined without a length");
 
-                    ResultValue scalar = expr(true);
+                    ResultValue scalar = expr(Status.EXECUTE);
 
                     if(!scan.currentToken.tokenStr.equals(";"))
                         errorWithCurrent("Expected ';' after array scalar assignment");
@@ -526,7 +525,10 @@ public class Parser {
         if(scan.currentToken.tokenStr.equals("[")) {
             int index = -1;
             scan.getNext();
-            ResultValue expr = expr(true);
+            ResultValue expr = expr(Status.EXECUTE);
+            if(expr.iDatatype != SubClassif.INTEGER)
+                error("Array subscript expression must evaluate to an integer");
+            index = ((Numeric)expr.value).intValue;
 
             // Slice
             if(scan.currentToken.tokenStr.equals("~")) {
@@ -545,7 +547,7 @@ public class Parser {
                     error("Expected string slice starting index to evaluate to an integer");
 
                 int endIndex = var.length();
-                expr = expr(true);
+                expr = expr(Status.EXECUTE);
                 if(expr.iDatatype == SubClassif.EMPTY)
                     endIndex = var.length();
                 else if(expr.iDatatype == SubClassif.INTEGER)
@@ -561,7 +563,7 @@ public class Parser {
                     errorWithCurrent("Only '=' assignment supported for array slice");
                 scan.getNext(); // Skip past '='
 
-                ResultValue strToAssign = expr(true);
+                ResultValue strToAssign = expr(Status.EXECUTE);
                 scan.getNext(); // Skip to next statement
 
                 // Bounds check
@@ -592,19 +594,19 @@ public class Parser {
 
                 scan.getNext();
 
-                expr = expr(true); // Value to copy into array reference
+                expr = expr(Status.EXECUTE); // Value to copy into array reference
 
                 // If array can't hold expr()'s type
                 SubClassif type = scan.symbolTable.getSymbol(variableName).dclType;
-                if (type == SubClassif.STRING) {
-                    if (expr.iDatatype != SubClassif.STRING)
+                if(type == SubClassif.STRING) {
+                    if(expr.iDatatype != SubClassif.STRING)
                         errorWithCurrent("Cannot assign %s to a STRING index", expr.value);
-                    String exprStr = ((String) expr.value);
-                    String str = ((String) getVariableValue(variableName).value);
+                    String exprStr = ((String)expr.value);
+                    String str = ((String)getVariableValue(variableName).value);
                     str = str.substring(0, index) + exprStr + str.substring(Math.min(str.length(), index + exprStr.length()));
                     assign(variableName, new ResultValue(SubClassif.STRING, str));
-                } else if (type == SubClassif.INTEGERARR || type == SubClassif.FLOATARR || type == SubClassif.STRINGARR) {
-                    if (!((type == SubClassif.INTEGERARR && expr.iDatatype == SubClassif.INTEGER)
+                } else if(type == SubClassif.INTEGERARR || type == SubClassif.FLOATARR || type == SubClassif.STRINGARR) {
+                    if(!((type == SubClassif.INTEGERARR && expr.iDatatype == SubClassif.INTEGER)
                             || (type == SubClassif.FLOATARR && expr.iDatatype == SubClassif.FLOAT)
                             || (type == SubClassif.STRINGARR && expr.iDatatype == SubClassif.STRING)))
                         error("Value of array reference assignment had type %s, but array has type %s", expr.iDatatype.toString(), type.toString());
@@ -627,7 +629,7 @@ public class Parser {
 
             String operatorStr = scan.currentToken.tokenStr;
             scan.getNext();
-            ResultValue exprToAssign = expr(true);
+            ResultValue exprToAssign = expr(Status.EXECUTE);
             switch(operatorStr) {
                 case "=":
                     res = assign(variableName, exprToAssign);
@@ -657,19 +659,19 @@ public class Parser {
         }
     }
 
-    void ifStmt(boolean bExec) throws Exception {
-        if(bExec) {
+    void ifStmt(Status iExecMode) throws Exception {
+        if(iExecMode == Status.EXECUTE) {
             scan.getNext(); // Skip past the "if" to the opening parenthesis of the condition expression
-            ResultValue resCond = evalCond(bExec, "if");
+            ResultValue resCond = evalCond(iExecMode, "if");
             if(Boolean.parseBoolean(String.valueOf(resCond.value))) {
                 if(!scan.currentToken.tokenStr.equals(":"))
                     errorWithCurrent("Expected ':' after if");
                 scan.getNext(); // Skip past ':'
-                ResultValue resTemp = executeStatements(true);
+                ResultValue resTemp = executeStatements(Status.EXECUTE);
                 if(resTemp.scTerminatingStr.equals("else")) {
                     if(!scan.getNext().tokenStr.equals(":"))
                         errorWithCurrent("Expected ':' after else");
-                    resTemp = executeStatements(false);
+                    resTemp = executeStatements(Status.IGNORE_EXEC);
                 }
                 if(!resTemp.scTerminatingStr.equals("endif"))
                     errorWithCurrent("Expected an 'endif' for an 'if'");
@@ -683,12 +685,12 @@ public class Parser {
                 if(!scan.currentToken.tokenStr.equals(":"))
                     errorWithCurrent("Expected ':' after if");
                 scan.getNext(); // Skip past ':'
-                ResultValue resTemp = executeStatements(false);
+                ResultValue resTemp = executeStatements(Status.IGNORE_EXEC);
                 if(resTemp.scTerminatingStr.equals("else")) {
                     if(!scan.getNext().tokenStr.equals(":"))
                         errorWithCurrent("Expected ':' after 'else'");
                     scan.getNext();
-                    resTemp = executeStatements(true);
+                    resTemp = executeStatements(Status.EXECUTE);
                 }
                 if(!scan.getNext().tokenStr.equals(";"))
                     errorWithCurrent("Expected ';' after 'endif'");
@@ -696,12 +698,12 @@ public class Parser {
             }
         } else {
             skipAfter(":");
-            ResultValue resTemp = executeStatements(false);
+            ResultValue resTemp = executeStatements(Status.IGNORE_EXEC);
             if(resTemp.scTerminatingStr.equals("else")) {
                 if(!scan.getNext().tokenStr.equals(":"))
                     errorWithCurrent("Expected ':' after else");
                 scan.getNext(); // Skip past ':'
-                resTemp = executeStatements(bExec);
+                resTemp = executeStatements(iExecMode);
             }
             if(!resTemp.scTerminatingStr.equals("endif"))
                 errorWithCurrent("Expected an 'endif' for an 'if'");
@@ -711,8 +713,8 @@ public class Parser {
             scan.getNext(); // Skip past ';'
         }
     }
-    void whileStmt(boolean bExec) throws Exception {
-        if(bExec) {
+    void whileStmt(Status iExecMode) throws Exception {
+        if(iExecMode == Status.EXECUTE) {
             scan.getNext(); // Skip past the "while" to the opening parenthesis of the condition expression
 
             int iStartSourceLineNr = scan.iSourceLineNr; // Save position at the condition to loop back
@@ -729,13 +731,13 @@ public class Parser {
             // Go back to start of expression for evalCond
             scan.goTo(iStartSourceLineNr, iStartColPos);
 
-            ResultValue resCond = evalCond(bExec, "while");
+            ResultValue resCond = evalCond(iExecMode, "while");
             while((Boolean)resCond.value) {
                 if (!scan.currentToken.tokenStr.equals(":"))
                     errorWithCurrent("Expected ':' after while");
                 scan.getNext(); // Skip past ':'
 
-                ResultValue resTemp = executeStatements(true);
+                ResultValue resTemp = executeStatements(Status.EXECUTE);
 
                 if (!resTemp.scTerminatingStr.equals("endwhile"))
                     errorWithCurrent("Expected an 'endwhile' for a 'while'");
@@ -744,7 +746,7 @@ public class Parser {
 
                 // Jump back to beginning
                 scan.goTo(iStartSourceLineNr, iStartColPos);
-                resCond = evalCond(bExec, "while");
+                resCond = evalCond(iExecMode, "while");
             }
             // Jump to endwhile
             scan.goTo(iEndSourceLineNr, iEndColPos);
@@ -760,7 +762,7 @@ public class Parser {
                 errorWithCurrent("Expected ':' after while");
             scan.getNext(); // Skip past ':'
 
-            ResultValue resTemp = executeStatements(false);
+            ResultValue resTemp = executeStatements(Status.IGNORE_EXEC);
 
             if (!resTemp.scTerminatingStr.equals("endwhile"))
                 errorWithCurrent("Expected an 'endwhile' for a 'while'");
@@ -771,8 +773,8 @@ public class Parser {
         }
     }
 
-    void forStmt(boolean bExec) throws Exception {
-        if(bExec) {
+    void forStmt(Status iExecMode) throws Exception {
+        if(iExecMode == Status.EXECUTE) {
 
             String iteratorVariable;
             if(StorageManager.retrieveVariable(currentForStmtDepth + "tempLimit") == null) { // We must initialize the values first
@@ -822,7 +824,7 @@ public class Parser {
                 if (scan.nextToken.primClassif == Classif.OPERATOR) { // If we found another operand, it's an expression.
                     scan.iColPos = iStartOperandColPos;
 
-                    StorageManager.storeVariable(iteratorVariable, expr(true));    // Store the evaluated expression
+                    StorageManager.storeVariable(iteratorVariable, expr(Status.EXECUTE));    // Store the evaluated expression
                 }   // expr() should land us on the "to" position
                 else {
                     scan.getNext();
@@ -851,7 +853,7 @@ public class Parser {
                 if (scan.nextToken.primClassif == Classif.OPERATOR || scan.currentToken.primClassif == Classif.FUNCTION) { // If we found another operand, it's an expression.
                     scan.iColPos = iStartOperandColPos;
 
-                    StorageManager.storeVariable(currentForStmtDepth + "tempLimit", expr(true));    // Store the evaluated expression
+                    StorageManager.storeVariable(currentForStmtDepth + "tempLimit", expr(Status.EXECUTE));    // Store the evaluated expression
                 }   // expr() should land us on the "by" position
                 else {
                     StorageManager.storeVariable(currentForStmtDepth + "tempLimit", new ResultValue(SubClassif.INTEGER, scan.currentToken.tokenStr));
@@ -877,7 +879,7 @@ public class Parser {
                     if (scan.nextToken.primClassif == Classif.OPERATOR) { // If we found another operand, it's an expression.
                         scan.iColPos = iStartOperandColPos;
 
-                        StorageManager.storeVariable(currentForStmtDepth + "tempIncrement", expr(true));    // Store the evaluated expression
+                        StorageManager.storeVariable(currentForStmtDepth + "tempIncrement", expr(Status.EXECUTE));    // Store the evaluated expression
                     }   // expr() should land us on the ":" position
                     else {
                         StorageManager.storeVariable(currentForStmtDepth + "tempIncrement", new ResultValue(SubClassif.INTEGER, scan.currentToken.tokenStr));
@@ -919,7 +921,7 @@ public class Parser {
                 //System.out.println("INDEX " + StorageManager.retrieveVariable(iteratorVariable).toString());
 
                 //System.out.println("VARIABLE: " + iteratorVariable + " " + StorageManager.retrieveVariable(iteratorVariable).iPrimClassif);
-                ResultValue resTemp = executeStatements(true);
+                ResultValue resTemp = executeStatements(Status.EXECUTE);
 
                 if (!resTemp.scTerminatingStr.equals("endfor"))
                     errorWithCurrent("Expected an 'endfor' for a 'for'");
@@ -951,7 +953,7 @@ public class Parser {
                 errorWithCurrent("Expected ':' after for");
             scan.getNext(); // Skip past ':'
 
-            ResultValue resTemp = executeStatements(false);
+            ResultValue resTemp = executeStatements(Status.IGNORE_EXEC);
 
             if (!resTemp.scTerminatingStr.equals("endfor"))
                 errorWithCurrent("Expected an 'endfor' for a 'endfor'");
@@ -966,8 +968,8 @@ public class Parser {
         --currentForStmtDepth;
     }
 
-    void forEachStmt(boolean bExec) throws Exception {
-        if(bExec) {
+    void forEachStmt(Status iExecMode) throws Exception {
+        if(iExecMode == Status.EXECUTE) {
 
             String iteratorVariable;
 
@@ -1009,7 +1011,7 @@ public class Parser {
 
                     if (scan.nextToken.primClassif == Classif.OPERATOR) { // If we found another operator, it's an expression
 
-                        StorageManager.storeVariable(currentForStmtDepth + "tempIteratorObject", expr(true));    // Store the evaluated expression
+                        StorageManager.storeVariable(currentForStmtDepth + "tempIteratorObject", expr(Status.EXECUTE));    // Store the evaluated expression
                     }   // expr() should land us on the ":" position
                     else {
                         StorageManager.storeVariable(currentForStmtDepth + "tempIteratorObject", StorageManager.retrieveVariable(scan.currentToken.tokenStr));
@@ -1092,7 +1094,7 @@ public class Parser {
                     // Increment the position
                     StorageManager.storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) + 1));
 
-                    ResultValue resTemp = executeStatements(true);
+                    ResultValue resTemp = executeStatements(Status.EXECUTE);
 
                     if (!resTemp.scTerminatingStr.equals("endfor"))
                         errorWithCurrent("Expected an 'endfor' for a 'for'");
@@ -1122,7 +1124,7 @@ public class Parser {
                     // Increment the position
                     StorageManager.storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) + 1));
 
-                    ResultValue resTemp = executeStatements(true);
+                    ResultValue resTemp = executeStatements(Status.EXECUTE);
 
                     if (!resTemp.scTerminatingStr.equals("endfor"))
                         errorWithCurrent("Expected an 'endfor' for a 'for'");
@@ -1151,7 +1153,7 @@ public class Parser {
                 errorWithCurrent("Expected ':' after for");
             scan.getNext(); // Skip past ':'
 
-            ResultValue resTemp = executeStatements(false);
+            ResultValue resTemp = executeStatements(Status.IGNORE_EXEC);
 
             if (!resTemp.scTerminatingStr.equals("endfor"))
                 errorWithCurrent("Expected an 'endfor' for a 'endfor'");
@@ -1177,11 +1179,11 @@ public class Parser {
     /**
      * This calls any built-in function we made, depending on currentToken's tokenStr
      *
-     * @param bFlag
+     * @param iExecMode
      * @return ResultValue
      * @throws Exception
      */
-    private ResultValue callBuiltInFunc(boolean bFlag) throws Exception
+    private ResultValue callBuiltInFunc(Status iExecMode) throws Exception
     {
         if (scan.currentToken.tokenStr.equals("print"))
         {
@@ -1190,19 +1192,19 @@ public class Parser {
         }
         else if (scan.currentToken.tokenStr.equals("LENGTH"))
         {
-            return lengthFunc(bFlag);
+            return lengthFunc(iExecMode);
         }
         else if (scan.currentToken.tokenStr.equals("SPACES"))
         {
-            return spacesFunc(bFlag);
+            return spacesFunc(iExecMode);
         }
         else if (scan.currentToken.tokenStr.equals("ELEM"))
         {
-            return elemFunc(bFlag);
+            return elemFunc(iExecMode);
         }
         else if (scan.currentToken.tokenStr.equals("MAXELEM"))
         {
-            return maxElemFunc(bFlag);
+            return maxElemFunc(iExecMode);
         }
         return new ResultValue();
 
@@ -1214,7 +1216,7 @@ public class Parser {
             errorWithCurrent("Expected '(' for builtin function 'print'");
         do {
             scan.getNext();
-            ResultValue msgPart = expr(true);
+            ResultValue msgPart = expr(Status.EXECUTE);
             switch(msgPart.iDatatype) {
                 case INTEGER:
                 case FLOAT:
@@ -1256,11 +1258,11 @@ public class Parser {
 
     /**
      * Returns the length
-     * @param bExec
+     * @param iExecMode
      * @return
      * @throws Exception
      */
-    private ResultValue lengthFunc(boolean bExec) throws Exception
+    private ResultValue lengthFunc(Status iExecMode) throws Exception
     {
         scan.getNext();
 
@@ -1279,9 +1281,9 @@ public class Parser {
 
         scan.getNext();
 
-        if (bExec)
+        if (iExecMode == Status.EXECUTE)
         {
-            param = expr(bExec);
+            param = expr(iExecMode);
             // Convert to String
             // TODO: Create convertType function in ResultValue
             param = ResultValue.convertType(SubClassif.STRING, param);
@@ -1331,7 +1333,7 @@ public class Parser {
         return result;
     }
 
-    private ResultValue spacesFunc(boolean bExec) throws Exception
+    private ResultValue spacesFunc(Status iExecMode) throws Exception
     {
         scan.getNext();
 
@@ -1346,9 +1348,9 @@ public class Parser {
         ResultValue result = null;
         scan.getNext();
 
-        if (bExec)
+        if (iExecMode == Status.EXECUTE)
         {
-            param = expr(bExec);
+            param = expr(iExecMode);
             param = ResultValue.convertType(SubClassif.STRING, param);
             if (!scan.currentToken.tokenStr.equals(")"))
             {
@@ -1416,11 +1418,11 @@ public class Parser {
 
     /**
      *
-     * @param bExec
+     * @param iExecMode
      * @return
      * @throws Exception
      */
-    private ResultValue maxElemFunc(boolean bExec) throws Exception
+    private ResultValue maxElemFunc(Status iExecMode) throws Exception
     {
         scan.getNext();
 
@@ -1434,7 +1436,7 @@ public class Parser {
         ResultValue result = null;
         scan.getNext();
 
-        if (bExec)
+        if (iExecMode == Status.EXECUTE)
         {
             // TODO: create this func in ResultValue
             result = convertTokenToResultValue();
@@ -1487,7 +1489,7 @@ public class Parser {
         return result;
     }
 
-    private ResultValue elemFunc(boolean bExec) throws Exception
+    private ResultValue elemFunc(Status iExecMode) throws Exception
     {
         scan.getNext();
 
@@ -1501,7 +1503,7 @@ public class Parser {
         ResultValue result = null;
         scan.getNext();
 
-        if (bExec)
+        if (iExecMode == Status.EXECUTE)
         {
             // TODO: create this func in ResultValue
             result = convertTokenToResultValue();
@@ -1566,13 +1568,13 @@ public class Parser {
      * An expression can also be within parenthesis, like while () <--
      *
      * Ends scan on SEPARATOR token that terminated the expression
-     * @param bExec used for functions
+     * @param iExecMode used for functions
      * @return The ResultValue of the expression
      */
-    ResultValue expr(boolean bExec) throws Exception {
+    ResultValue expr(Status iExecMode) throws Exception {
         saveLocationForRange();
-        // First we'll handle if `bExec` == false
-        if(!bExec) {
+        // First we'll handle if `iExecMode` == Status.EXECUTE
+        if(!(iExecMode == Status.EXECUTE)) {
             while(continuesExpr(scan.currentToken))
                 scan.getNext();
             return new ResultValue(SubClassif.EMPTY, "");
@@ -1602,7 +1604,7 @@ public class Parser {
                 scan.getNext(); // Skip to '['
                 scan.getNext(); // Skip to first item in index
 
-                indexResult = expr(true);
+                indexResult = expr(Status.EXECUTE);
 
                 // Slice
                 if(scan.currentToken.tokenStr.equals("~")) {
@@ -1617,7 +1619,7 @@ public class Parser {
                         startIndex = ((Numeric) indexResult.value).intValue;
 
                     int endIndex = var.length();
-                    indexResult = expr(true);
+                    indexResult = expr(Status.EXECUTE);
                     if(indexResult.iDatatype == SubClassif.INTEGER)
                         endIndex = ((Numeric) indexResult.value).intValue;
 
@@ -1887,8 +1889,8 @@ public class Parser {
         return new ResultValue(SubClassif.EMPTY, "");
     }
 
-    ResultValue evalCond(boolean bExecFunc, String flowType) throws Exception {
-        ResultValue expr = expr(bExecFunc);
+    ResultValue evalCond(Status iExecMode, String flowType) throws Exception {
+        ResultValue expr = expr(iExecMode);
         if(expr.iDatatype != SubClassif.BOOLEAN)
             error("%s condition must yield a Bool", flowType);
         return expr;

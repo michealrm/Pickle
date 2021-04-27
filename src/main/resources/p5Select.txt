@@ -1,0 +1,116 @@
+Int i;
+String loc = "TX";
+print("p5Select.txt");
+// Select statement
+print(">>>select, loc is", loc);
+select loc:
+    when "CA", "OR":
+        print("\tin CA or OR, loc is", loc);
+    when "NM", "TX", "AZ":
+        print ("\tin NM TX or AZ, loc is", loc);
+    when  "TX":
+        print("\tTX again ... oops, loc is", loc);
+    default:
+        print("\tdefault, loc is", loc);
+endselect;
+
+// Select statement
+loc = "OR";
+print(">>>select, loc is", loc);
+select loc:
+    when "CA", "OR":
+        print("\tin CA or OR, loc is", loc);
+    when "NM", "TX", "AZ":
+        print ("\tin NM TX or AZ, loc is", loc);
+    when  "TX":
+        print("\tTX again ... oops, loc is", loc);
+    default:
+        print("\tdefault, loc is", loc);
+endselect;
+// Select statement
+loc = "NY";
+print(">>>select, loc is", loc);
+select loc:
+    when "CA", "OR":
+        print("\tin CA or OR, loc is", loc);
+    when "NM", "TX", "AZ":
+        print ("\tin NM TX or AZ, loc is", loc);
+    when  "TX":
+        print("\tTX again ... oops, loc is", loc);
+    default:
+        print("\tdefault, loc is", loc);
+endselect;
+
+// while and if 
+print(">>>  while i < 5");    
+Int i = 1;
+loc = "TX";
+while i < 5:
+    print("\ttop of while, i=", i);
+    select i:
+        when 1, 2:
+            print("\twhile first select when true i in 1, 2, i=", i);
+            i = i + 1;
+            select loc:
+                when "OK":
+                    print("\t\tloc is 'OK' which is not OK");
+                when "TX":
+                    print("\t\tloc is 'TX'");
+                default:
+                   print("\t\twhile inner select wrong!");
+            endselect;
+            print("\twhile after first inner select");
+        when 3:
+            print("\twhile first select when true i in 3, i=", i);
+            select loc:
+                when "TX":
+                     print("\t\twhile 2nd inner select true 'TX', loc is", loc);
+                     i = i + 1;
+                when "CA":
+                     print("\t\twhile 2nd inner select CA ... wrong");
+                     i = i + 10;
+            endselect;
+            print("\twhile after second inner select");
+        default:
+            print("\twhile first select default, i =", i);
+            i = i + 1;
+    endselect;
+    print("\tbottom of while, i=", i);
+endwhile;
+print("\tAfter first while");
+print(">>>  for state in stateM"); 
+String stateM[] = "FL", "TX", "NY", "OK","ND", "SD";
+Int warm = 0;
+Int cold = 0;
+for state in stateM:
+    print("\tinside for, state is ", state);
+    select state:
+        when "TX", "FL":
+            warm = warm + 1;
+        when "ND":
+            print ("\t",state, "is cold");
+            select warm:
+                when 0:
+                    cold = cold + 1;
+                when 1:
+                    cold = cold + 2;
+                when 2:
+                    cold = cold + 1;
+                    print("\tleaving for loop");
+                    break;
+                    print("\toops, why print after break?");
+                default:
+                    print("\tdefault inside select");
+            endselect;
+        when "NY":
+            cold = cold + 1;
+            print("\t",state, "is cold");
+        default:
+            print("\t",state, "- why does it exist");
+    endselect;
+    print ("\tafter select within for");
+endfor;
+print("after for", "warm=", warm, "cold=", cold);
+                    
+print("done with select");
+        

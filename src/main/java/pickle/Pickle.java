@@ -39,7 +39,7 @@ public class Pickle
             Parser parser = new Parser(scan);
 
             // Execute statements in the source file
-            parser.executeStatements(true);
+            parser.executeStatements(Status.EXECUTE);
         } catch(Exception e) {
             e.printStackTrace();
         }

@@ -1,0 +1,11 @@
+print("p5Funky.txt");
+def Void funky (Int iP1, Int iP2):
+    iP1 = iP1 * 2;
+    iP2 = iP2 * 2;
+    print("funky", "iP1=", iP1, "iP2=", iP2);
+enddef;
+Int x= 10;
+Int y= 11;
+funky(x,y+100);
+print("after", "x=", x, "y=", y);
+

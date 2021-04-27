@@ -1,0 +1,52 @@
+print("p5FuncUser.txt");
+def Void minMax (Float fArrayM[]
+     , Float fMax, Float fMin):
+    fMax = 0.0;    // arbitrary low value
+    fMin = 1000.0; // arbitrary high value
+    for fItem in fArrayM:
+        if fItem > fMax:
+            fMax = fItem;
+        endif;
+        if fItem < fMin:
+            fMin = fItem;
+        endif;
+    endfor;
+    print("inside minMax, fMax=", fMax, "fMin=", fMin);
+    //return;
+enddef;
+
+Float fArrM [5]= 50.0, 65.0, 35.0;
+Float fHi = 0;
+Float fLo = 0;
+print("before minMax");
+minMax(fArrM, fHi, fLo);
+print ("outside Max=", fHi, "Min=", fLo);
+
+def Int max2(Int iP1, Int iP2):
+    print("inside max2", iP1, iP2);
+    if iP1 > iP2:
+        return iP1;
+    else:
+        return iP2;
+    endif;
+        
+enddef;
+
+String str1 = "hello";
+Int i1 = 1;
+Int i2 = 2;
+print("i1=", i1, "i2=", i2,"max2(i1,i2)=", max2(i1, i2));
+
+print("str1=", str1, "LENGTH(str1)=", LENGTH(str1)
+    , "ELEM(fArrM)=", ELEM(fArrM), "max2=", max2(LENGTH(str1), ELEM(fArrM)));
+
+def Void weird (Int pR1, Value Int pV2):
+    print("weird first", pR1, pV2);
+    pR1 = pR1 + 10;
+    pV2 = pV2 + 10;
+    print("weird second", pR1, pV2);
+enddef;
+Int x = 5;
+Int y = 7;
+weird(x, y);
+print("after weird", x, y);

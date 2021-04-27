@@ -1,0 +1,21 @@
+// Example 3
+print("p5ScopeEx3.txt");
+def Void funcB():
+    iX = iX + 5;
+    iY = iY + 5;
+    iZ = iZ + 5;
+    print("funcB:", iX, iY, iZ); 
+enddef;
+
+def Void funcA():
+    Int iZ = 400;
+    iX = iX + 10;
+    iY = iY + 10;
+    print("funcA:", iX, iY, iZ); 
+    funcB();
+enddef;
+
+Int iX = 100;
+Int iY = 200;
+Int iZ = 300;
+funcA();
