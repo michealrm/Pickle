@@ -1,9 +1,0 @@
-String name = "alphabet neighborhood";
-String a = name[~5];
-String b = name[5~8];
-print(a);
-print(b);
-name[~5] = "[]";
-print(name);
-name[9~] = "[]";
-print(name);

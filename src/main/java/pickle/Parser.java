@@ -518,9 +518,24 @@ public class Parser {
         if(scan.currentToken.dclType != SubClassif.IDENTIFIER)
             error("Expected a variable for the target of an assignment");
         String variableName = scan.currentToken.tokenStr;
+        ResultValue resultValue = getVariableValue(variableName);
 
         scan.getNext();
         // Either on '[' or assignment operator
+
+
+        if(resultValue != null) {
+            if (existsInCurrentLine("~")
+                    && (resultValue.iDatatype == SubClassif.INTEGERARR
+                    || resultValue.iDatatype == SubClassif.FLOATARR
+                    || resultValue.iDatatype == SubClassif.BOOLEANARR
+                    || resultValue.iDatatype == SubClassif.STRINGARR
+                    || resultValue.iDatatype == SubClassif.DATEARR)) {
+
+                scan.getNext();
+                scan.getNext();
+            }
+        }
 
         if(scan.currentToken.tokenStr.equals("[")) {
             int index = -1;
@@ -530,50 +545,101 @@ public class Parser {
             // Slice
             if(scan.currentToken.tokenStr.equals("~")) {
                 scan.getNext(); // Skip to ending index
-                ResultValue resultValue = getVariableValue(variableName);
-                if(resultValue.iDatatype != SubClassif.STRING)
-                    error("%s cannot be sliced because it's not a string.", variableName);
-                String var = (String)resultValue.value;
+                if(resultValue.iDatatype == SubClassif.STRING) {
+                    String var = (String) resultValue.value;
 
-                int startIndex = 0;
-                if(expr.iDatatype == SubClassif.EMPTY)
-                    startIndex = 0;
-                else if(expr.iDatatype == SubClassif.INTEGER)
-                    startIndex = ((Numeric) expr.value).intValue;
-                else
-                    error("Expected string slice starting index to evaluate to an integer");
+                    int startIndex = 0;
+                    if (expr.iDatatype == SubClassif.EMPTY)
+                        startIndex = 0;
+                    else if (expr.iDatatype == SubClassif.INTEGER)
+                        startIndex = ((Numeric) expr.value).intValue;
+                    else
+                        error("Expected string slice starting index to evaluate to an integer");
 
-                int endIndex = var.length();
-                expr = expr(Status.EXECUTE);
-                if(expr.iDatatype == SubClassif.EMPTY)
-                    endIndex = var.length();
-                else if(expr.iDatatype == SubClassif.INTEGER)
-                    endIndex = ((Numeric) expr.value).intValue;
-                else
-                    error("Expected string slice ending index to evaluate to an integer");
+                    int endIndex = var.length();
+                    expr = expr(Status.EXECUTE);
+                    if (expr.iDatatype == SubClassif.EMPTY)
+                        endIndex = var.length();
+                    else if (expr.iDatatype == SubClassif.INTEGER)
+                        endIndex = ((Numeric) expr.value).intValue;
+                    else
+                        error("Expected string slice ending index to evaluate to an integer");
 
-                if (!scan.currentToken.tokenStr.equals("]"))
-                    errorWithCurrent("Expected string slice to end with a ']'");
-                scan.getNext(); // Skip to '='
+                    if (!scan.currentToken.tokenStr.equals("]"))
+                        errorWithCurrent("Expected string slice to end with a ']'");
+                    scan.getNext(); // Skip to '='
 
-                if(!scan.currentToken.tokenStr.equals("="))
-                    errorWithCurrent("Only '=' assignment supported for array slice");
-                scan.getNext(); // Skip past '='
+                    if (!scan.currentToken.tokenStr.equals("="))
+                        errorWithCurrent("Only '=' assignment supported for array slice");
+                    scan.getNext(); // Skip past '='
 
-                ResultValue strToAssign = expr(Status.EXECUTE);
-                scan.getNext(); // Skip to next statement
+                    ResultValue strToAssign = expr(Status.EXECUTE);
+                    scan.getNext(); // Skip to next statement
 
-                // Bounds check
-                if(startIndex < 0)
-                    error("Start index for a slice must be greater than / equal to 0");
-                if(endIndex > var.length())
-                    error("End index for a slice must be less than / equal to the LENGTH(%s)", variableName);
+                    // Bounds check
+                    if (startIndex < 0)
+                        error("Start index for a slice must be greater than / equal to 0");
 
-                var = var.substring(0, startIndex) + strToAssign.value + var.substring(endIndex);
-                ResultValue retRV = new ResultValue(SubClassif.STRING, var);
-                assign(variableName, retRV);
+                    var = var.substring(0, startIndex) + strToAssign.value + var.substring(endIndex);
+                    ResultValue retRV = new ResultValue(SubClassif.STRING, var);
+                    assign(variableName, retRV);
 
-                return retRV;
+                    return retRV;
+
+                } else if(  resultValue.iDatatype == SubClassif.INTEGERARR
+                        ||  resultValue.iDatatype == SubClassif.FLOATARR
+                        ||  resultValue.iDatatype == SubClassif.BOOLEANARR
+                        ||  resultValue.iDatatype == SubClassif.STRINGARR
+                        ||  resultValue.iDatatype == SubClassif.DATEARR) {
+
+                    PickleArray var = ((PickleArray) resultValue.value);
+
+                    int startIndex = 0;
+                    if (expr.iDatatype == SubClassif.EMPTY)
+                        startIndex = 0;
+                    else if (expr.iDatatype == SubClassif.INTEGER)
+                        startIndex = ((Numeric) expr.value).intValue;
+                    else
+                        error("Expected string slice starting index to evaluate to an integer");
+
+                    int endIndex = var.length;
+                    expr = expr(Status.EXECUTE);
+                    if (expr.iDatatype == SubClassif.EMPTY)
+                        endIndex = var.length;
+                    else if (expr.iDatatype == SubClassif.INTEGER)
+                        endIndex = ((Numeric) expr.value).intValue;
+                    else
+                        error("Expected string slice ending index to evaluate to an integer");
+
+                    endIndex -= 1;
+
+                    if (!scan.currentToken.tokenStr.equals("]"))
+                        errorWithCurrent("Expected string slice to end with a ']'");
+
+                    scan.getNext();
+                    scan.getNext(); // Skip to next statement
+
+                    // Bounds check
+                    if (startIndex < 0)
+                        error("Start index for a slice must be greater than / equal to 0");
+                    if (endIndex > var.length)
+                        error("End index for a slice must be less than / equal to the LENGTH(%s)", variableName);
+
+                    var.arrayList = new ArrayList(var.arrayList.subList(startIndex, endIndex));
+                    var.length = var.arrayList.size();
+
+                    if((endIndex - 1) < var.highestPopulatedValue) {
+                        for(int i = 0; i < var.length; i++) {
+                            if(!var.arrayList.get(i).isNull)
+                                var.highestPopulatedValue = i;
+                        }
+                    }
+
+                    return resultValue;
+
+                } else {
+                    error("Invalid datatype for a slicing operation");
+                }
             }
             // Array subscript
             else {
@@ -651,9 +717,9 @@ public class Parser {
             {
                 System.out.println( String.format("... Assign result into '%s' is '%s'", variableName, res.toString()));
             }
-
-            return res;
         }
+
+        return res;
     }
 
     void ifStmt(Status iExecMode) throws Exception {
@@ -1607,34 +1673,36 @@ public class Parser {
                 if(scan.currentToken.tokenStr.equals("~")) {
                     scan.getNext(); // Skip to ending index
                     ResultValue resultValue = getVariableValue(variableName);
-                    if(resultValue.iDatatype != SubClassif.STRING)
-                        error("%s cannot be sliced because it's not a string.", variableName);
-                    String var = (String)resultValue.value;
 
-                    int startIndex = 0;
-                    if(indexResult.iDatatype == SubClassif.INTEGER)
-                        startIndex = ((Numeric) indexResult.value).intValue;
+                    if(resultValue.iDatatype == SubClassif.STRING) {
 
-                    int endIndex = var.length();
-                    indexResult = expr(Status.EXECUTE);
-                    if(indexResult.iDatatype == SubClassif.INTEGER)
-                        endIndex = ((Numeric) indexResult.value).intValue;
+                        String var = (String) resultValue.value;
 
-                    if (!scan.currentToken.tokenStr.equals("]"))
-                        errorWithCurrent("Expected string slice to end with a ']'");
-                    // Keep on ']', so get next gets the next token after ending the slice
+                        int startIndex = 0;
+                        if (indexResult.iDatatype == SubClassif.INTEGER)
+                            startIndex = ((Numeric) indexResult.value).intValue;
 
-                    // Bounds check
-                    if(startIndex < 0)
-                        error("Start index for a slice must be greater than / equal to 0");
-                    if(endIndex > var.length())
-                        error("End index for a slice must be less than / equal to the LENGTH(%s)", variableName);
+                        int endIndex = var.length();
+                        indexResult = expr(Status.EXECUTE);
+                        if (indexResult.iDatatype == SubClassif.INTEGER)
+                            endIndex = ((Numeric) indexResult.value).intValue;
 
-                    // Set the token
-                    t = new Token(var.substring(startIndex, endIndex));
-                    t.primClassif = Classif.OPERAND;
-                    t.dclType = SubClassif.STRING;
+                        if (!scan.currentToken.tokenStr.equals("]"))
+                            errorWithCurrent("Expected string slice to end with a ']'");
+                        // Keep on ']', so get next gets the next token after ending the slice
 
+                        // Bounds check
+                        if (startIndex < 0)
+                            error("Start index for a slice must be greater than / equal to 0");
+                        if (endIndex > var.length())
+                            error("End index for a slice must be less than / equal to the LENGTH(%s)", variableName);
+
+                        // Set the token
+                        t = new Token(var.substring(startIndex, endIndex));
+                        t.primClassif = Classif.OPERAND;
+                        t.dclType = SubClassif.STRING;
+
+                    }
                 }
                 // Subscript
                 else {
@@ -1959,6 +2027,27 @@ public class Parser {
             scan.getNext();
     }
 
+    private boolean skipToInCurrentLine(String to) throws Exception {
+        boolean found = true;
+
+        int startLine = scan.iSourceLineNr;
+        int startCol = scan.iColPos;
+
+        while(!scan.currentToken.tokenStr.equals(to)) {
+            if(scan.currentToken.tokenStr.equals(";")) {
+                found = false;
+                break;
+            }
+            scan.getNext();
+        }
+
+        if(!found) {
+            scan.goTo(startLine, startCol);
+        }
+
+        return found;
+    }
+
     private void skipAfter(String to) throws Exception {
         skipTo(to);
         scan.getNext();
@@ -1967,6 +2056,25 @@ public class Parser {
     private void skipAfter(Classif primClassif) throws Exception {
         skipTo(primClassif);
         scan.getNext();
+    }
+
+    private boolean existsInCurrentLine(String str) throws Exception {
+        boolean found = true;
+
+        int startLine = scan.iSourceLineNr;
+        int startCol = scan.iColPos;
+
+        while(!scan.currentToken.tokenStr.equals(str)) {
+            if(scan.currentToken.tokenStr.equals(";")) {
+                found = false;
+                break;
+            }
+            scan.getNext();
+        }
+
+        scan.goTo(startLine, startCol);
+
+        return found;
     }
 
     private ResultValue assign(String variableName, ResultValue value) throws Exception {
