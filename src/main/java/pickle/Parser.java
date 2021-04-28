@@ -861,15 +861,10 @@ public class Parser {
 
                 if (StorageManager.retrieveVariable(scan.currentToken.tokenStr) == null) {   // Store the iterator variable if it doesn't already exit
                     scan.currentToken.primClassif = Classif.IDENTIFIER; // Set the classification to an identifier
-                    StorageManager.storeVariable(scan.currentToken.tokenStr, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0));   // TODO: FIX BUG THAT DELETES NON-USER DECLARED ITERATOR VARIABLES FROM StorageManager
+                    StorageManager.storeVariable(scan.currentToken.tokenStr, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0));
                 } else {
                     StorageManager.storeVariable(iteratorVariable, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0));
                 }
-
-                //System.out.println(scan.currentToken.tokenStr);
-                //System.out.println(StorageManager.retrieveVariable(scan.currentToken.tokenStr).iPrimClassif);
-                //System.out.println(StorageManager.retrieveVariable("i").iPrimClassif);
-
 
                 if (StorageManager.retrieveVariable(scan.currentToken.tokenStr).iPrimClassif != Classif.IDENTIFIER) {
                     errorWithCurrent("Expected identifier for 'for' iterator variable");
@@ -887,8 +882,6 @@ public class Parser {
 
                 scan.getNext();
 
-
-
                 if (!(scan.currentToken.primClassif == Classif.OPERAND)) {
                     errorWithCurrent("Expected operand after 'for' iterator variable");
                 }
@@ -898,11 +891,12 @@ public class Parser {
 
                     StorageManager.storeVariable(iteratorVariable, expr(Status.EXECUTE));    // Store the evaluated expression
                 }   // expr() should land us on the "to" position
+
                 else {
+                    StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.INTEGER, scan.currentToken.tokenStr));
+
                     scan.getNext();
                 }
-                //System.out.println(StorageManager.retrieveVariable("i").iPrimClassif);
-                //System.out.println(StorageManager.retrieveVariable("i").iPrimClassif);
 
                 // LIMIT VALUE
 
@@ -913,10 +907,6 @@ public class Parser {
                 iStartOperandColPos = scan.iColPos;
 
                 scan.getNext();
-
-                //.out.println("TOKEN STRING " + scan.currentToken.tokenStr);
-                //System.out.println(scan.currentToken.primClassif);
-                //System.out.println(scan.currentToken.dclType);
 
                 if (scan.currentToken.primClassif != Classif.OPERAND && scan.currentToken.primClassif != Classif.FUNCTION) {
                     errorWithCurrent("Expected operand after 'for' limit");
@@ -1054,6 +1044,10 @@ public class Parser {
                 scan.getNext(); // Skip past the "for" to the iterator variable
 
                 iteratorVariable = scan.currentToken.tokenStr;
+
+                if(scan.symbolTable.getSymbol(iteratorVariable) == null) {
+                    scan.symbolTable.putSymbol(iteratorVariable, new STEntry(iteratorVariable, scan.currentToken.primClassif));
+                }
 
                 scan.getNext();
 
@@ -1255,6 +1249,10 @@ public class Parser {
                 scan.getNext(); // Skip past the "for" to the iterator variable
 
                 iteratorVariable = scan.currentToken.tokenStr;
+
+                if(scan.symbolTable.getSymbol(iteratorVariable) == null) {
+                    scan.symbolTable.putSymbol(iteratorVariable, new STEntry(iteratorVariable, scan.currentToken.primClassif));
+                }
 
                 scan.getNext();
 

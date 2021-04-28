@@ -1,0 +1,5 @@
+for i = 2 * 2 to 10 by 2:
+	print(i);
+endfor;
+
+print(i);
