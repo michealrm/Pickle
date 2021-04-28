@@ -20,6 +20,8 @@ package pickle;
 import pickle.st.SymbolTable;
 import pickle.Scanner;
 
+import java.util.ArrayList;
+
 public class Pickle
 {
     public static void main(String[] args) throws Exception {
@@ -28,8 +30,12 @@ public class Pickle
         // Create the Global SymbolTable
         SymbolTable.initGlobal();
 
+        SymbolTable firstSymbolTable = new SymbolTable();
+
         // Create the SymbolTable
-        SymbolTable symbolTable = new SymbolTable();
+        final ArrayList<SymbolTable> symbolTable = new ArrayList<SymbolTable>();
+
+        symbolTable.add(firstSymbolTable);
 
         // Create the Scanner
         Scanner scan = new Scanner(args[0], symbolTable);

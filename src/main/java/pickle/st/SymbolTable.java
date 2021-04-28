@@ -10,8 +10,6 @@ public class SymbolTable {
 
     public static SymbolTable globalSymbolTable; // Symbols stored here are either Pickle reserve words, or any symbols outside of a function
 
-    public static HashMap<String, SymbolTable> symbolTableList = new HashMap<>(); // List of all symbol tables
-
     public HashMap<String, STEntry> hm = new HashMap<>(); // Individual symbol table
 
     // Symbols
@@ -24,23 +22,12 @@ public class SymbolTable {
         return hm.get(key);
     }
 
-    // Symbol tables
-
-    public static void putSymbolTable(String key, SymbolTable value) {
-        symbolTableList.put(key, value);
-    }
-
-    public static SymbolTable getSymbolTable(String key) {
-        return symbolTableList.get(key);
-    }
-
     /**
      * Initialize global symbol table
      */
     public static void initGlobal() {
         globalSymbolTable = new SymbolTable();
 
-        globalSymbolTable.putSymbolTable("global", globalSymbolTable);
         Scanner.linkedSymbolTable.put(0, globalSymbolTable);
 
         globalSymbolTable.putSymbol("def", new STControl("def", Classif.CONTROL, SubClassif.FLOW));

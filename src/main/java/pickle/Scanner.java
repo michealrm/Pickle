@@ -24,7 +24,7 @@ public class Scanner {
 
     public String sourceFileNm;
     public ArrayList<String> sourceLineM;
-    public SymbolTable symbolTable;
+    public ArrayList<SymbolTable> symbolTable;
     public char[] textCharM;
     public int iSourceLineNr;
     public int iColPos;
@@ -33,7 +33,7 @@ public class Scanner {
     private int lastLine = -1; // Used by advanceTokenPos
     public Debug scanDebug = new Debug();
 
-    public Scanner(String fileNm, SymbolTable symbolTable) {
+    public Scanner(String fileNm, ArrayList<SymbolTable> symbolTable) {
         this.sourceFileNm = fileNm;
         this.symbolTable = symbolTable;
         sourceLineM = new ArrayList<>();
@@ -495,10 +495,10 @@ public class Scanner {
                     case BUILTIN:
                         return containsIn(token.tokenStr + c, SymbolTable.globalSymbolTable.hm);
                     case USER:
-                        return containsIn(token.tokenStr + c, symbolTable.hm);
+                        return containsIn(token.tokenStr + c, symbolTable.get(Parser.environmentVector).hm);
                     case VOID:
                         return containsIn(token.tokenStr + c, SymbolTable.globalSymbolTable.hm) ||
-                                containsIn(token.tokenStr + c, symbolTable.hm);
+                                containsIn(token.tokenStr + c, symbolTable.get(Parser.environmentVector).hm);
                 }
             case DEBUG:
                 switch(token.dclType) {

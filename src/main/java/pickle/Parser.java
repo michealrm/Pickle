@@ -9,14 +9,13 @@ import pickle.st.SymbolTable;
 
 import java.util.ArrayList;
 import java.util.EmptyStackException;
-import java.util.HashMap;
 import java.util.Stack;
 
 public class Parser {
 
     public Scanner scan;
-    private HashMap<String, Object> storage;
-    private Stack<String> flowStack = new Stack<>();
+    private static final ArrayList<StorageManager> storageManager = new ArrayList<StorageManager>();
+    private static final Stack<String> flowStack = new Stack<>();
 
     public static int currentIfLine;
     public static int currentWhileLine;
@@ -27,10 +26,15 @@ public class Parser {
     // Useful in functions like expr() to print all tokens in a range in error messages
     public static int savedRangeStartLine = 0;
     public static int savedRangeStartCol = 0;
+    
+    public static int environmentVector = 0;
 
     public Parser(Scanner scanner) throws Exception {
         scan = scanner;
-        this.storage = new HashMap<String, Object>();
+        StorageManager firstStorageManager = new StorageManager();
+        
+        storageManager.add(firstStorageManager);
+        
         scan.getNext(); // Call initial getNext() to get first token
     }
 
@@ -280,13 +284,13 @@ public class Parser {
         if(scan.nextToken.tokenStr.equals("=")) {
             switch(typeStr) {
                 case "Int":
-                    scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.INTEGER));
+                    scan.symbolTable.get(environmentVector).putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.INTEGER));
                     break;
                 case "Float":
-                    scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.FLOAT));
+                    scan.symbolTable.get(environmentVector).putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.FLOAT));
                     break;
                 case "String":
-                    scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.STRING));
+                    scan.symbolTable.get(environmentVector).putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.STRING));
                     break;
             }
             assignmentStmt();
@@ -327,15 +331,15 @@ public class Parser {
                 // Put variable in symbol table, then create and assign PickleArray
                 switch(typeStr) {
                     case "Int[":
-                        scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.INTEGERARR));
+                        scan.symbolTable.get(environmentVector).putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.INTEGERARR));
                         assign(variableStr, new ResultValue(SubClassif.INTEGERARR, new PickleArray(SubClassif.INTEGER, iArrayLen)));
                         break;
                     case "Float[":
-                        scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.FLOATARR));
+                        scan.symbolTable.get(environmentVector).putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.FLOATARR));
                         assign(variableStr, new ResultValue(SubClassif.FLOATARR, new PickleArray(SubClassif.FLOAT, iArrayLen)));
                         break;
                     case "String[":
-                        scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.STRINGARR));
+                        scan.symbolTable.get(environmentVector).putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.STRINGARR));
                         assign(variableStr, new ResultValue(SubClassif.STRINGARR, new PickleArray(SubClassif.STRING, iArrayLen)));
                         break;
                 }
@@ -351,7 +355,7 @@ public class Parser {
                         errorWithCurrent("Expected ';' after array assignment");
 
                     String sourceTypeStr = null;
-                    STEntry sourceSTEntry = scan.symbolTable.getSymbol(scan.currentToken.tokenStr);
+                    STEntry sourceSTEntry = scan.symbolTable.get(environmentVector).getSymbol(scan.currentToken.tokenStr);
                     if(sourceSTEntry == null)
                         errorWithCurrent("Source variable " + scan.currentToken.tokenStr + " was not found in " +
                                 "symbol table for assignment.");
@@ -430,7 +434,7 @@ public class Parser {
                         arr.length = arr.arrayList.size();
 
                     // Now put variable in symbol table and store array into variable using StorageManager
-                    scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, subclassif));
+                    scan.symbolTable.get(environmentVector).putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, subclassif));
                     assign(variableStr, new ResultValue(subclassif,  arr));
 
                     scan.getNext(); // Skip to next statement
@@ -461,15 +465,15 @@ public class Parser {
                     // Put variable in symbol table, then create and assign PickleArray
                     switch(typeStr) {
                         case "Int[":
-                            scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.INTEGERARR));
+                            scan.symbolTable.get(environmentVector).putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.INTEGERARR));
                             assign(variableStr, new ResultValue(SubClassif.INTEGERARR, arr));
                             break;
                         case "Float[":
-                            scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.FLOATARR));
+                            scan.symbolTable.get(environmentVector).putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.FLOATARR));
                             assign(variableStr, new ResultValue(SubClassif.FLOATARR, arr));
                             break;
                         case "String[":
-                            scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.STRINGARR));
+                            scan.symbolTable.get(environmentVector).putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.STRINGARR));
                             assign(variableStr, new ResultValue(SubClassif.STRINGARR, arr));
                             break;
                     }
@@ -488,19 +492,19 @@ public class Parser {
             scan.getNext(); // Skip past ';' to next statement
             switch (typeStr) {
                 case "Int":
-                    scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.INTEGER));
+                    scan.symbolTable.get(environmentVector).putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.INTEGER));
                     assign(variableStr, new ResultValue(SubClassif.INTEGER, new Numeric("0", SubClassif.INTEGER)));
                     break;
                 case "Float":
-                    scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.FLOAT));
+                    scan.symbolTable.get(environmentVector).putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.FLOAT));
                     assign(variableStr, new ResultValue(SubClassif.INTEGER, new Numeric("0", SubClassif.INTEGER)));
                     break;
                 case "String":
-                    scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.STRING));
+                    scan.symbolTable.get(environmentVector).putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.STRING));
                     assign(variableStr, new ResultValue(SubClassif.STRING, ""));
                     break;
                 case "Bool":
-                    scan.symbolTable.putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.BOOLEAN));
+                    scan.symbolTable.get(environmentVector).putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.BOOLEAN));
                     assign(variableStr, new ResultValue(SubClassif.BOOLEAN, "F"));
                     break;
                 // Arrays handled above (if we see a '[' after the variable name
@@ -669,7 +673,7 @@ public class Parser {
                 expr = expr(Status.EXECUTE); // Value to copy into array reference
 
                 // If array can't hold expr()'s type
-                SubClassif type = scan.symbolTable.getSymbol(variableName).dclType;
+                SubClassif type = scan.symbolTable.get(environmentVector).getSymbol(variableName).dclType;
                 if(type == SubClassif.STRING) {
                     if(expr.iDatatype != SubClassif.STRING)
                         errorWithCurrent("Cannot assign %s to a STRING index", expr.value);
@@ -849,7 +853,7 @@ public class Parser {
         if(iExecMode == Status.EXECUTE) {
 
             String iteratorVariable;
-            if(StorageManager.retrieveVariable(currentForStmtDepth + "tempLimit") == null) { // We must initialize the values first
+            if(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempLimit") == null) { // We must initialize the values first
 
                 int iStartOperandColPos;
 
@@ -859,14 +863,14 @@ public class Parser {
 
                 iteratorVariable = scan.currentToken.tokenStr;
 
-                if (StorageManager.retrieveVariable(scan.currentToken.tokenStr) == null) {   // Store the iterator variable if it doesn't already exit
+                if (storageManager.get(environmentVector).retrieveVariable(scan.currentToken.tokenStr) == null) {   // Store the iterator variable if it doesn't already exit
                     scan.currentToken.primClassif = Classif.IDENTIFIER; // Set the classification to an identifier
-                    StorageManager.storeVariable(scan.currentToken.tokenStr, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0));
+                    storageManager.get(environmentVector).storeVariable(scan.currentToken.tokenStr, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0));
                 } else {
-                    StorageManager.storeVariable(iteratorVariable, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0));
+                    storageManager.get(environmentVector).storeVariable(iteratorVariable, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0));
                 }
 
-                if (StorageManager.retrieveVariable(scan.currentToken.tokenStr).iPrimClassif != Classif.IDENTIFIER) {
+                if (storageManager.get(environmentVector).retrieveVariable(scan.currentToken.tokenStr).iPrimClassif != Classif.IDENTIFIER) {
                     errorWithCurrent("Expected identifier for 'for' iterator variable");
                 }
 
@@ -889,11 +893,11 @@ public class Parser {
                 if (scan.nextToken.primClassif == Classif.OPERATOR) { // If we found another operand, it's an expression.
                     scan.iColPos = iStartOperandColPos;
 
-                    StorageManager.storeVariable(iteratorVariable, expr(Status.EXECUTE));    // Store the evaluated expression
+                    storageManager.get(environmentVector).storeVariable(iteratorVariable, expr(Status.EXECUTE));    // Store the evaluated expression
                 }   // expr() should land us on the "to" position
 
                 else {
-                    StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.INTEGER, scan.currentToken.tokenStr));
+                    storageManager.get(environmentVector).storeVariable(iteratorVariable, new ResultValue(SubClassif.INTEGER, scan.currentToken.tokenStr));
 
                     scan.getNext();
                 }
@@ -915,10 +919,10 @@ public class Parser {
                 if (scan.nextToken.primClassif == Classif.OPERATOR || scan.currentToken.primClassif == Classif.FUNCTION) { // If we found another operand, it's an expression.
                     scan.iColPos = iStartOperandColPos;
 
-                    StorageManager.storeVariable(currentForStmtDepth + "tempLimit", expr(Status.EXECUTE));    // Store the evaluated expression
+                    storageManager.get(environmentVector).storeVariable(currentForStmtDepth + "tempLimit", expr(Status.EXECUTE));    // Store the evaluated expression
                 }   // expr() should land us on the "by" position
                 else {
-                    StorageManager.storeVariable(currentForStmtDepth + "tempLimit", new ResultValue(SubClassif.INTEGER, scan.currentToken.tokenStr));
+                    storageManager.get(environmentVector).storeVariable(currentForStmtDepth + "tempLimit", new ResultValue(SubClassif.INTEGER, scan.currentToken.tokenStr));
                     scan.getNext();
                 }
 
@@ -926,7 +930,7 @@ public class Parser {
 
                 if (!scan.currentToken.tokenStr.equals("by")) {
 
-                    StorageManager.storeVariable(currentForStmtDepth + "tempIncrement", new ResultValue(SubClassif.INTEGER, "1"));
+                    storageManager.get(environmentVector).storeVariable(currentForStmtDepth + "tempIncrement", new ResultValue(SubClassif.INTEGER, "1"));
 
                 } else {
 
@@ -941,10 +945,10 @@ public class Parser {
                     if (scan.nextToken.primClassif == Classif.OPERATOR) { // If we found another operand, it's an expression.
                         scan.iColPos = iStartOperandColPos;
 
-                        StorageManager.storeVariable(currentForStmtDepth + "tempIncrement", expr(Status.EXECUTE));    // Store the evaluated expression
+                        storageManager.get(environmentVector).storeVariable(currentForStmtDepth + "tempIncrement", expr(Status.EXECUTE));    // Store the evaluated expression
                     }   // expr() should land us on the ":" position
                     else {
-                        StorageManager.storeVariable(currentForStmtDepth + "tempIncrement", new ResultValue(SubClassif.INTEGER, scan.currentToken.tokenStr));
+                        storageManager.get(environmentVector).storeVariable(currentForStmtDepth + "tempIncrement", new ResultValue(SubClassif.INTEGER, scan.currentToken.tokenStr));
                         scan.getNext();
                     }
                 }
@@ -977,12 +981,12 @@ public class Parser {
             // Go back to start of expression for evalCond
             scan.goTo(iStartSourceLineNr, iStartColPos);
 
-            //System.out.println("SIZE " + Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "tempLimit").toString()));
+            //System.out.println("SIZE " + Integer.parseInt(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempLimit").toString()));
 
-            while(Integer.parseInt(StorageManager.retrieveVariable(iteratorVariable).toString()) < Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "tempLimit").toString())) {
-                //System.out.println("INDEX " + StorageManager.retrieveVariable(iteratorVariable).toString());
+            while(Integer.parseInt(storageManager.get(environmentVector).retrieveVariable(iteratorVariable).toString()) < Integer.parseInt(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempLimit").toString())) {
+                //System.out.println("INDEX " + storageManager.get(environmentVector).retrieveVariable(iteratorVariable).toString());
 
-                //System.out.println("VARIABLE: " + iteratorVariable + " " + StorageManager.retrieveVariable(iteratorVariable).iPrimClassif);
+                //System.out.println("VARIABLE: " + iteratorVariable + " " + storageManager.get(environmentVector).retrieveVariable(iteratorVariable).iPrimClassif);
                 ResultValue resTemp = executeStatements(Status.EXECUTE);
 
                 if (!resTemp.scTerminatingStr.equals("endfor"))
@@ -994,12 +998,12 @@ public class Parser {
                 scan.goTo(iStartSourceLineNr, iStartColPos);
 
                 //System.out.println("Depth " + currentForStmtDepth);
-                //System.out.println("Iterator " + StorageManager.retrieveVariable(iteratorVariable).toString());
-                //System.out.println("Increment " + Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "tempIncrement").toString()));
+                //System.out.println("Iterator " + storageManager.get(environmentVector).retrieveVariable(iteratorVariable).toString());
+                //System.out.println("Increment " + Integer.parseInt(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempIncrement").toString()));
                 //System.out.println();
 
                 // Add the increment to the iterator
-                StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.INTEGER, Integer.parseInt(StorageManager.retrieveVariable(iteratorVariable).toString()) + Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "tempIncrement").toString())));
+                storageManager.get(environmentVector).storeVariable(iteratorVariable, new ResultValue(SubClassif.INTEGER, Integer.parseInt(storageManager.get(environmentVector).retrieveVariable(iteratorVariable).toString()) + Integer.parseInt(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempIncrement").toString())));
             }
             // Jump to endfor
             scan.goTo(iEndSourceLineNr, iEndColPos);
@@ -1025,8 +1029,8 @@ public class Parser {
             scan.getNext(); // Skip past ';'
         }
         // Delete temporary limit and increment variables in the StorageManager
-        StorageManager.deleteVariable(currentForStmtDepth + "tempLimit");
-        StorageManager.deleteVariable(currentForStmtDepth + "tempIncrement");
+        storageManager.get(environmentVector).deleteVariable(currentForStmtDepth + "tempLimit");
+        storageManager.get(environmentVector).deleteVariable(currentForStmtDepth + "tempIncrement");
         --currentForStmtDepth;
     }
 
@@ -1035,9 +1039,9 @@ public class Parser {
 
             String iteratorVariable;
 
-            if(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition") == null) {
+            if(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "iteratorPosition") == null) {
 
-                StorageManager.storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, 0));
+                storageManager.get(environmentVector).storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, 0));
 
                 // ITERATOR VARIABLE
 
@@ -1045,8 +1049,8 @@ public class Parser {
 
                 iteratorVariable = scan.currentToken.tokenStr;
 
-                if(scan.symbolTable.getSymbol(iteratorVariable) == null) {
-                    scan.symbolTable.putSymbol(iteratorVariable, new STEntry(iteratorVariable, scan.currentToken.primClassif));
+                if(scan.symbolTable.get(environmentVector).getSymbol(iteratorVariable) == null) {
+                    scan.symbolTable.get(environmentVector).putSymbol(iteratorVariable, new STEntry(iteratorVariable, scan.currentToken.primClassif));
                 }
 
                 scan.getNext();
@@ -1060,13 +1064,13 @@ public class Parser {
                 scan.getNext();
 
                 //System.out.println(scan.currentToken.tokenStr);
-                //System.out.println(StorageManager.retrieveVariable(scan.currentToken.tokenStr).iDatatype);
-                //System.out.println(((PickleArray) StorageManager.retrieveVariable(scan.currentToken.tokenStr).value).type);
+                //System.out.println(storageManager.get(environmentVector).retrieveVariable(scan.currentToken.tokenStr).iDatatype);
+                //System.out.println(((PickleArray) storageManager.get(environmentVector).retrieveVariable(scan.currentToken.tokenStr).value).type);
 
                 //if (scan.currentToken.primClassif == Classif.OPERAND || scan.currentToken.dclType == SubClassif.STRING) {
-                if (StorageManager.retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.STRING) {
-                    if (StorageManager.retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exist
-                        StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, ""));
+                if (storageManager.get(environmentVector).retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.STRING) {
+                    if (storageManager.get(environmentVector).retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exist
+                        storageManager.get(environmentVector).storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, ""));
                     }
 
                     //System.out.println(scan.currentToken.dclType);
@@ -1077,41 +1081,41 @@ public class Parser {
 
                     if (scan.nextToken.primClassif == Classif.OPERATOR) { // If we found another operator, it's an expression
 
-                        StorageManager.storeVariable(currentForStmtDepth + "tempIteratorObject", expr(Status.EXECUTE));    // Store the evaluated expression
+                        storageManager.get(environmentVector).storeVariable(currentForStmtDepth + "tempIteratorObject", expr(Status.EXECUTE));    // Store the evaluated expression
                     }   // expr() should land us on the ":" position
                     else {
-                        StorageManager.storeVariable(currentForStmtDepth + "tempIteratorObject", StorageManager.retrieveVariable(scan.currentToken.tokenStr));
+                        storageManager.get(environmentVector).storeVariable(currentForStmtDepth + "tempIteratorObject", storageManager.get(environmentVector).retrieveVariable(scan.currentToken.tokenStr));
                         scan.getNext();
                     }
-                } else if (StorageManager.retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.FIXED_ARRAY
-                        || StorageManager.retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.UNBOUNDED_ARRAY
-                        || StorageManager.retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.INTEGERARR
-                        || StorageManager.retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.FLOATARR
-                        || StorageManager.retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.STRINGARR
-                        || StorageManager.retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.BOOLEANARR
-                        || StorageManager.retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.DATEARR) {
+                } else if (storageManager.get(environmentVector).retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.FIXED_ARRAY
+                        || storageManager.get(environmentVector).retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.UNBOUNDED_ARRAY
+                        || storageManager.get(environmentVector).retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.INTEGERARR
+                        || storageManager.get(environmentVector).retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.FLOATARR
+                        || storageManager.get(environmentVector).retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.STRINGARR
+                        || storageManager.get(environmentVector).retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.BOOLEANARR
+                        || storageManager.get(environmentVector).retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.DATEARR) {
 
 
 
-                    if (StorageManager.retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exist
-                        StorageManager.storeVariable(iteratorVariable, new ResultValue( ((PickleArray) StorageManager.retrieveVariable(scan.currentToken.tokenStr).value).type, 0));
+                    if (storageManager.get(environmentVector).retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exist
+                        storageManager.get(environmentVector).storeVariable(iteratorVariable, new ResultValue( ((PickleArray) storageManager.get(environmentVector).retrieveVariable(scan.currentToken.tokenStr).value).type, 0));
                     }
 
                     //System.out.println(scan.currentToken.dclType);
-                    if (StorageManager.retrieveVariable(iteratorVariable).iDatatype != ((PickleArray) StorageManager.retrieveVariable(scan.currentToken.tokenStr).value).type) {
+                    if (storageManager.get(environmentVector).retrieveVariable(iteratorVariable).iDatatype != ((PickleArray) storageManager.get(environmentVector).retrieveVariable(scan.currentToken.tokenStr).value).type) {
                         errorWithCurrent("Expected identifier for 'for' iterator variable");
                     }
 
                     /*if (scan.nextToken.primClassif == Classif.OPERATOR) { // If we found another operator, it's an expression
 
-                        StorageManager.storeVariable(currentForStmtDepth + "tempIteratorObject", expr(true));    // Store the evaluated expression
+                        storageManager.get(environmentVector).storeVariable(currentForStmtDepth + "tempIteratorObject", expr(true));    // Store the evaluated expression
                     }   // expr() should land us on the ":" position
                     else {
-                        StorageManager.storeVariable(currentForStmtDepth + "tempIteratorObject", StorageManager.retrieveVariable(scan.currentToken.tokenStr));
+                        storageManager.get(environmentVector).storeVariable(currentForStmtDepth + "tempIteratorObject", storageManager.get(environmentVector).retrieveVariable(scan.currentToken.tokenStr));
                         scan.getNext();
                     }*/
 
-                    StorageManager.storeVariable(currentForStmtDepth + "tempIteratorObject", StorageManager.retrieveVariable(scan.currentToken.tokenStr));
+                    storageManager.get(environmentVector).storeVariable(currentForStmtDepth + "tempIteratorObject", storageManager.get(environmentVector).retrieveVariable(scan.currentToken.tokenStr));
                     scan.getNext();
 
                 } else {
@@ -1146,19 +1150,19 @@ public class Parser {
             iEndColPos = scan.iColPos;
             // Go back to start of expression for evalCond
             scan.goTo(iStartSourceLineNr, iStartColPos);
-            //System.out.println(StorageManager.retrieveVariable(iteratorVariable).iDatatype);
-            if(StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.STRING) {
-                //System.out.println(StorageManager.retrieveVariable(iteratorVariable).toString());
-                //System.out.println(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()));
+            //System.out.println(storageManager.get(environmentVector).retrieveVariable(iteratorVariable).iDatatype);
+            if(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.STRING) {
+                //System.out.println(storageManager.get(environmentVector).retrieveVariable(iteratorVariable).toString());
+                //System.out.println(Integer.parseInt(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()));
                 //System.out.println(iteratorVariable);
-                //System.out.println(StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").toString());
-                while(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) < StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").toString().length()) {
+                //System.out.println(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempIteratorObject").toString());
+                while(Integer.parseInt(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) < storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempIteratorObject").toString().length()) {
 
                     // Store the new value in the iterator variable
-                    StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").toString().charAt(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()))));
+                    storageManager.get(environmentVector).storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempIteratorObject").toString().charAt(Integer.parseInt(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()))));
 
                     // Increment the position
-                    StorageManager.storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) + 1));
+                    storageManager.get(environmentVector).storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) + 1));
 
                     ResultValue resTemp = executeStatements(Status.EXECUTE);
 
@@ -1170,25 +1174,25 @@ public class Parser {
                     // Jump back to beginning
                     scan.goTo(iStartSourceLineNr, iStartColPos);
                 }
-            } else if ( StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.FIXED_ARRAY
-                    || StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.UNBOUNDED_ARRAY
-                    || StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.INTEGERARR
-                    || StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.FLOATARR
-                    || StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.STRINGARR
-                    || StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.BOOLEANARR
-                    || StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.DATEARR) {
+            } else if ( storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.FIXED_ARRAY
+                    || storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.UNBOUNDED_ARRAY
+                    || storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.INTEGERARR
+                    || storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.FLOATARR
+                    || storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.STRINGARR
+                    || storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.BOOLEANARR
+                    || storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempIteratorObject").iDatatype == SubClassif.DATEARR) {
 
-                //System.out.println("SIZE " + ((PickleArray) StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value).arrayList.size());
+                //System.out.println("SIZE " + ((PickleArray) storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempIteratorObject").value).arrayList.size());
 
-                while(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) < ( (PickleArray) StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value).arrayList.size()) {
+                while(Integer.parseInt(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) < ( (PickleArray) storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempIteratorObject").value).arrayList.size()) {
 
-                    //System.out.println(StorageManager.retrieveVariable(iteratorVariable));
-                    //System.out.println(StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value instanceof PickleArray);
+                    //System.out.println(storageManager.get(environmentVector).retrieveVariable(iteratorVariable));
+                    //System.out.println(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempIteratorObject").value instanceof PickleArray);
                     // Store the new value in the iterator variable
-                    StorageManager.storeVariable(iteratorVariable, new ResultValue(StorageManager.retrieveVariable(iteratorVariable).iDatatype, ((PickleArray) StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").value).get(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()))));
+                    storageManager.get(environmentVector).storeVariable(iteratorVariable, new ResultValue(storageManager.get(environmentVector).retrieveVariable(iteratorVariable).iDatatype, ((PickleArray) storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempIteratorObject").value).get(Integer.parseInt(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()))));
 
                     // Increment the position
-                    StorageManager.storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) + 1));
+                    storageManager.get(environmentVector).storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) + 1));
 
                     ResultValue resTemp = executeStatements(Status.EXECUTE);
 
@@ -1229,8 +1233,8 @@ public class Parser {
             scan.getNext(); // Skip past ';'
         }
 
-        StorageManager.deleteVariable(currentForStmtDepth + "iteratorPosition");
-        StorageManager.deleteVariable(currentForStmtDepth + "tempIteratorObject");
+        storageManager.get(environmentVector).deleteVariable(currentForStmtDepth + "iteratorPosition");
+        storageManager.get(environmentVector).deleteVariable(currentForStmtDepth + "tempIteratorObject");
         --currentForStmtDepth;
     }
 
@@ -1240,9 +1244,9 @@ public class Parser {
             String iteratorVariable;
             String[] tokenizedString;
 
-            if(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition") == null) {
+            if(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "iteratorPosition") == null) {
 
-                StorageManager.storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, 0));
+                storageManager.get(environmentVector).storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, 0));
 
                 // ITERATOR VARIABLE
 
@@ -1250,8 +1254,8 @@ public class Parser {
 
                 iteratorVariable = scan.currentToken.tokenStr;
 
-                if(scan.symbolTable.getSymbol(iteratorVariable) == null) {
-                    scan.symbolTable.putSymbol(iteratorVariable, new STEntry(iteratorVariable, scan.currentToken.primClassif));
+                if(scan.symbolTable.get(environmentVector).getSymbol(iteratorVariable) == null) {
+                    scan.symbolTable.get(environmentVector).putSymbol(iteratorVariable, new STEntry(iteratorVariable, scan.currentToken.primClassif));
                 }
 
                 scan.getNext();
@@ -1264,9 +1268,9 @@ public class Parser {
 
                 scan.getNext();
 
-                if (StorageManager.retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.STRING) {
-                    if (StorageManager.retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exist
-                        StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, ""));
+                if (storageManager.get(environmentVector).retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.STRING) {
+                    if (storageManager.get(environmentVector).retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exist
+                        storageManager.get(environmentVector).storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, ""));
                     }
 
                     if (scan.currentToken.dclType != SubClassif.IDENTIFIER && scan.currentToken.dclType != SubClassif.STRING) {
@@ -1275,10 +1279,10 @@ public class Parser {
 
                     if (scan.nextToken.primClassif == Classif.OPERATOR) { // If we found another operator, it's an expression
 
-                        StorageManager.storeVariable(currentForStmtDepth + "tempIteratorObject", expr(Status.EXECUTE));    // Store the evaluated expression
+                        storageManager.get(environmentVector).storeVariable(currentForStmtDepth + "tempIteratorObject", expr(Status.EXECUTE));    // Store the evaluated expression
                     }   // expr() should land us on the ":" position
                     else {
-                        StorageManager.storeVariable(currentForStmtDepth + "tempIteratorObject", StorageManager.retrieveVariable(scan.currentToken.tokenStr));
+                        storageManager.get(environmentVector).storeVariable(currentForStmtDepth + "tempIteratorObject", storageManager.get(environmentVector).retrieveVariable(scan.currentToken.tokenStr));
                         scan.getNext();
                     }
 
@@ -1296,7 +1300,7 @@ public class Parser {
                     errorWithCurrent("Expected string for 'for' tokenizing delimiter variable");
                 }
 
-                StorageManager.storeVariable(currentForStmtDepth + "tempDelimiterVariable", new ResultValue(SubClassif.STRING, scan.currentToken.tokenStr));
+                storageManager.get(environmentVector).storeVariable(currentForStmtDepth + "tempDelimiterVariable", new ResultValue(SubClassif.STRING, scan.currentToken.tokenStr));
 
                 scan.getNext();
 
@@ -1328,15 +1332,15 @@ public class Parser {
             // Go back to start of expression for evalCond
             scan.goTo(iStartSourceLineNr, iStartColPos);
 
-            tokenizedString = StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").toString().split(StorageManager.retrieveVariable(currentForStmtDepth + "tempDelimiterVariable").toString());
+            tokenizedString = storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempIteratorObject").toString().split(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "tempDelimiterVariable").toString());
 
-            while(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) < tokenizedString.length) {
+            while(Integer.parseInt(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) < tokenizedString.length) {
 
                 // Store the new value in the iterator variable
-                StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, tokenizedString[Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString())]));
+                storageManager.get(environmentVector).storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, tokenizedString[Integer.parseInt(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "iteratorPosition").toString())]));
 
                 // Increment the position
-                StorageManager.storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) + 1));
+                storageManager.get(environmentVector).storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(storageManager.get(environmentVector).retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) + 1));
 
                 ResultValue resTemp = executeStatements(Status.EXECUTE);
 
@@ -1374,16 +1378,16 @@ public class Parser {
             scan.getNext(); // Skip past ';'
         }
 
-        StorageManager.deleteVariable(currentForStmtDepth + "iteratorPosition");
-        StorageManager.deleteVariable(currentForStmtDepth + "tempIteratorObject");
+        storageManager.get(environmentVector).deleteVariable(currentForStmtDepth + "iteratorPosition");
+        storageManager.get(environmentVector).deleteVariable(currentForStmtDepth + "tempIteratorObject");
         --currentForStmtDepth;
     }
 
     private void initializeTempForVariables() throws Exception {
         if(scan.currentToken.tokenStr.equals("to")) {
-            StorageManager.storeVariable(currentForStmtDepth + "tempLimit", new ResultValue(SubClassif.INTEGER, 0));
+            storageManager.get(environmentVector).storeVariable(currentForStmtDepth + "tempLimit", new ResultValue(SubClassif.INTEGER, 0));
         } else if(scan.currentToken.tokenStr.equals("by")) {
-            StorageManager.storeVariable(currentForStmtDepth + "tempIncrement", new ResultValue(SubClassif.INTEGER, 0));
+            storageManager.get(environmentVector).storeVariable(currentForStmtDepth + "tempIncrement", new ResultValue(SubClassif.INTEGER, 0));
         }
     }
 
@@ -1805,7 +1809,7 @@ public class Parser {
             if(scan.nextToken.tokenStr.equals("[")) {
                 ResultValue indexResult = null;
                 String variableName = scan.currentToken.tokenStr;
-                STEntry stEntry = scan.symbolTable.getSymbol(variableName);
+                STEntry stEntry = scan.symbolTable.get(environmentVector).getSymbol(variableName);
 
                 if(stEntry == null)
                     errorWithCurrent("Variable \"%s\" not found in symbol table");
@@ -2158,7 +2162,7 @@ public class Parser {
 
     // Util
     private ResultValue getVariableValue(String variableStr) {
-        return StorageManager.retrieveVariable(variableStr);
+        return storageManager.get(environmentVector).retrieveVariable(variableStr);
     }
 
     /**
@@ -2226,7 +2230,7 @@ public class Parser {
     }
 
     private ResultValue assign(String variableName, ResultValue value) throws Exception {
-        STEntry stEntry = scan.symbolTable.getSymbol(variableName);
+        STEntry stEntry = scan.symbolTable.get(environmentVector).getSymbol(variableName);
         // Arrays
         if(value != null && stEntry != null && value.iDatatype != stEntry.dclType) {
             if(stEntry.dclType == SubClassif.INTEGERARR
@@ -2256,7 +2260,7 @@ public class Parser {
                         variableName, stEntry.dclType, String.valueOf(value.value));
             }
         }
-        StorageManager.storeVariable(variableName, value);
+        storageManager.get(environmentVector).storeVariable(variableName, value);
         return value;
     }
 
@@ -2338,12 +2342,12 @@ public class Parser {
         ResultValue res = null;
         if(scan.currentToken.primClassif == Classif.IDENTIFIER)
         {
-            identifier = (STIdentifier) scan.symbolTable.getSymbol(scan.currentToken.tokenStr);
+            identifier = (STIdentifier) scan.symbolTable.get(environmentVector).getSymbol(scan.currentToken.tokenStr);
             if(identifier == null)
             {
                 error("variable is undeclared or undefined in this scope");
             }
-            res = new ResultValue(scan.currentToken.dclType, storage.get(scan.currentToken.tokenStr));  // WHY USE THIS STORAGE OBJECT, NOT StorageManager?
+            res = new ResultValue(scan.currentToken.dclType, storageManager.get(environmentVector).retrieveVariable(scan.currentToken.tokenStr));  // WHY USE THIS STORAGE OBJECT, NOT StorageManager?
             //res = new ResultValue(identifier.dclType, storage.get(scan.currentToken.tokenStr));
         }
         else if(scan.currentToken.primClassif == Classif.OPERAND)

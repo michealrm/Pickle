@@ -4,17 +4,17 @@ import java.util.HashMap;
 
 public class StorageManager {
 
-    private static final HashMap<String, ResultValue> storageManager = new HashMap<>();
+    private HashMap<String, ResultValue> storageManager = new HashMap<>();
 
-    public static void storeVariable(String symbol, ResultValue value) {
+    public void storeVariable(String symbol, ResultValue value) {
         storageManager.put(symbol, value);
     }
 
-    public static ResultValue retrieveVariable(String symbol) {
+    public ResultValue retrieveVariable(String symbol) {
         return storageManager.get(symbol);
     }
 
-    public static ResultValue deleteVariable(String symbol) {
+    public ResultValue deleteVariable(String symbol) {
         return storageManager.remove(symbol);
     }
 }
