@@ -1,0 +1,14 @@
+def Void minMax (Ref Float[] fArrayM, Ref Float fMax, Ref Float fMin):
+	fMax = 0.0;
+	fMin = 1000.0;
+	
+	for( fItem in fArrayM:
+		if fItem > fMax:
+			fMax = fItems;
+		endif;
+		
+		if fItem < fMin:
+			fMin = fItem;
+		endif;
+	endfor
+enddef;

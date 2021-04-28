@@ -27,8 +27,6 @@ public class Parser {
     public static int savedRangeStartLine = 0;
     public static int savedRangeStartCol = 0;
     
-    public static int environmentVector = 0;
-
     public Parser(Scanner scanner) throws Exception {
         scan = scanner;
         StorageManager firstStorageManager = new StorageManager();
@@ -222,6 +220,8 @@ public class Parser {
             if(scan.currentToken.primClassif == Classif.EOF) {
                 // executeStatements will check for EOF, we just need to get out of this function
                 return new ResultValue(SubClassif.EMPTY, "");
+            } else if (scan.currentToken.tokenStr.equals("def")) {
+                declareFunc();
             }
             else if (scan.currentToken.dclType == SubClassif.DECLARE) {
                 declareStmt();
@@ -238,7 +238,7 @@ public class Parser {
             else if(scan.currentToken.tokenStr.equals("debug")) {
                 parseDebugStmt();
             }
-            else if(scan.currentToken.tokenStr.equals("to") || scan.currentToken.tokenStr.equals("from") || scan.currentToken.tokenStr.equals("by")) {
+            else if(scan.currentToken.tokenStr.equals("to") || scan.currentToken.tokenStr.equals("by")) {
                 initializeTempForVariables();
             }
             else {
@@ -258,6 +258,170 @@ public class Parser {
     private ResultValue scanStmt() throws Exception {
         skipAfter(";");
         return new ResultValue(SubClassif.EMPTY, "");
+    }
+
+    private ResultValue declareFunc() throws Exception {
+
+        ResultValue resultValue;
+
+        String functionName;
+        int numberOfArguments = 0;
+        SubClassif returnType = null;
+        SymbolTable functionSymbolTable = new SymbolTable();
+        boolean hasVarArgs = false;
+
+        String parameterName;
+        SubClassif parameterType;
+        Classif primClassif;
+        SubClassif dclType = null;
+
+        boolean firstParameter = true;
+
+        scan.getNext();
+
+        if(scan.currentToken.tokenStr.equals("Void")) {
+            returnType = SubClassif.VOID;
+        } else if(scan.currentToken.tokenStr.equals("String")) {
+            returnType = SubClassif.STRING;
+        } else if(scan.currentToken.tokenStr.equals("Int")) {
+            returnType = SubClassif.INTEGER;
+        } else if(scan.currentToken.tokenStr.equals("Float")) {
+            returnType = SubClassif.FLOAT;
+        } else if(scan.currentToken.tokenStr.equals("Bool")) {
+            returnType = SubClassif.BOOLEAN;
+        } else if(scan.currentToken.tokenStr.equals("Date")) {
+            returnType = SubClassif.DATE;
+        } else if(scan.currentToken.tokenStr.equals("String[]")) {
+            returnType = SubClassif.STRINGARR;
+        } else if(scan.currentToken.tokenStr.equals("Int[]")) {
+            returnType = SubClassif.INTEGERARR;
+        } else if(scan.currentToken.tokenStr.equals("Float[]")) {
+            returnType = SubClassif.FLOATARR;
+        } else if(scan.currentToken.tokenStr.equals("Bool[]")) {
+            returnType = SubClassif.BOOLEANARR;
+        } else if(scan.currentToken.tokenStr.equals("Date[]")) {
+            returnType = SubClassif.DATEARR;
+        } else {
+            errorWithCurrent("Invalid function return type");
+        }
+
+        scan.getNext();
+
+        if(scan.currentToken.dclType != SubClassif.IDENTIFIER) {
+            errorWithCurrent("Expected valid function name");
+        }
+
+        functionName = scan.currentToken.tokenStr;
+
+        scan.getNext();
+
+        if(!scan.currentToken.tokenStr.equals("(")) {
+            errorWithCurrent("Expected '(' to start function arguments list");
+        }
+
+        while(!scan.currentToken.tokenStr.equals(")")) {
+
+            if(firstParameter) {
+                scan.getNext();
+            }
+
+            if(!firstParameter) {
+                if(!scan.currentToken.tokenStr.equals(",")) {
+                    errorWithCurrent("Invalid parameter separator");
+                }
+
+                scan.getNext();
+            }
+
+            if(scan.currentToken.tokenStr.equals("Ref")) {
+                parameterType = SubClassif.REFERENCE;
+
+                scan.getNext();
+
+            } else {
+                parameterType = SubClassif.VALUE;
+            }
+
+            switch (scan.currentToken.tokenStr) {
+                case "String":
+                    dclType = SubClassif.STRING;
+                    break;
+                case "Int":
+                    dclType = SubClassif.INTEGER;
+                    break;
+                case "Float":
+                    dclType = SubClassif.FLOAT;
+                    break;
+                case "Bool":
+                    dclType = SubClassif.BOOLEAN;
+                    break;
+                case "Date":
+                    dclType = SubClassif.DATE;
+                    break;
+                case "String[":
+                    dclType = SubClassif.STRINGARR;
+                    scan.getNext();
+                    break;
+                case "Int[":
+                    dclType = SubClassif.INTEGERARR;
+                    scan.getNext();
+                    break;
+                case "Float[":
+                    dclType = SubClassif.FLOATARR;
+                    scan.getNext();
+                    break;
+                case "Bool[":
+                    dclType = SubClassif.BOOLEANARR;
+                    scan.getNext();
+                    break;
+                case "Date[":
+                    dclType = SubClassif.DATEARR;
+                    scan.getNext();
+                    break;
+                case "Rest":
+                    dclType = SubClassif.VAR_ARGS;
+                    hasVarArgs = true;
+                    break;
+                default:
+                    errorWithCurrent("Invalid function parameter type");
+                    break;
+            }
+
+            scan.getNext();
+
+            if(scan.currentToken.dclType != SubClassif.IDENTIFIER) {
+                errorWithCurrent("Expected a valid identifier name for a function parameter");
+            }
+
+            parameterName = scan.currentToken.tokenStr;
+
+            primClassif = scan.currentToken.primClassif;
+
+
+            functionSymbolTable.putSymbol(parameterName, new STEntry(parameterName, primClassif, dclType, parameterType));
+
+            numberOfArguments += 1;
+
+            if(firstParameter) {
+                firstParameter = false;
+            }
+
+            scan.getNext();
+        }
+
+        scan.getNext();
+
+        if(!scan.currentToken.tokenStr.equals(":")) {
+            errorWithCurrent("Expected ':' to end function parameter list");
+        }
+
+        resultValue = new ResultValue(SubClassif.USER, new STFunction(functionName, Classif.FUNCTION, functionSymbolTable, numberOfArguments, hasVarArgs, returnType, SubClassif.USER, scan.currentToken.iSourceLineNr, scan.currentToken.iColPos));
+
+        storageManager.peek().storeVariable(functionName, resultValue);
+
+        skipAfter("enddef");
+
+        return resultValue;
     }
 
     /**

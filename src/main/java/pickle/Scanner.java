@@ -1,10 +1,7 @@
 package pickle;
 
-import pickle.exception.InvalidReturnTypeException;
 import pickle.exception.SyntaxExceptionHandler;
 import pickle.st.STEntry;
-import pickle.st.STFunction;
-import pickle.st.STIdentifier;
 import pickle.st.SymbolTable;
 
 import java.io.BufferedReader;
@@ -491,10 +488,10 @@ public class Scanner {
                     case BUILTIN:
                         return containsIn(token.tokenStr + c, SymbolTable.globalSymbolTable.hm);
                     case USER:
-                        return containsIn(token.tokenStr + c, symbolTable.get(Parser.environmentVector).hm);
+                        return containsIn(token.tokenStr + c, symbolTable.peek().hm);
                     case VOID:
                         return containsIn(token.tokenStr + c, SymbolTable.globalSymbolTable.hm) ||
-                                containsIn(token.tokenStr + c, symbolTable.get(Parser.environmentVector).hm);
+                                containsIn(token.tokenStr + c, symbolTable.peek().hm);
                 }
             case DEBUG:
                 switch(token.dclType) {
