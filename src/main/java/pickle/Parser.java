@@ -185,6 +185,15 @@ public class Parser {
 
                             break;
 
+                        } else if (scan.nextToken.tokenStr.equals("from")) {
+
+                            // Go back to start of expression for evalCond
+                            scan.goTo(iStartSourceLineNr, iStartColPos);
+
+                            forTokenizingStmt(iExecMode);   // Will change the token position
+
+                            break;
+
                         } else if (scan.nextToken.tokenStr.equals(":")) {
                             errorWithCurrent("Invalid 'for' statement syntax");
                         }
@@ -225,7 +234,7 @@ public class Parser {
             else if(scan.currentToken.tokenStr.equals("debug")) {
                 parseDebugStmt();
             }
-            else if(scan.currentToken.tokenStr.equals("to") || scan.currentToken.tokenStr.equals("by")) {
+            else if(scan.currentToken.tokenStr.equals("to") || scan.currentToken.tokenStr.equals("from") || scan.currentToken.tokenStr.equals("by")) {
                 initializeTempForVariables();
             }
             else {
@@ -1227,14 +1236,155 @@ public class Parser {
         }
 
         StorageManager.deleteVariable(currentForStmtDepth + "iteratorPosition");
+        StorageManager.deleteVariable(currentForStmtDepth + "tempIteratorObject");
+        --currentForStmtDepth;
+    }
+
+    void forTokenizingStmt(Status iExecMode) throws Exception {
+        if(iExecMode == Status.EXECUTE) {
+
+            String iteratorVariable;
+            String[] tokenizedString;
+
+            if(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition") == null) {
+
+                StorageManager.storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, 0));
+
+                // ITERATOR VARIABLE
+
+                scan.getNext(); // Skip past the "for" to the iterator variable
+
+                iteratorVariable = scan.currentToken.tokenStr;
+
+                scan.getNext();
+
+                if (!scan.currentToken.tokenStr.equals("from")) {
+                    errorWithCurrent("Expected 'in' after 'for each' iterator variable");
+                }
+
+                // ITERATION STRING VALUE
+
+                scan.getNext();
+
+                if (StorageManager.retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.STRING) {
+                    if (StorageManager.retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exist
+                        StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, ""));
+                    }
+
+                    if (scan.currentToken.dclType != SubClassif.IDENTIFIER && scan.currentToken.dclType != SubClassif.STRING) {
+                        errorWithCurrent("Expected identifier for 'for' tokenizing variable");
+                    }
+
+                    if (scan.nextToken.primClassif == Classif.OPERATOR) { // If we found another operator, it's an expression
+
+                        StorageManager.storeVariable(currentForStmtDepth + "tempIteratorObject", expr(Status.EXECUTE));    // Store the evaluated expression
+                    }   // expr() should land us on the ":" position
+                    else {
+                        StorageManager.storeVariable(currentForStmtDepth + "tempIteratorObject", StorageManager.retrieveVariable(scan.currentToken.tokenStr));
+                        scan.getNext();
+                    }
+
+                } else {
+                    errorWithCurrent("Incorrect type for 'for each' iterator object");
+                }
+
+                if (!scan.currentToken.tokenStr.equals("by")) {
+                    errorWithCurrent("Expected 'by' in for tokenizing statement");
+                }
+
+                scan.getNext();
+
+                if (scan.currentToken.dclType != SubClassif.STRING) {
+                    errorWithCurrent("Expected string for 'for' tokenizing delimiter variable");
+                }
+
+                StorageManager.storeVariable(currentForStmtDepth + "tempDelimiterVariable", new ResultValue(SubClassif.STRING, scan.currentToken.tokenStr));
+
+                scan.getNext();
+
+                if (!scan.currentToken.tokenStr.equals(":")) {
+                    errorWithCurrent("Expected ':' to end 'for' statement)");
+                }
+
+                scan.getNext();
+
+            } else {
+                scan.getNext(); // Skip past the "for" to the iterator variable
+
+                iteratorVariable = scan.currentToken.tokenStr;
+
+                skipAfter(":");
+            }
+
+            int iStartSourceLineNr = scan.iSourceLineNr; // Save position at the condition to loop back
+            int iStartColPos = scan.iColPos;
+            int iEndSourceLineNr; // Save position of endwhile to jump to when resCond is false
+            int iEndColPos;
+
+            // Get iEndSourceLineNr and iEndColPos
+            while(!scan.currentToken.tokenStr.equals("endfor"))
+                scan.getNext();
+            //Save iEnd
+            iEndSourceLineNr = scan.iSourceLineNr;
+            iEndColPos = scan.iColPos;
+            // Go back to start of expression for evalCond
+            scan.goTo(iStartSourceLineNr, iStartColPos);
+
+            tokenizedString = StorageManager.retrieveVariable(currentForStmtDepth + "tempIteratorObject").toString().split(StorageManager.retrieveVariable(currentForStmtDepth + "tempDelimiterVariable").toString());
+
+            while(Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) < tokenizedString.length) {
+
+                // Store the new value in the iterator variable
+                StorageManager.storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, tokenizedString[Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString())]));
+
+                // Increment the position
+                StorageManager.storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(StorageManager.retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) + 1));
+
+                ResultValue resTemp = executeStatements(Status.EXECUTE);
+
+                if (!resTemp.scTerminatingStr.equals("endfor"))
+                    errorWithCurrent("Expected an 'endfor' for a 'for'");
+                iEndSourceLineNr = scan.iSourceLineNr;
+                iEndColPos = scan.iColPos;
+
+                // Jump back to beginning
+                scan.goTo(iStartSourceLineNr, iStartColPos);
+            }
+
+            // Jump to endfor
+            scan.goTo(iEndSourceLineNr, iEndColPos);
+            if(!scan.currentToken.tokenStr.equals("endfor"))
+                errorWithCurrent("Expected an 'endfor' for a 'for'");
+            scan.getNext(); // Skip past endfor
+            if(!scan.currentToken.tokenStr.equals(";"))
+                errorWithCurrent("Expected';' after a 'endfor'");
+            scan.getNext(); // Skip past ';'
+        } else {
+
+            // expr() has already been called outside this if/else, so we should be on ':'
+            if (!scan.currentToken.tokenStr.equals(":"))
+                errorWithCurrent("Expected ':' after for");
+            scan.getNext(); // Skip past ':'
+
+            ResultValue resTemp = executeStatements(Status.IGNORE_EXEC);
+
+            if (!resTemp.scTerminatingStr.equals("endfor"))
+                errorWithCurrent("Expected an 'endfor' for a 'endfor'");
+            scan.getNext(); // Skip past endwhile
+            if(!scan.currentToken.tokenStr.equals(";"))
+                errorWithCurrent("Expected';' after an 'endfor'");
+            scan.getNext(); // Skip past ';'
+        }
+
+        StorageManager.deleteVariable(currentForStmtDepth + "iteratorPosition");
+        StorageManager.deleteVariable(currentForStmtDepth + "tempIteratorObject");
         --currentForStmtDepth;
     }
 
     private void initializeTempForVariables() throws Exception {
         if(scan.currentToken.tokenStr.equals("to")) {
             StorageManager.storeVariable(currentForStmtDepth + "tempLimit", new ResultValue(SubClassif.INTEGER, 0));
-        }
-        else if(scan.currentToken.tokenStr.equals("by")) {
+        } else if(scan.currentToken.tokenStr.equals("by")) {
             StorageManager.storeVariable(currentForStmtDepth + "tempIncrement", new ResultValue(SubClassif.INTEGER, 0));
         }
     }
