@@ -21,6 +21,7 @@ import pickle.st.SymbolTable;
 import pickle.Scanner;
 
 import java.util.ArrayList;
+import java.util.Stack;
 
 public class Pickle
 {
@@ -33,7 +34,7 @@ public class Pickle
         SymbolTable firstSymbolTable = new SymbolTable();
 
         // Create the SymbolTable
-        final ArrayList<SymbolTable> symbolTable = new ArrayList<SymbolTable>();
+        final Stack<SymbolTable> symbolTable = new Stack<SymbolTable>();
 
         symbolTable.add(firstSymbolTable);
 

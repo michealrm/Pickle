@@ -28,8 +28,6 @@ public class SymbolTable {
     public static void initGlobal() {
         globalSymbolTable = new SymbolTable();
 
-        Scanner.linkedSymbolTable.put(0, globalSymbolTable);
-
         globalSymbolTable.putSymbol("def", new STControl("def", Classif.CONTROL, SubClassif.FLOW));
         globalSymbolTable.putSymbol("enddef", new STControl("enddef", Classif.CONTROL, SubClassif.END));
 

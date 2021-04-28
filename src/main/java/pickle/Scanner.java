@@ -10,21 +10,17 @@ import pickle.st.SymbolTable;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Set;
+import java.util.*;
 
 public class Scanner {
 
     private static final boolean PRINT_CURRENT_TOKEN_LINE = false;
 
-    public static LinkedHashMap<Integer, SymbolTable> linkedSymbolTable = new LinkedHashMap<>(); // Volatile list of symbol tables used for depth sensing
     public static Integer currentSymbolTableDepth = 0;
 
     public String sourceFileNm;
     public ArrayList<String> sourceLineM;
-    public ArrayList<SymbolTable> symbolTable;
+    public Stack<SymbolTable> symbolTable;
     public char[] textCharM;
     public int iSourceLineNr;
     public int iColPos;
@@ -33,7 +29,7 @@ public class Scanner {
     private int lastLine = -1; // Used by advanceTokenPos
     public Debug scanDebug = new Debug();
 
-    public Scanner(String fileNm, ArrayList<SymbolTable> symbolTable) {
+    public Scanner(String fileNm, Stack<SymbolTable> symbolTable) {
         this.sourceFileNm = fileNm;
         this.symbolTable = symbolTable;
         sourceLineM = new ArrayList<>();
