@@ -7,12 +7,13 @@ import java.util.HashMap;
 
 public class STFunction extends STEntry {
 
-    SubClassif returnType = SubClassif.EMPTY;
-    SubClassif definedBy = SubClassif.EMPTY;
-    HashMap<String, SubClassif> parmList = new HashMap<String, SubClassif>();
-    public int numArgs;
+    public SubClassif returnType = SubClassif.EMPTY;
+    public Object returnValue = null;
+    public SubClassif definedBy = SubClassif.EMPTY;
+    public HashMap<String, SubClassif> parmList = new HashMap<String, SubClassif>();
+    public int numArgs; // Even if the function has var args, there still could be some non-var arg parameters, and this will be useful to know when deciding which parameters to put in the "Rest" PickleArray
     public boolean hasVarArgs;
-    SymbolTable symbolTable;
+    public SymbolTable symbolTable;
 
     int functionLineNumber;
     int functionColumnPosition;

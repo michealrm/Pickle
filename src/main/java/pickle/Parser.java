@@ -267,7 +267,6 @@ public class Parser {
         String functionName;
         int numberOfArguments = 0;
         SubClassif returnType = null;
-        SymbolTable functionSymbolTable = new SymbolTable();
         boolean hasVarArgs = false;
 
         String parameterName;
@@ -279,30 +278,43 @@ public class Parser {
 
         scan.getNext();
 
-        if(scan.currentToken.tokenStr.equals("Void")) {
-            returnType = SubClassif.VOID;
-        } else if(scan.currentToken.tokenStr.equals("String")) {
-            returnType = SubClassif.STRING;
-        } else if(scan.currentToken.tokenStr.equals("Int")) {
-            returnType = SubClassif.INTEGER;
-        } else if(scan.currentToken.tokenStr.equals("Float")) {
-            returnType = SubClassif.FLOAT;
-        } else if(scan.currentToken.tokenStr.equals("Bool")) {
-            returnType = SubClassif.BOOLEAN;
-        } else if(scan.currentToken.tokenStr.equals("Date")) {
-            returnType = SubClassif.DATE;
-        } else if(scan.currentToken.tokenStr.equals("String[]")) {
-            returnType = SubClassif.STRINGARR;
-        } else if(scan.currentToken.tokenStr.equals("Int[]")) {
-            returnType = SubClassif.INTEGERARR;
-        } else if(scan.currentToken.tokenStr.equals("Float[]")) {
-            returnType = SubClassif.FLOATARR;
-        } else if(scan.currentToken.tokenStr.equals("Bool[]")) {
-            returnType = SubClassif.BOOLEANARR;
-        } else if(scan.currentToken.tokenStr.equals("Date[]")) {
-            returnType = SubClassif.DATEARR;
-        } else {
-            errorWithCurrent("Invalid function return type");
+        switch (scan.currentToken.tokenStr) {
+            case "Void":
+                returnType = SubClassif.VOID;
+                break;
+            case "String":
+                returnType = SubClassif.STRING;
+                break;
+            case "Int":
+                returnType = SubClassif.INTEGER;
+                break;
+            case "Float":
+                returnType = SubClassif.FLOAT;
+                break;
+            case "Bool":
+                returnType = SubClassif.BOOLEAN;
+                break;
+            case "Date":
+                returnType = SubClassif.DATE;
+                break;
+//            case "String[]":
+//                returnType = SubClassif.STRINGARR;
+//                break;
+//            case "Int[]":
+//                returnType = SubClassif.INTEGERARR;
+//                break;
+//            case "Float[]":
+//                returnType = SubClassif.FLOATARR;
+//                break;
+//            case "Bool[]":
+//                returnType = SubClassif.BOOLEANARR;
+//                break;
+//            case "Date[]":
+//                returnType = SubClassif.DATEARR;
+//                break;
+            default:
+                errorWithCurrent("Invalid function return type");
+                break;
         }
 
         scan.getNext();
@@ -312,6 +324,8 @@ public class Parser {
         }
 
         functionName = scan.currentToken.tokenStr;
+
+        SymbolTable functionSymbolTable = new SymbolTable(functionName);
 
         scan.getNext();
 
@@ -420,6 +434,57 @@ public class Parser {
         storageManager.peek().storeVariable(functionName, resultValue);
 
         skipAfter("enddef");
+
+        return resultValue;
+    }
+
+    private ResultValue returnFunc() throws Exception {
+
+        ResultValue resultValue = new ResultValue(SubClassif.EMPTY, "");
+
+        scan.getNext();
+
+        if(scan.currentToken.tokenStr.equals(";")) {
+            return resultValue;
+        } else if (scan.nextToken.primClassif == Classif.OPERATOR) {
+            resultValue = expr(Status.EXECUTE);
+        } else if (scan.nextToken.dclType == SubClassif.IDENTIFIER) {
+            resultValue = new ResultValue(scan.symbolTable.peek().getSymbol(scan.currentToken.tokenStr).dclType, scan.currentToken.tokenStr);
+        } else if (scan.nextToken.dclType == SubClassif.STRING) {
+            resultValue = new ResultValue(SubClassif.STRING, scan.currentToken.tokenStr);
+        } else if (scan.nextToken.dclType == SubClassif.INTEGER) {
+            resultValue = new ResultValue(SubClassif.INTEGER, scan.currentToken.tokenStr);
+        } else if (scan.nextToken.dclType == SubClassif.FLOAT) {
+            resultValue = new ResultValue(SubClassif.FLOAT, scan.currentToken.tokenStr);
+        } else if (scan.nextToken.dclType == SubClassif.BOOLEAN) {
+            resultValue = new ResultValue(SubClassif.BOOLEAN, scan.currentToken.tokenStr);
+        } else if (scan.nextToken.dclType == SubClassif.DATE) {
+            resultValue = new ResultValue(SubClassif.DATE, scan.currentToken.tokenStr);
+        }
+
+        if(resultValue.iDatatype != ((STFunction) storageManager.peek().retrieveVariable(scan.symbolTable.peek().symbolTableName).value).returnType) {
+            errorWithCurrent("Incompatible return types");
+        }
+
+        ((STFunction) storageManager.peek().retrieveVariable(scan.symbolTable.peek().symbolTableName).value).returnValue = resultValue;
+
+        scan.goTo(((STFunction) storageManager.peek().retrieveVariable(scan.symbolTable.peek().symbolTableName).value).iSourceLineNr, ((STFunction) storageManager.peek().retrieveVariable(scan.symbolTable.peek().symbolTableName).value).iColPos);
+
+        scan.getNext();
+
+        // General logic that we need for all uses of the SymbolTable and StorageManager
+
+//        if(storageManager.indexOf(storageManager.peek()) != 0) {
+//            if(storageManager.peek().retrieveVariable(variableName) == null) {
+//                if (storageManager.get(storageManager.indexOf(storageManager.peek()) - 1).retrieveVariable(variableName) == null) {   // For referencing the non-local static scope above the current scope
+//                    // Set the locally in the function, or error if the user referenced a variable that was not found, and make sure to set the SymbolTable if we're assigning something
+//                }
+//            }
+//        } else {
+//            if(storageManager.peek().retrieveVariable(variableName) == null) {
+//                // Set the value in the global scope, or error if the user referenced a variable that was not found, and make sure to set the SymbolTable if we're assigning something
+//            }
+//        }
 
         return resultValue;
     }

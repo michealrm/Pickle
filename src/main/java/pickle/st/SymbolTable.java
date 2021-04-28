@@ -12,6 +12,16 @@ public class SymbolTable {
 
     public HashMap<String, STEntry> hm = new HashMap<>(); // Individual symbol table
 
+    public String symbolTableName;
+
+    public SymbolTable() {
+        
+    }
+
+    public SymbolTable(String symbolTableName) {
+        this.symbolTableName = symbolTableName;
+    }
+
     // Symbols
 
     public void putSymbol(String key, STEntry value) {
