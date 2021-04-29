@@ -1102,14 +1102,19 @@ public class Parser {
 
                 if(storageManager.indexOf(storageManager.peek()) != 0) {
 
-                    if(storageManager.get(storageManager.indexOf(storageManager.peek()) - 1).retrieveVariable(iteratorVariable) == null) {
+                    if (storageManager.peek().retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exit
 
-                        if (storageManager.peek().retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exit
+                        if (storageManager.get(storageManager.indexOf(storageManager.peek()) - 1).retrieveVariable(iteratorVariable) == null) {
                             storageManager.peek().storeVariable(iteratorVariable, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0));
+                            envVector = storageManager.indexOf(storageManager.peek());
+
+                        } else {
+                            storageManager.get(storageManager.indexOf(storageManager.peek()) - 1).storeVariable(iteratorVariable, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0));
+                            envVector = storageManager.indexOf(storageManager.peek()) - 1;
                         }
-                        envVector = storageManager.indexOf(storageManager.peek());
                     } else {
-                        envVector = storageManager.indexOf(storageManager.peek()) - 1;
+                        storageManager.peek().storeVariable(iteratorVariable, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0));
+                        envVector = storageManager.indexOf(storageManager.peek());
                     }
 
                 } else {
@@ -1284,6 +1289,8 @@ public class Parser {
     void forEachStmt(Status iExecMode) throws Exception {
         if(iExecMode == Status.EXECUTE) {
 
+            int envVector = 0;
+
             String iteratorVariable;
 
             if(storageManager.peek().retrieveVariable(currentForStmtDepth + "iteratorPosition") == null) {
@@ -1296,8 +1303,26 @@ public class Parser {
 
                 iteratorVariable = scan.currentToken.tokenStr;
 
-                if(scan.symbolTable.peek().getSymbol(iteratorVariable) == null) {
+                if(scan.symbolTable.indexOf(scan.symbolTable.peek()) != 0) {
+
+                    if (scan.symbolTable.peek().getSymbol(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exit
+
+                        if (scan.symbolTable.get(scan.symbolTable.indexOf(scan.symbolTable.peek()) - 1).getSymbol(iteratorVariable) == null) {
+                            scan.symbolTable.peek().putSymbol(iteratorVariable, new STEntry(iteratorVariable, scan.currentToken.primClassif));
+                            envVector = scan.symbolTable.indexOf(scan.symbolTable.peek());
+
+                        } else {
+                            scan.symbolTable.get(scan.symbolTable.indexOf(scan.symbolTable.peek()) - 1).putSymbol(iteratorVariable, new STEntry(iteratorVariable, scan.currentToken.primClassif));
+                            envVector = scan.symbolTable.indexOf(scan.symbolTable.peek()) - 1;
+                        }
+                    } else {
+                        scan.symbolTable.peek().putSymbol(iteratorVariable, new STEntry(iteratorVariable, scan.currentToken.primClassif));
+                        envVector = scan.symbolTable.indexOf(scan.symbolTable.peek());
+                    }
+
+                } else {
                     scan.symbolTable.peek().putSymbol(iteratorVariable, new STEntry(iteratorVariable, scan.currentToken.primClassif));
+                    envVector = scan.symbolTable.indexOf(scan.symbolTable.peek());
                 }
 
                 scan.getNext();
@@ -1316,8 +1341,8 @@ public class Parser {
 
                 //if (scan.currentToken.primClassif == Classif.OPERAND || scan.currentToken.dclType == SubClassif.STRING) {
                 if (storageManager.peek().retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.STRING) {
-                    if (storageManager.peek().retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exist
-                        storageManager.peek().storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, ""));
+                    if (storageManager.get(envVector).retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exist
+                        storageManager.get(envVector).storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, ""));
                     }
 
                     //System.out.println(scan.currentToken.dclType);
@@ -1344,12 +1369,12 @@ public class Parser {
 
 
 
-                    if (storageManager.peek().retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exist
-                        storageManager.peek().storeVariable(iteratorVariable, new ResultValue( ((PickleArray) storageManager.peek().retrieveVariable(scan.currentToken.tokenStr).value).type, 0));
+                    if (storageManager.get(envVector).retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exist
+                        storageManager.get(envVector).storeVariable(iteratorVariable, new ResultValue( ((PickleArray) storageManager.peek().retrieveVariable(scan.currentToken.tokenStr).value).type, 0));
                     }
 
                     //System.out.println(scan.currentToken.dclType);
-                    if (storageManager.peek().retrieveVariable(iteratorVariable).iDatatype != ((PickleArray) storageManager.peek().retrieveVariable(scan.currentToken.tokenStr).value).type) {
+                    if (storageManager.get(envVector).retrieveVariable(iteratorVariable).iDatatype != ((PickleArray) storageManager.peek().retrieveVariable(scan.currentToken.tokenStr).value).type) {
                         errorWithCurrent("Expected identifier for 'for' iterator variable");
                     }
 
@@ -1406,7 +1431,7 @@ public class Parser {
                 while(Integer.parseInt(storageManager.peek().retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) < storageManager.peek().retrieveVariable(currentForStmtDepth + "tempIteratorObject").toString().length()) {
 
                     // Store the new value in the iterator variable
-                    storageManager.peek().storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, storageManager.peek().retrieveVariable(currentForStmtDepth + "tempIteratorObject").toString().charAt(Integer.parseInt(storageManager.peek().retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()))));
+                    storageManager.get(envVector).storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, storageManager.peek().retrieveVariable(currentForStmtDepth + "tempIteratorObject").toString().charAt(Integer.parseInt(storageManager.peek().retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()))));
 
                     // Increment the position
                     storageManager.peek().storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(storageManager.peek().retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) + 1));
@@ -1436,7 +1461,7 @@ public class Parser {
                     //System.out.println(storageManager.peek().retrieveVariable(iteratorVariable));
                     //System.out.println(storageManager.peek().retrieveVariable(currentForStmtDepth + "tempIteratorObject").value instanceof PickleArray);
                     // Store the new value in the iterator variable
-                    storageManager.peek().storeVariable(iteratorVariable, new ResultValue(storageManager.peek().retrieveVariable(iteratorVariable).iDatatype, ((PickleArray) storageManager.peek().retrieveVariable(currentForStmtDepth + "tempIteratorObject").value).get(Integer.parseInt(storageManager.peek().retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()))));
+                    storageManager.get(envVector).storeVariable(iteratorVariable, new ResultValue(storageManager.get(envVector).retrieveVariable(iteratorVariable).iDatatype, ((PickleArray) storageManager.peek().retrieveVariable(currentForStmtDepth + "tempIteratorObject").value).get(Integer.parseInt(storageManager.peek().retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()))));
 
                     // Increment the position
                     storageManager.peek().storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(storageManager.peek().retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) + 1));
@@ -1488,6 +1513,8 @@ public class Parser {
     void forTokenizingStmt(Status iExecMode) throws Exception {
         if(iExecMode == Status.EXECUTE) {
 
+            int envVector = 0;
+
             String iteratorVariable;
             String[] tokenizedString;
 
@@ -1501,8 +1528,26 @@ public class Parser {
 
                 iteratorVariable = scan.currentToken.tokenStr;
 
-                if(scan.symbolTable.peek().getSymbol(iteratorVariable) == null) {
+                if(scan.symbolTable.indexOf(scan.symbolTable.peek()) != 0) {
+
+                    if (scan.symbolTable.peek().getSymbol(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exit
+
+                        if (scan.symbolTable.get(scan.symbolTable.indexOf(scan.symbolTable.peek()) - 1).getSymbol(iteratorVariable) == null) {
+                            scan.symbolTable.peek().putSymbol(iteratorVariable, new STEntry(iteratorVariable, scan.currentToken.primClassif));
+                            envVector = scan.symbolTable.indexOf(scan.symbolTable.peek());
+
+                        } else {
+                            scan.symbolTable.get(scan.symbolTable.indexOf(scan.symbolTable.peek()) - 1).putSymbol(iteratorVariable, new STEntry(iteratorVariable, scan.currentToken.primClassif));
+                            envVector = scan.symbolTable.indexOf(scan.symbolTable.peek()) - 1;
+                        }
+                    } else {
+                        scan.symbolTable.peek().putSymbol(iteratorVariable, new STEntry(iteratorVariable, scan.currentToken.primClassif));
+                        envVector = scan.symbolTable.indexOf(scan.symbolTable.peek());
+                    }
+
+                } else {
                     scan.symbolTable.peek().putSymbol(iteratorVariable, new STEntry(iteratorVariable, scan.currentToken.primClassif));
+                    envVector = scan.symbolTable.indexOf(scan.symbolTable.peek());
                 }
 
                 scan.getNext();
@@ -1516,8 +1561,8 @@ public class Parser {
                 scan.getNext();
 
                 if (storageManager.peek().retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.STRING) {
-                    if (storageManager.peek().retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exist
-                        storageManager.peek().storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, ""));
+                    if (storageManager.get(envVector).retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exist
+                        storageManager.get(envVector).storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, ""));
                     }
 
                     if (scan.currentToken.dclType != SubClassif.IDENTIFIER && scan.currentToken.dclType != SubClassif.STRING) {
@@ -1584,7 +1629,7 @@ public class Parser {
             while(Integer.parseInt(storageManager.peek().retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) < tokenizedString.length) {
 
                 // Store the new value in the iterator variable
-                storageManager.peek().storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, tokenizedString[Integer.parseInt(storageManager.peek().retrieveVariable(currentForStmtDepth + "iteratorPosition").toString())]));
+                storageManager.get(envVector).storeVariable(iteratorVariable, new ResultValue(SubClassif.STRING, tokenizedString[Integer.parseInt(storageManager.peek().retrieveVariable(currentForStmtDepth + "iteratorPosition").toString())]));
 
                 // Increment the position
                 storageManager.peek().storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(storageManager.peek().retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) + 1));
