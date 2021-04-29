@@ -36,7 +36,7 @@ public class Pickle
         // Create the SymbolTable
         final Stack<SymbolTable> symbolTable = new Stack<SymbolTable>();
 
-        symbolTable.add(firstSymbolTable);
+        symbolTable.push(firstSymbolTable);
 
         // Create the Scanner
         Scanner scan = new Scanner(args[0], symbolTable);

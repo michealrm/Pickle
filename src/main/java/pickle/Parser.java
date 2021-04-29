@@ -31,7 +31,7 @@ public class Parser {
         scan = scanner;
         StorageManager firstStorageManager = new StorageManager();
         
-        storageManager.add(firstStorageManager);
+        storageManager.push(firstStorageManager);
         
         scan.getNext(); // Call initial getNext() to get first token
     }
@@ -472,21 +472,25 @@ public class Parser {
 
         scan.getNext();
 
+        return resultValue;
+
         // General logic that we need for all uses of the SymbolTable and StorageManager
 
-//        if(storageManager.indexOf(storageManager.peek()) != 0) {
-//            if(storageManager.peek().retrieveVariable(variableName) == null) {
-//                if (storageManager.get(storageManager.indexOf(storageManager.peek()) - 1).retrieveVariable(variableName) == null) {   // For referencing the non-local static scope above the current scope
-//                    // Set the locally in the function, or error if the user referenced a variable that was not found, and make sure to set the SymbolTable if we're assigning something
-//                }
-//            }
-//        } else {
-//            if(storageManager.peek().retrieveVariable(variableName) == null) {
-//                // Set the value in the global scope, or error if the user referenced a variable that was not found, and make sure to set the SymbolTable if we're assigning something
-//            }
-//        }
+        /*if(storageManager.indexOf(storageManager.peek()) != 0) {
+            if(storageManager.peek().retrieveVariable(variableName) != null) {
 
-        return resultValue;
+            } else if (storageManager.get(storageManager.indexOf(storageManager.peek()) - 1).retrieveVariable(variableName) == null) {   // For referencing the non-local static scope above the current scope
+                // Set the locally in the function, or error if the user referenced a variable that was not found, and make sure to set the SymbolTable if we're assigning something
+            } else {
+                errorWithCurrent("Reference to undeclared variable");
+            }
+        } else {
+            if(storageManager.peek().retrieveVariable(variableName) != null) {
+                // Set the value in the global scope, or error if the user referenced a variable that was not found, and make sure to set the SymbolTable if we're assigning something
+            } else {
+                errorWithCurrent("Reference to undeclared variable");
+            }
+        }*/
     }
 
     /**
@@ -1081,6 +1085,8 @@ public class Parser {
     void forStmt(Status iExecMode) throws Exception {
         if(iExecMode == Status.EXECUTE) {
 
+            int envVector = 0;
+
             String iteratorVariable;
             if(storageManager.peek().retrieveVariable(currentForStmtDepth + "tempLimit") == null) { // We must initialize the values first
 
@@ -1090,16 +1096,28 @@ public class Parser {
 
                 scan.getNext(); // Skip past the "for" to the iterator variable
 
+                scan.currentToken.primClassif = Classif.IDENTIFIER; // Set the classification to an identifier
+
                 iteratorVariable = scan.currentToken.tokenStr;
 
-                if (storageManager.peek().retrieveVariable(scan.currentToken.tokenStr) == null) {   // Store the iterator variable if it doesn't already exit
-                    scan.currentToken.primClassif = Classif.IDENTIFIER; // Set the classification to an identifier
-                    storageManager.peek().storeVariable(scan.currentToken.tokenStr, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0));
+                if(storageManager.indexOf(storageManager.peek()) != 0) {
+
+                    if(storageManager.get(storageManager.indexOf(storageManager.peek()) - 1).retrieveVariable(iteratorVariable) == null) {
+
+                        if (storageManager.peek().retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exit
+                            storageManager.peek().storeVariable(iteratorVariable, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0));
+                        }
+                        envVector = storageManager.indexOf(storageManager.peek());
+                    } else {
+                        envVector = storageManager.indexOf(storageManager.peek()) - 1;
+                    }
+
                 } else {
                     storageManager.peek().storeVariable(iteratorVariable, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0));
+                    envVector = storageManager.indexOf(storageManager.peek());
                 }
 
-                if (storageManager.peek().retrieveVariable(scan.currentToken.tokenStr).iPrimClassif != Classif.IDENTIFIER) {
+                if (storageManager.get(envVector).retrieveVariable(iteratorVariable).iPrimClassif != Classif.IDENTIFIER) {
                     errorWithCurrent("Expected identifier for 'for' iterator variable");
                 }
 
@@ -1122,11 +1140,11 @@ public class Parser {
                 if (scan.nextToken.primClassif == Classif.OPERATOR) { // If we found another operand, it's an expression.
                     scan.iColPos = iStartOperandColPos;
 
-                    storageManager.peek().storeVariable(iteratorVariable, expr(Status.EXECUTE));    // Store the evaluated expression
+                    storageManager.get(envVector).storeVariable(iteratorVariable, expr(Status.EXECUTE));    // Store the evaluated expression
                 }   // expr() should land us on the "to" position
 
                 else {
-                    storageManager.peek().storeVariable(iteratorVariable, new ResultValue(SubClassif.INTEGER, scan.currentToken.tokenStr));
+                    storageManager.get(envVector).storeVariable(iteratorVariable, new ResultValue(SubClassif.INTEGER, scan.currentToken.tokenStr));
 
                     scan.getNext();
                 }
@@ -1212,7 +1230,7 @@ public class Parser {
 
             //System.out.println("SIZE " + Integer.parseInt(storageManager.peek().retrieveVariable(currentForStmtDepth + "tempLimit").toString()));
 
-            while(Integer.parseInt(storageManager.peek().retrieveVariable(iteratorVariable).toString()) < Integer.parseInt(storageManager.peek().retrieveVariable(currentForStmtDepth + "tempLimit").toString())) {
+            while(Integer.parseInt(storageManager.get(envVector).retrieveVariable(iteratorVariable).toString()) < Integer.parseInt(storageManager.peek().retrieveVariable(currentForStmtDepth + "tempLimit").toString())) {
                 //System.out.println("INDEX " + storageManager.peek().retrieveVariable(iteratorVariable).toString());
 
                 //System.out.println("VARIABLE: " + iteratorVariable + " " + storageManager.peek().retrieveVariable(iteratorVariable).iPrimClassif);
@@ -1232,7 +1250,7 @@ public class Parser {
                 //System.out.println();
 
                 // Add the increment to the iterator
-                storageManager.peek().storeVariable(iteratorVariable, new ResultValue(SubClassif.INTEGER, Integer.parseInt(storageManager.peek().retrieveVariable(iteratorVariable).toString()) + Integer.parseInt(storageManager.peek().retrieveVariable(currentForStmtDepth + "tempIncrement").toString())));
+                storageManager.get(envVector).storeVariable(iteratorVariable, new ResultValue(SubClassif.INTEGER, Integer.parseInt(storageManager.peek().retrieveVariable(iteratorVariable).toString()) + Integer.parseInt(storageManager.peek().retrieveVariable(currentForStmtDepth + "tempIncrement").toString())));
             }
             // Jump to endfor
             scan.goTo(iEndSourceLineNr, iEndColPos);
