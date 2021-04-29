@@ -1096,35 +1096,35 @@ public class Parser {
 
                 scan.getNext(); // Skip past the "for" to the iterator variable
 
-                scan.currentToken.primClassif = Classif.IDENTIFIER; // Set the classification to an identifier
-
                 iteratorVariable = scan.currentToken.tokenStr;
 
-                if(storageManager.indexOf(storageManager.peek()) != 0) {
+                if(scan.symbolTable.indexOf(scan.symbolTable.peek()) != 0) {
 
-                    if (storageManager.peek().retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exit
+                    if (scan.symbolTable.peek().getSymbol(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exit
 
-                        if (storageManager.get(storageManager.indexOf(storageManager.peek()) - 1).retrieveVariable(iteratorVariable) == null) {
-                            storageManager.peek().storeVariable(iteratorVariable, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0));
-                            envVector = storageManager.indexOf(storageManager.peek());
+                        if (scan.symbolTable.get(scan.symbolTable.indexOf(scan.symbolTable.peek()) - 1).getSymbol(iteratorVariable) == null) {
+                            scan.symbolTable.peek().putSymbol(iteratorVariable, new STEntry(iteratorVariable, scan.currentToken.primClassif));
+                            envVector = scan.symbolTable.indexOf(scan.symbolTable.peek());
 
                         } else {
-                            storageManager.get(storageManager.indexOf(storageManager.peek()) - 1).storeVariable(iteratorVariable, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0));
-                            envVector = storageManager.indexOf(storageManager.peek()) - 1;
+                            scan.symbolTable.get(scan.symbolTable.indexOf(scan.symbolTable.peek()) - 1).putSymbol(iteratorVariable, new STEntry(iteratorVariable, scan.currentToken.primClassif));
+                            envVector = scan.symbolTable.indexOf(scan.symbolTable.peek()) - 1;
                         }
                     } else {
-                        storageManager.peek().storeVariable(iteratorVariable, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0));
-                        envVector = storageManager.indexOf(storageManager.peek());
+                        scan.symbolTable.peek().putSymbol(iteratorVariable, new STEntry(iteratorVariable, scan.currentToken.primClassif));
+                        envVector = scan.symbolTable.indexOf(scan.symbolTable.peek());
                     }
 
                 } else {
-                    storageManager.peek().storeVariable(iteratorVariable, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0));
-                    envVector = storageManager.indexOf(storageManager.peek());
+                    scan.symbolTable.peek().putSymbol(iteratorVariable, new STEntry(iteratorVariable, scan.currentToken.primClassif));
+                    envVector = scan.symbolTable.indexOf(scan.symbolTable.peek());
                 }
 
-                if (storageManager.get(envVector).retrieveVariable(iteratorVariable).iPrimClassif != Classif.IDENTIFIER) {
+                if (scan.currentToken.dclType != SubClassif.IDENTIFIER) {
                     errorWithCurrent("Expected identifier for 'for' iterator variable");
                 }
+
+                storageManager.get(envVector).storeVariable(iteratorVariable, new ResultValue(Classif.IDENTIFIER, SubClassif.INTEGER, 0)); // Reset the variable's value TODO: (Very Low Priority) Make iteratorVariable ResultValue have "value" variable of type Numeric
 
                 scan.getNext();
 
