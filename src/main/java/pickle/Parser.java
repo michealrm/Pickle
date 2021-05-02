@@ -1111,6 +1111,11 @@ public class Parser {
                     resCond = evalCond(iExecMode, "while");
                     resTemp.iExecMode = Status.EXECUTE;
                     continue;
+
+                } else if(resTemp.iExecMode == Status.BREAK) {
+                    scan.goTo(iStartSourceLineNr, iStartColPos);
+                    resTemp.iExecMode = Status.EXECUTE;
+                    break;
                 }
 
                 if (!resTemp.scTerminatingStr.equals("endwhile"))
