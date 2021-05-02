@@ -525,6 +525,9 @@ public class Parser {
                 case "String":
                     scan.symbolTable.peek().putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.STRING));
                     break;
+                case "Date":
+                    scan.symbolTable.peek().putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.DATE));
+                    break;
             }
             assignmentStmt();
         }
@@ -575,6 +578,10 @@ public class Parser {
                         scan.symbolTable.peek().putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.STRINGARR));
                         assign(variableStr, new ResultValue(SubClassif.STRINGARR, new PickleArray(SubClassif.STRING, iArrayLen)));
                         break;
+                    case "Date[":
+                        scan.symbolTable.peek().putSymbol(variableStr, new STEntry(variableStr, Classif.OPERAND, SubClassif.DATEARR));
+                        assign(variableStr, new ResultValue(SubClassif.DATEARR, new PickleArray(SubClassif.DATE, iArrayLen)));
+                        break;
                 }
                 scan.getNext(); // Skip past ';' to next statement
             // Assignment to either to another array or a list of values
@@ -601,6 +608,8 @@ public class Parser {
                         sourceTypeStr = "Float[";
                     if(sourceDclType == SubClassif.STRINGARR)
                         sourceTypeStr = "String[";
+                    if(sourceDclType == SubClassif.DATEARR)
+                        sourceTypeStr = "Date[";
 
                     if(!typeStr.equals(sourceTypeStr))
                         errorWithCurrent("Invalid source type for assignment. Destination variable %s was type %s" +
@@ -1735,6 +1744,7 @@ public class Parser {
                 case INTEGERARR:
                 case FLOATARR:
                 case STRINGARR:
+                case DATEARR:
                     PickleArray arr = ((PickleArray)msgPart.value);
                     StringBuilder sb = new StringBuilder();
                     if(arr.highestPopulatedValue != 0 && !arr.arrayList.get(0).isNull)
@@ -1748,7 +1758,9 @@ public class Parser {
                     }
                     msg.append(sb.toString());
                     break;
-
+                case DATE:
+                    msg.append(msgPart.value);
+                    break;
                 default:
                     error("Unsupported type %s in print function \"%s\"", msgPart.iDatatype, msgPart.value);
             }
@@ -2080,6 +2092,7 @@ public class Parser {
      */
     ResultValue expr(Status iExecMode) throws Exception {
         saveLocationForRange();
+        int funcDepth = 0;
         // First we'll handle if `iExecMode` == Status.EXECUTE
         if(!(iExecMode == Status.EXECUTE)) {
             while(continuesExpr(scan.currentToken))
@@ -2092,7 +2105,11 @@ public class Parser {
         Stack<Token> stack = new Stack<>();
         boolean foundLParen = false;
         infix_to_postfix_loop:
-        while(continuesExpr(scan.currentToken) && !scan.currentToken.tokenStr.equals("~")) {
+        while((continuesExpr(scan.currentToken) && !scan.currentToken.tokenStr.equals("~")) || (funcDepth != 0 && scan.currentToken.tokenStr.equals(","))) {
+            if(scan.currentToken.tokenStr.equals(",")) {
+                scan.getNext();
+            }
+
             // Evaluate starting from currentToken. Converts results from things like array references or variables into a Token
             Token t = scan.currentToken;
 
@@ -2196,6 +2213,10 @@ public class Parser {
                     unaryMinus = true;
                     t.tokenStr = t.tokenStr.substring(1);
                 }
+
+                if(scan.symbolTable.peek().getSymbol(scan.currentToken.tokenStr) == null)
+                    errorWithCurrent("%s was classified as IDENTIFIER but was not found in the symbol table", scan.currentToken.tokenStr);
+
                 ResultValue value = getVariableValue(scan.currentToken.tokenStr);
                 if(value.iDatatype == SubClassif.STRING) {
                     t = new Token("\"" + value.toString() + "\"");
@@ -2219,6 +2240,7 @@ public class Parser {
             switch(t.primClassif) {
                 case FUNCTION:
                     stack.push(t);
+                    funcDepth++;
                     break;
                 case OPERAND:
                     out.push(t);
@@ -2229,6 +2251,8 @@ public class Parser {
                             break;
                         Token popped = stack.pop();
                         out.push(popped);
+                        if(popped.primClassif == Classif.FUNCTION)
+                            funcDepth--;
                     }
                     stack.push(t);
                     break;
@@ -2351,6 +2375,25 @@ public class Parser {
                             error("Function SPACES only takes in one string.");
                         str = ((String)strRV.value);
                         return funcSPACES(str);
+                    case "dateDiff":
+                    case "dateAge":
+                        PickleDate pd1, pd2;
+                        if(parms.get(0).iDatatype == SubClassif.STRING)
+                            pd1 = new PickleDate(String.valueOf(parms.get(0).value));
+                        else
+                            pd1 = (PickleDate) parms.get(0).value;
+
+                        if(parms.get(1).iDatatype == SubClassif.STRING)
+                            pd2 = new PickleDate(String.valueOf(parms.get(1).value));
+                        else
+                            pd2 = (PickleDate) parms.get(1).value;
+
+                        int diff = PickleDate.diff(pd1, pd2);
+                        return new ResultValue(SubClassif.INTEGER, new Numeric(String.valueOf(diff), SubClassif.INTEGER));
+                    case "dateAdj":
+                        PickleDate pd = (PickleDate) parms.get(1).value;
+                        ResultValue by = parms.get(0);
+                        return new ResultValue(SubClassif.DATE, PickleDate.adj(pd, ((Numeric)by.value).intValue));
                     default:
                         error("STFunction was passed in, but %s is not a supported function for callFunction, " +
                                 "used in expr()'s eval of postfix", stFunction.tokenStr);
@@ -2527,7 +2570,8 @@ public class Parser {
         if(value != null && stEntry != null && value.iDatatype != stEntry.dclType) {
             if(stEntry.dclType == SubClassif.INTEGERARR
                     || stEntry.dclType == SubClassif.FLOATARR
-                    || stEntry.dclType == SubClassif.STRINGARR) {
+                    || stEntry.dclType == SubClassif.STRINGARR
+                    || stEntry.dclType == SubClassif.DATEARR) {
                 // We're only handling array assignments to scalars here
                 // For array to array assignments, they're the same subclassif, so StorageManager will assign them
                 // But for scalars, since they're not the same type as the array, we need to do the fill here
@@ -2546,6 +2590,9 @@ public class Parser {
             // Float f = 5;, 5 is an integer,m but needs to be stored as a float
             else if (value.iDatatype == SubClassif.INTEGER || value.iDatatype == SubClassif.FLOAT) {
                 value = new ResultValue(stEntry.dclType, new Numeric(String.valueOf(value.value), stEntry.dclType));
+            }
+            else if(stEntry.dclType == SubClassif.DATE && value.iDatatype == SubClassif.STRING) {
+                value = new ResultValue(SubClassif.DATE, new PickleDate(String.valueOf(value.value)));
             }
             else {
                 error("Variable %s with subclassification %s can not convert assignment value %s in assign statement",

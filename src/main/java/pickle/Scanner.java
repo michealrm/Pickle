@@ -72,7 +72,7 @@ public class Scanner {
      */
     public Token getNext() throws Exception {
         boolean isLastTokenOperatorOrSeparator = false;
-        if(currentToken.primClassif == Classif.OPERATOR || currentToken.tokenStr.equals("(") || currentToken.tokenStr.equals("["))
+        if(currentToken.primClassif == Classif.OPERATOR || currentToken.tokenStr.equals("(") || currentToken.tokenStr.equals("[") || currentToken.tokenStr.equals(","))
             isLastTokenOperatorOrSeparator = true;
         iSourceLineNr = nextToken.iSourceLineNr;
         iColPos = nextToken.iColPos;
@@ -115,6 +115,9 @@ public class Scanner {
                 advancedPos = advanceTokenPos(nextToken);
             }
         }
+
+        if(currentToken.tokenStr.equals("-"))
+            System.out.println();
 
         if(isLastTokenOperatorOrSeparator && currentToken.tokenStr.equals("-")) {
             getNext();

@@ -1,7 +1,7 @@
 print("p5Date.txt");
 Date aprilFools = "2017-04-01";
 Date earlier = "2015-04-01";
-print ("date1 =", aprilFools, "date2 =", earlier, "diff =", dateDiff(aprilFools, earlier);
+print ("date1 =", aprilFools, "date2 =", earlier, "diff =", dateDiff(aprilFools, earlier));
 print ("date =", aprilFools, "adjusted by 1 =", dateAdj(aprilFools, 1)); 
 print ("date =", aprilFools, "adjusted by -40 =", dateAdj(aprilFools, -40)); 
 print ("date =", aprilFools, "adjusted by -365 =", dateAdj(aprilFools, -365)); 

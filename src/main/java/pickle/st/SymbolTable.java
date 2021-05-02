@@ -56,6 +56,9 @@ public class SymbolTable {
         globalSymbolTable.putSymbol("SPACES", new STFunction("SPACES", Classif.FUNCTION, 1,SubClassif.BUILTIN));
         globalSymbolTable.putSymbol("ELEM", new STFunction("ELEM", Classif.FUNCTION, 1,SubClassif.BUILTIN));
         globalSymbolTable.putSymbol("MAXELEM", new STFunction("MAXELEM", Classif.FUNCTION, 1,SubClassif.BUILTIN));
+        globalSymbolTable.putSymbol("dateDiff", new STFunction("dateDiff", Classif.FUNCTION, 2,SubClassif.BUILTIN));
+        globalSymbolTable.putSymbol("dateAdj", new STFunction("dateAdj", Classif.FUNCTION, 2,SubClassif.BUILTIN));
+        globalSymbolTable.putSymbol("dateAge", new STFunction("dateDiff", Classif.FUNCTION, 2,SubClassif.BUILTIN));
 
         globalSymbolTable.putSymbol("Int", new STControl("Int", Classif.CONTROL, SubClassif.DECLARE));
         globalSymbolTable.putSymbol("Float", new STControl("Float", Classif.CONTROL, SubClassif.DECLARE));
