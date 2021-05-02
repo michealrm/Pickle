@@ -507,6 +507,10 @@ public class Scanner {
                         return c == 'o';
                     case FOR_INCREMENT:
                         return c == 'y';
+                    case CONTINUE:
+                        return c == 'e';
+                    case BREAK:
+                        return c == 'k';
                     default:
                         return containsIn(token.tokenStr + c, SymbolTable.globalSymbolTable.hm);
                 }

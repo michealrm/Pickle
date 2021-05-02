@@ -98,6 +98,14 @@ public class Numeric {
             return -floatValue;
     }
 
+    public boolean equal(Numeric value) {
+        if (type == SubClassif.INTEGER) {
+            return intValue.equals(value.intValue);
+        } else {
+            return floatValue.equals(value.floatValue);
+        }
+    }
+
     public boolean notEqual(Numeric value) {
         if (type == SubClassif.INTEGER) {
             return !intValue.equals(value.intValue);

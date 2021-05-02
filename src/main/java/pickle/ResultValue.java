@@ -22,7 +22,8 @@ public class ResultValue
 	public Object value;
 	public boolean isNumber = false;
 	public boolean isNull = false;
-	public static String scTerminatingStr;
+	public static Status iExecMode = Status.EXECUTE;
+	public static String scTerminatingStr = "default";
 	public static String leftOpGlobal;
 	public static String rightOpGlobal;
 	public static String operationGlobal;
@@ -225,7 +226,7 @@ public class ResultValue
 						result = ((Numeric) value).power((Numeric) rightOperand.value).toString();
 						break;
 					case "==":
-						if (((Numeric) value).equals((Numeric) rightOperand.value)) {
+						if (((Numeric) value).equal((Numeric) rightOperand.value)) {
 							result = true;
 						} else {
 							result = false;

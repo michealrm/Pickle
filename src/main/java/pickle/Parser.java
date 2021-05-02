@@ -60,6 +60,19 @@ public class Parser {
             if (scan.currentToken.primClassif == Classif.EOF)
                 System.exit(0);
 
+            else if (ResultValue.iExecMode == Status.BREAK) {
+                res.scTerminatingStr = resTemp.scTerminatingStr;
+                res.iExecMode = resTemp.iExecMode;
+
+                return res;
+
+            } else if (ResultValue.iExecMode == Status.CONTINUE) {
+                res.scTerminatingStr = resTemp.scTerminatingStr;
+                res.iExecMode = resTemp.iExecMode;
+
+                return res;
+            }
+
             if (resTemp.scTerminatingStr != null && resTemp.iDatatype == SubClassif.END) {
                 if (flowStack.isEmpty()) {
                     // Either flow is higher in the call stack or this is an invalid/non-matching termination
@@ -141,8 +154,7 @@ public class Parser {
             }
         }
 
-        // Check for END
-        if (scan.currentToken.dclType == SubClassif.END) {
+        if (scan.currentToken.dclType == SubClassif.END) {  // Check for END
             ResultValue res = new ResultValue(SubClassif.END, scan.currentToken.tokenStr);
             res.scTerminatingStr = scan.currentToken.tokenStr;
             // DO NOT skip past endX;. We need this if XStmt for exception handling
@@ -213,6 +225,11 @@ public class Parser {
                 // DO NOT skip past endX;. We need this if XStmt for exception handling
 
                 return res;
+
+            } else if(scan.currentToken.tokenStr.equals("continue") || scan.currentToken.tokenStr.equals("break")) {
+                ResultValue res = new ResultValue(SubClassif.FLOW, scan.currentToken.tokenStr);
+
+                return res;
             }
         }
 
@@ -240,6 +257,18 @@ public class Parser {
             }
             else if(scan.currentToken.tokenStr.equals("to") || scan.currentToken.tokenStr.equals("by")) {
                 initializeTempForVariables();
+
+            } else if(scan.currentToken.tokenStr.equals("break")) {
+                ResultValue res = executeStatements(Status.IGNORE_EXEC);
+                res.iExecMode = Status.BREAK;
+
+                return res;
+
+            } else if (scan.currentToken.tokenStr.equals("continue")) {
+                ResultValue res = executeStatements(Status.IGNORE_EXEC);
+                res.iExecMode = Status.CONTINUE;
+
+                return res;
             }
             else {
                 error("Unsupported statement type for token %s. Classif: %s/%s", scan.currentToken.tokenStr, scan.currentToken.primClassif, scan.currentToken.dclType);
@@ -297,21 +326,21 @@ public class Parser {
             case "Date":
                 returnType = SubClassif.DATE;
                 break;
-//            case "String[]":
-//                returnType = SubClassif.STRINGARR;
-//                break;
-//            case "Int[]":
-//                returnType = SubClassif.INTEGERARR;
-//                break;
-//            case "Float[]":
-//                returnType = SubClassif.FLOATARR;
-//                break;
-//            case "Bool[]":
-//                returnType = SubClassif.BOOLEANARR;
-//                break;
-//            case "Date[]":
-//                returnType = SubClassif.DATEARR;
-//                break;
+/*            case "String[]":
+                returnType = SubClassif.STRINGARR;
+                break;
+            case "Int[]":
+                returnType = SubClassif.INTEGERARR;
+                break;
+            case "Float[]":
+                returnType = SubClassif.FLOATARR;
+                break;
+            case "Bool[]":
+                returnType = SubClassif.BOOLEANARR;
+                break;
+            case "Date[]":
+                returnType = SubClassif.DATEARR;
+                break;*/
             default:
                 errorWithCurrent("Invalid function return type");
                 break;
@@ -986,6 +1015,14 @@ public class Parser {
                     errorWithCurrent("Expected ':' after if");
                 scan.getNext(); // Skip past ':'
                 ResultValue resTemp = executeStatements(Status.EXECUTE);
+
+                if(resTemp.iExecMode == Status.CONTINUE) {
+                    return;
+                } else if (resTemp.iExecMode == Status.BREAK) {
+                    return;
+                }
+
+
                 if(resTemp.scTerminatingStr.equals("else")) {
                     if(!scan.getNext().tokenStr.equals(":"))
                         errorWithCurrent("Expected ':' after else");
@@ -1009,6 +1046,12 @@ public class Parser {
                         errorWithCurrent("Expected ':' after 'else'");
                     scan.getNext();
                     resTemp = executeStatements(Status.EXECUTE);
+
+                    if(resTemp.iExecMode == Status.CONTINUE) {
+                        return;
+                    } else if (resTemp.iExecMode == Status.BREAK) {
+                        return;
+                    }
                 }
                 if(!scan.getNext().tokenStr.equals(";"))
                     errorWithCurrent("Expected ';' after 'endif'");
@@ -1022,6 +1065,12 @@ public class Parser {
                     errorWithCurrent("Expected ':' after else");
                 scan.getNext(); // Skip past ':'
                 resTemp = executeStatements(iExecMode);
+
+                if(resTemp.iExecMode == Status.CONTINUE) {
+                    return;
+                } else if (resTemp.iExecMode == Status.BREAK) {
+                    return;
+                }
             }
             if(!resTemp.scTerminatingStr.equals("endif"))
                 errorWithCurrent("Expected an 'endif' for an 'if'");
@@ -1056,6 +1105,13 @@ public class Parser {
                 scan.getNext(); // Skip past ':'
 
                 ResultValue resTemp = executeStatements(Status.EXECUTE);
+
+                if(resTemp.iExecMode == Status.CONTINUE) {
+                    scan.goTo(iStartSourceLineNr, iStartColPos);
+                    resCond = evalCond(iExecMode, "while");
+                    resTemp.iExecMode = Status.EXECUTE;
+                    continue;
+                }
 
                 if (!resTemp.scTerminatingStr.equals("endwhile"))
                     errorWithCurrent("Expected an 'endwhile' for a 'while'");
