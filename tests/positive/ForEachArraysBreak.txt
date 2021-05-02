@@ -1,0 +1,13 @@
+Int arr1[5] = 1, 2, 3, 4, 5;
+
+Int i = 0;
+
+for e in arr1:
+
+	print(e);
+	
+	if i == 0:
+		break;
+	endif;
+	
+endfor;

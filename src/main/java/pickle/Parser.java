@@ -1311,6 +1311,18 @@ public class Parser {
                 //System.out.println("VARIABLE: " + iteratorVariable + " " + storageManager.peek().retrieveVariable(iteratorVariable).iPrimClassif);
                 ResultValue resTemp = executeStatements(Status.EXECUTE);
 
+                if(resTemp.iExecMode == Status.CONTINUE) {
+                    scan.goTo(iStartSourceLineNr, iStartColPos);
+                    storageManager.get(envVector).storeVariable(iteratorVariable, new ResultValue(SubClassif.INTEGER, Integer.parseInt(storageManager.peek().retrieveVariable(iteratorVariable).toString()) + Integer.parseInt(storageManager.peek().retrieveVariable(currentForStmtDepth + "tempIncrement").toString())));
+                    resTemp.iExecMode = Status.EXECUTE;
+                    continue;
+
+                } else if(resTemp.iExecMode == Status.BREAK) {
+                    scan.goTo(iStartSourceLineNr, iStartColPos);
+                    resTemp.iExecMode = Status.EXECUTE;
+                    break;
+                }
+
                 if (!resTemp.scTerminatingStr.equals("endfor"))
                     errorWithCurrent("Expected an 'endfor' for a 'for'");
                 iEndSourceLineNr = scan.iSourceLineNr;
@@ -1508,6 +1520,17 @@ public class Parser {
 
                     ResultValue resTemp = executeStatements(Status.EXECUTE);
 
+                    if(resTemp.iExecMode == Status.CONTINUE) {
+                        scan.goTo(iStartSourceLineNr, iStartColPos);
+                        resTemp.iExecMode = Status.EXECUTE;
+                        continue;
+
+                    } else if(resTemp.iExecMode == Status.BREAK) {
+                        scan.goTo(iStartSourceLineNr, iStartColPos);
+                        resTemp.iExecMode = Status.EXECUTE;
+                        break;
+                    }
+
                     if (!resTemp.scTerminatingStr.equals("endfor"))
                         errorWithCurrent("Expected an 'endfor' for a 'for'");
                     iEndSourceLineNr = scan.iSourceLineNr;
@@ -1537,6 +1560,17 @@ public class Parser {
                     storageManager.peek().storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(storageManager.peek().retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) + 1));
 
                     ResultValue resTemp = executeStatements(Status.EXECUTE);
+
+                    if(resTemp.iExecMode == Status.CONTINUE) {
+                        scan.goTo(iStartSourceLineNr, iStartColPos);
+                        resTemp.iExecMode = Status.EXECUTE;
+                        continue;
+
+                    } else if(resTemp.iExecMode == Status.BREAK) {
+                        scan.goTo(iStartSourceLineNr, iStartColPos);
+                        resTemp.iExecMode = Status.EXECUTE;
+                        break;
+                    }
 
                     if (!resTemp.scTerminatingStr.equals("endfor"))
                         errorWithCurrent("Expected an 'endfor' for a 'for'");
@@ -1705,6 +1739,17 @@ public class Parser {
                 storageManager.peek().storeVariable(currentForStmtDepth + "iteratorPosition", new ResultValue(SubClassif.INTEGER, Integer.parseInt(storageManager.peek().retrieveVariable(currentForStmtDepth + "iteratorPosition").toString()) + 1));
 
                 ResultValue resTemp = executeStatements(Status.EXECUTE);
+
+                if(resTemp.iExecMode == Status.CONTINUE) {
+                    scan.goTo(iStartSourceLineNr, iStartColPos);
+                    resTemp.iExecMode = Status.EXECUTE;
+                    continue;
+
+                } else if(resTemp.iExecMode == Status.BREAK) {
+                    scan.goTo(iStartSourceLineNr, iStartColPos);
+                    resTemp.iExecMode = Status.EXECUTE;
+                    break;
+                }
 
                 if (!resTemp.scTerminatingStr.equals("endfor"))
                     errorWithCurrent("Expected an 'endfor' for a 'for'");
