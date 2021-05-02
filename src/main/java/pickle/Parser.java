@@ -64,11 +64,19 @@ public class Parser {
                 res.scTerminatingStr = resTemp.scTerminatingStr;
                 res.iExecMode = resTemp.iExecMode;
 
+                if(!flowStack.isEmpty()) {
+                    flowStack.pop();
+                }
+
                 return res;
 
             } else if (ResultValue.iExecMode == Status.CONTINUE) {
                 res.scTerminatingStr = resTemp.scTerminatingStr;
                 res.iExecMode = resTemp.iExecMode;
+
+                if(!flowStack.isEmpty()) {
+                    flowStack.pop();
+                }
 
                 return res;
             }
