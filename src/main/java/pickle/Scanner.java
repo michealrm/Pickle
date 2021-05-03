@@ -116,8 +116,8 @@ public class Scanner {
             }
         }
 
-        if(currentToken.tokenStr.equals("-"))
-            System.out.println();
+        /*if(currentToken.tokenStr.equals("-"))
+            System.out.println();*/
 
         if(isLastTokenOperatorOrSeparator && currentToken.tokenStr.equals("-")) {
             getNext();
