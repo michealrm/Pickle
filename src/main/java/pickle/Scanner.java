@@ -439,7 +439,7 @@ public class Scanner {
         // So don't change types if the tokenStr is a -
         // The - will be added in getNext
         // But classification, without changing classifs below, should return INT for a number like -5
-        if(copy.primClassif != Classif.EMPTY && copy.dclType != token.dclType && !token.tokenStr.equals("-") && token.primClassif != Classif.OPERATOR) {
+        if(copy.primClassif != Classif.EMPTY && copy.dclType != token.dclType && !token.tokenStr.equals("-")) {
             token.primClassif = copy.primClassif;
             token.dclType = copy.dclType;
         }

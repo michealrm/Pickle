@@ -185,7 +185,7 @@ public class ResultValue
 	*/
 	public ResultValue executeOperation(ResultValue rightOperand, String operation) throws Exception
 	{
-		Object result;
+		Object result = null;
 		SubClassif resultType = iDatatype;
 
 		if(rightOperand != null)
@@ -348,6 +348,26 @@ public class ResultValue
 						break;
 					default:
 						throw new InvalidOperationException("Invalid operation detected");
+				}
+			}
+			else if(rightOperand.iDatatype == SubClassif.INTEGERARR
+						|| rightOperand.iDatatype == SubClassif.FLOATARR
+						|| rightOperand.iDatatype == SubClassif.BOOLEANARR
+						|| rightOperand.iDatatype == SubClassif.STRINGARR) {
+				PickleArray arr;
+				switch(operation) {
+					case "in":
+						arr = (PickleArray)rightOperand.value;
+						for(ResultValue element : arr.arrayList)
+							if(String.valueOf(element.value).equals(String.valueOf(this.value)))
+								return new ResultValue(SubClassif.BOOLEAN, "T");
+						return new ResultValue(SubClassif.BOOLEAN, "F");
+					case "notin":
+						arr = (PickleArray)rightOperand.value;
+						for(ResultValue element : arr.arrayList)
+							if(String.valueOf(element.value).equals(String.valueOf(this.value)))
+								return new ResultValue(SubClassif.BOOLEAN, "F");
+						return new ResultValue(SubClassif.BOOLEAN, "T");
 				}
 			}
 			else

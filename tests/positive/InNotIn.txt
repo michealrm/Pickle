@@ -1,0 +1,4 @@
+Int a[] = 1, 2, 3, 4, 5;
+Int b = 5;
+print(b in a);
+print(b notin a);
