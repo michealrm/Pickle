@@ -38,6 +38,7 @@ public enum SubClassif
     PRIMITIVE("PRIMITIVE"),      // Primitive type
     FIXED_ARRAY("FIXED_ARRAY"),    // Array type
     UNBOUNDED_ARRAY("UNBOUNDED_ARRAY"), // Pointer
+    UNBOUNDED_ARRAY_DECLARE("UNBOUNDED_ARRAY_DECLARE"),
     // IDENTIFIER's Parameter subclassifications
     REFERENCE("REFERENCE"),
     VALUE("VALUE");

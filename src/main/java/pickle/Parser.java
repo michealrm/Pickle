@@ -1001,6 +1001,11 @@ public class Parser {
                         error("Value of array reference assignment had type %s, but array has type %s", expr.iDatatype.toString(), type.toString());
                     // Set value
                     PickleArray arr = ((PickleArray) getVariableValue(variableName).value);
+
+                    if( (index >= arr.length) && arr.length != 0) {
+                        errorWithCurrent("Array reference '%s[%s]' is out of bounds for size %s", variableName, index, arr.length);
+                    }
+
                     arr.set(index, expr);
                 }
 
@@ -2382,9 +2387,13 @@ public class Parser {
                     } else {
                         PickleArray arr = ((PickleArray) getVariableValue(variableName).value);
 
-                        if(index > arr.arrayList.size()) {
+                        if(index >= arr.arrayList.size()) {
                             errorWithCurrent("Reference to array, '%s[%s]', which has not been populated", variableName, index);
                         }
+
+                        //System.out.println(arr.arrayList.size());
+
+                        //System.out.println(index);
 
                         ResultValue value = arr.get(index);
 

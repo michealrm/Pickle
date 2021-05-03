@@ -47,7 +47,7 @@ print("Bracket OK4", aM[aM[i2-i1]-3]);
 // Brackets causing errors
 //print(aM[+3]);              // error x9, Line 47 expected operand, found: '+'
 //print(aM[aM[4]*]);          // error x10, Line 48 expected operand, found: ']'
-//print(aM[aM[i2-i1]]);       // error x11, Line 49 Reference to array, 'aM[6]', which has not been populated
+print(aM[aM[i2-i1]]);       // error x11, Line 49 Reference to array, 'aM[6]', which has not been populated
 
 // Not errors (do not comment out these as you go)
 iAns = (((i1)+i2)*f5);
@@ -70,10 +70,11 @@ if i2*10 > s1#s2:
      print("Coerce OK4 - true");
 else:
      print("Coerce Error 4 - false");
-endif; 
+endif;
+
 // Data type issues
-print( 5 * (s1#sA));         // error x14, Line 74 Invalid non-numeric data for 2nd operand in '*' operation, value: 1A
-print(5.0 + (s1#'.'#sA);     // error x15, Line 75 Invalid non-numeric data for 2nd operand in '+' operation, value: 1.A
+//print( 5 * (s1#sA));         // error x14, Line 74 Invalid non-numeric data for 2nd operand in '*' operation, value: 1A
+//print(5.0 + (s1#'.'#sA));     // error x15, Line 75 Invalid non-numeric data for 2nd operand in '+' operation, value: 1.A
 if (i2*10 > sA):               // error x16, Line 76 Invalid non-numeric data for 2nd operand in '>' operation, value: A
      print("Should not do this - true");
 else:

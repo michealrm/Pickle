@@ -321,6 +321,9 @@ public class Scanner {
         } else if(token.tokenStr.equals("return")) {
             token.primClassif = Classif.CONTROL;
             token.dclType = SubClassif.RETURN;
+        } else if(token.tokenStr.equals("unbound")) {
+            token.primClassif = Classif.CONTROL;
+            token.dclType = SubClassif.UNBOUNDED_ARRAY_DECLARE;
         }
 
         /* else if(token.tokenStr.compareTo("def") == 0) {   // TODO 1: Add parameters as identifiers within the function symbol table
@@ -511,6 +514,8 @@ public class Scanner {
                         return c == 'e';
                     case BREAK:
                         return c == 'k';
+                    case UNBOUNDED_ARRAY_DECLARE:
+                        return c == 'd';
                     default:
                         return containsIn(token.tokenStr + c, SymbolTable.globalSymbolTable.hm);
                 }
