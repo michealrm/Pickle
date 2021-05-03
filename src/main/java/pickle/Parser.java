@@ -2265,7 +2265,10 @@ public class Parser {
         Stack<Token> stack = new Stack<>();
         boolean foundLParen = false;
 
-        if(scan.currentToken.tokenStr.startsWith("-")) {
+        // Evaluate starting from currentToken. Converts results from things like array references or variables into a Token
+        Token t = scan.currentToken;
+
+        if(t.tokenStr.startsWith("-")) {
             expectOperand = true;
             expectOperator = false;
         }
@@ -2277,7 +2280,7 @@ public class Parser {
             }
 
             // Evaluate starting from currentToken. Converts results from things like array references or variables into a Token
-            Token t = scan.currentToken;
+            t = scan.currentToken;
 
             if(t.primClassif == Classif.OPERAND && expectOperand) {
                 expectOperand = false;
@@ -2469,6 +2472,10 @@ public class Parser {
                     errorWithCurrent("Couldn't classify %s to add to the stack", t.tokenStr);
             }
             scan.getNext();
+        }
+
+        if(t.primClassif == Classif.OPERATOR) {
+            errorWithCurrent("expected operand, found '%s'", scan.currentToken.tokenStr);
         }
 
         expectOperand = true;

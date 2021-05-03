@@ -32,10 +32,10 @@ print("OK8", i1+i2, f5);
 //iAns = 3 + i1  (i2 + f5); // error x3, Line 31 operator expected, found: '('
 //iAns = i1 +(f5 * f6) f7;  // error x4, Line 32 operand was not expected, found: 'f7'
 // Missing operand errors
-iAns = i1+;               // error x5, Line 34 expected operand, found: ';'
-iAns = i1 + (* f6);       // error x6, Line 35 expected operand, found: '*'
-print(i1+, i2);           // error x7, Line 36 expected operand, found: ','
-print(i1+i2, *f5);        // error x8, Line 37 expected operand, found: '*'
+//iAns = i1+;               // error x5, Line 34 expected operand, found: ';'
+//iAns = i1 + (* f6);       // error x6, Line 35 expected operand, found: '*'
+//print(i1+, i2);           // error x7, Line 36 expected operand, found: ','
+//print(i1+i2, *f5);        // error x8, Line 37 expected operand, found: '*'
 
 // Not errors (do not comment out these as you go)
 Int aM[] = 5, 6, 7, 8, 9;
