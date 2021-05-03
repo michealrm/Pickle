@@ -1888,7 +1888,7 @@ public class Parser {
             errorWithCurrent("Expected '(' for builtin function 'print'");
         do {
             scan.getNext();
-            ResultValue msgPart = expr(Status.EXECUTE);
+            ResultValue msgPart = expr(Status.EXECUTE, true);
             switch(msgPart.iDatatype) {
                 case INTEGER:
                 case FLOAT:
@@ -1962,7 +1962,7 @@ public class Parser {
 
         if (iExecMode == Status.EXECUTE)
         {
-            param = expr(iExecMode);
+            param = expr(iExecMode, true);
             // Convert to String
             // TODO: Create convertType function in ResultValue
             param = ResultValue.convertType(SubClassif.STRING, param);
@@ -2029,7 +2029,7 @@ public class Parser {
 
         if (iExecMode == Status.EXECUTE)
         {
-            param = expr(iExecMode);
+            param = expr(iExecMode, true);
             param = ResultValue.convertType(SubClassif.STRING, param);
             if (!scan.currentToken.tokenStr.equals(")"))
             {
@@ -2250,10 +2250,19 @@ public class Parser {
      * @param iExecMode used for functions
      * @return The ResultValue of the expression
      */
-    ResultValue expr(Status iExecMode) throws Exception {
+    ResultValue expr(Status iExecMode, Object... varArgs) throws Exception {
+
+        boolean isFunctionCall = false;
+
+        if(varArgs.length == 1) {
+            isFunctionCall = (boolean) varArgs[0];
+        }
 
         boolean expectOperand = true;
         boolean expectOperator = false;
+
+        int numberOfLeftParentheses = 0;
+        int numberOfRightParentheses = 0;
 
         saveLocationForRange();
         int funcDepth = 0;
@@ -2373,6 +2382,10 @@ public class Parser {
                     } else {
                         PickleArray arr = ((PickleArray) getVariableValue(variableName).value);
 
+                        if(index > arr.arrayList.size()) {
+                            errorWithCurrent("Reference to array, '%s[%s]', which has not been populated", variableName, index);
+                        }
+
                         ResultValue value = arr.get(index);
 
                         if (((Numeric) indexResult.value).intValue > arr.highestPopulatedValue) {
@@ -2452,9 +2465,14 @@ public class Parser {
                 case SEPARATOR:
                     switch(t.tokenStr) {
                         case "(":
+                            numberOfLeftParentheses += 1;
                             stack.push(t);
                             break;
                         case ")":
+                            if(scan.nextToken.tokenStr.equals(";") && isFunctionCall) {
+                                break infix_to_postfix_loop;
+                            }
+                            numberOfRightParentheses += 1;
                             foundLParen = false;
                             while(!stack.isEmpty()) {
                                 Token popped = stack.pop();
@@ -2466,8 +2484,9 @@ public class Parser {
                             }
                             if(!stack.isEmpty() && stack.peek().primClassif == Classif.FUNCTION)
                                 out.push(stack.pop());
-                            if(!foundLParen)
+                            if(!foundLParen) {
                                 break infix_to_postfix_loop;
+                            }
                             break;
                         default:
                             error("Token %s, a separator, must either be a '(' or ')'", t.tokenStr);
@@ -2483,8 +2502,11 @@ public class Parser {
             errorWithCurrent("expected operand, found '%s'", scan.currentToken.tokenStr);
         }
 
-        expectOperand = true;
-        expectOperator = false;
+        if( (numberOfLeftParentheses - numberOfRightParentheses) > 0) {
+            errorWithCurrent("Missing ')'");
+        } else if( (numberOfLeftParentheses - numberOfRightParentheses) < 0) {
+            errorWithCurrent("Missing '('");
+        }
 
         while(!stack.isEmpty())
             out.push(stack.pop());

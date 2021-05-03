@@ -47,15 +47,15 @@ print("Bracket OK4", aM[aM[i2-i1]-3]);
 // Brackets causing errors
 //print(aM[+3]);              // error x9, Line 47 expected operand, found: '+'
 //print(aM[aM[4]*]);          // error x10, Line 48 expected operand, found: ']'
-print(aM[aM[i2-i1]]);       // error x11, Line 49 Reference to array, 'aM[6]', which has not been populated
+//print(aM[aM[i2-i1]]);       // error x11, Line 49 Reference to array, 'aM[6]', which has not been populated
 
 // Not errors (do not comment out these as you go)
 iAns = (((i1)+i2)*f5);
 print("Paren OK1", iAns);
 
 // Parens causing errors
-iAns = ((i1)+i2))*f5;       // error x12, Line 56 Missing '(', found: ')'
-iAns = (((i1)+i2)*f5;      // error x13, Line 57 Missing ')'
+//iAns = ((i1)+i2))*f5;       // error x12, Line 56 Missing '(', found: ')'
+//iAns = (((i1)+i2)*f5;      // error x13, Line 57 Missing ')'
 
 // Not errors (do not comment out these as you go)
 String sA = "A";
