@@ -1,0 +1,5 @@
+String count = "I'm a String";
+
+Int isNotAString = 1;
+
+isNotAString = count;

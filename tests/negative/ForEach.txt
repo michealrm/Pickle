@@ -1,4 +1,4 @@
 String t = "Test";
-for c in t:
+for c in isNotAVariable:
 	print(c);
 endfor;

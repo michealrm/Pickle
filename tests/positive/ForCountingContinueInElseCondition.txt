@@ -7,9 +7,8 @@ for i = 0 to 5 by 1:
 	if i == 0:
 		print(i);
 	else:
-		print(isNotAVariable);
 		print("continuing");
-		break;
+		continue;
 	endif;
 	
 	print("end of for loop");

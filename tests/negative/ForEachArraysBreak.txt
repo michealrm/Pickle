@@ -2,7 +2,7 @@ Int arr1[5] = 1, 2, 3, 4, 5;
 
 Int i = 0;
 
-for e in arr1:
+for e in arr1 in test:
 
 	print(e);
 	

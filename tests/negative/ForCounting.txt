@@ -2,7 +2,7 @@ Int i;
 Int j;
 
 for i = 2 * 2 to 10 by 2:
-	print(i);
+	print(test);
 	
 	for j = 0 to 2:
 		print(j);

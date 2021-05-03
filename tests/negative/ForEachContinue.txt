@@ -6,7 +6,7 @@ for c in t:
 	
 	if i == 0:
 		i = i + 1;
-		continue;
+		continuebreak;
 	endif;
 
 	print(c);

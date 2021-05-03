@@ -3,9 +3,9 @@ Int arr2[5] = 10, 20, 30, 40, 50;
 Int arr3[10] = 1, 2, 3, 4, 5;
 Int arr4[10] = 10, 20, 30, 40, 50;
 
-for e1 in arr1:
+for e1 in isNotAnArray1:
 	print(e1);
-	for e2 in arr2:
+	for e2 in isNotAnArray2:
 		print(e2);
 	endfor;
 endfor;

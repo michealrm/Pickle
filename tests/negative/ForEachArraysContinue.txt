@@ -4,7 +4,7 @@ Int i = 0;
 
 for e in arr1:
 
-	if i == 0:
+	if i == 0 else:
 		i = i + 1;
 		continue;
 	endif;

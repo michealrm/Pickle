@@ -7,7 +7,7 @@ bFlag = T;
 i = 0;
 fruit = 'larry';
 climber = 'pike';
-while bFlag:
+while isNotAVariable:
     i = i + 1;
     print("i=", i);
     if fruit == "apple" or fruit == "orange" or fruit == "larry":

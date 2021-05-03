@@ -1,4 +1,4 @@
-String t = "Test";
+String t = "Error";
 
 Int i = 0;
 
@@ -7,7 +7,7 @@ for c in t:
 	print(c);
 	
 	if i == 0:
-		break;
+		breakcontinue;
 	endif;
 
 endfor;

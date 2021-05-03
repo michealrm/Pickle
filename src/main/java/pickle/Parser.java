@@ -1442,6 +1442,10 @@ public class Parser {
                 //System.out.println(storageManager.peek().retrieveVariable(scan.currentToken.tokenStr).iDatatype);
                 //System.out.println(((PickleArray) storageManager.peek().retrieveVariable(scan.currentToken.tokenStr).value).type);
 
+                if(scan.symbolTable.peek().getSymbol(scan.currentToken.tokenStr) == null) {
+                    errorWithCurrent("Reference to undeclared variable");
+                }
+
                 //if (scan.currentToken.primClassif == Classif.OPERAND || scan.currentToken.dclType == SubClassif.STRING) {
                 if (storageManager.peek().retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.STRING) {
                     if (storageManager.get(envVector).retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exist
@@ -1684,6 +1688,10 @@ public class Parser {
                 // ITERATION STRING VALUE
 
                 scan.getNext();
+
+                if(scan.symbolTable.peek().getSymbol(scan.currentToken.tokenStr) == null) {
+                    errorWithCurrent("Reference to undeclared variable");
+                }
 
                 if (storageManager.peek().retrieveVariable(scan.currentToken.tokenStr).iDatatype == SubClassif.STRING) {
                     if (storageManager.get(envVector).retrieveVariable(iteratorVariable) == null) {   // Store the iterator variable if it doesn't already exist
@@ -2903,8 +2911,6 @@ public class Parser {
     }
 
     public void errorWithCurrent(String fmt, Object... varArgs) throws Exception {
-        error("Read \"%s\", " + fmt, scan.currentToken.tokenStr, varArgs);
+        error(fmt, varArgs);
     }
-
-
 }
