@@ -22,6 +22,8 @@ public class Parser {
     public static int currentForLine;
     public static boolean onStmtLine = false;
     public static int currentForStmtDepth = 0;
+    //public static boolean expectOperand = true;
+    //public static boolean expectOperator = false;
 
     // Useful in functions like expr() to print all tokens in a range in error messages
     public static int savedRangeStartLine = 0;
@@ -256,6 +258,25 @@ public class Parser {
                 if(scan.symbolTable.peek().getSymbol(scan.currentToken.tokenStr) == null) {
                     errorWithCurrent("Reference to undeclared variable/function");
                 }
+
+                /*int iStartSourceLineNr = scan.iSourceLineNr;
+                int iStartColPos = scan.iColPos;
+
+                skipToInCurrentLine("=");
+
+                if(scan.nextToken.tokenStr.equals("-")) {
+                    expectOperand = true;
+                    expectOperator = false;
+                } else if(scan.nextToken.primClassif == Classif.OPERAND || scan.nextToken.tokenStr.equals("(")) {
+                    expectOperand = false;
+                    expectOperator = true;
+                } else if(scan.nextToken.primClassif == Classif.OPERATOR) {
+                    errorWithCurrent("operator was not expected, found: '%s'", scan.nextToken.tokenStr);
+                } else {
+                    errorWithCurrent("token was not expected, found: '%s'", scan.nextToken.tokenStr);
+                }
+
+                scan.goTo(iStartSourceLineNr, iStartColPos);*/
 
                 return assignmentStmt();
             }
@@ -1867,7 +1888,7 @@ public class Parser {
             errorWithCurrent("Expected '(' for builtin function 'print'");
         do {
             scan.getNext();
-            ResultValue msgPart = expr(Status.EXECUTE);
+            ResultValue msgPart = expr(Status.EXECUTE, true);
             switch(msgPart.iDatatype) {
                 case INTEGER:
                 case FLOAT:
@@ -1941,7 +1962,7 @@ public class Parser {
 
         if (iExecMode == Status.EXECUTE)
         {
-            param = expr(iExecMode);
+            param = expr(iExecMode, true);
             // Convert to String
             // TODO: Create convertType function in ResultValue
             param = ResultValue.convertType(SubClassif.STRING, param);
@@ -2008,7 +2029,7 @@ public class Parser {
 
         if (iExecMode == Status.EXECUTE)
         {
-            param = expr(iExecMode);
+            param = expr(iExecMode, true);
             param = ResultValue.convertType(SubClassif.STRING, param);
             if (!scan.currentToken.tokenStr.equals(")"))
             {
@@ -2229,7 +2250,20 @@ public class Parser {
      * @param iExecMode used for functions
      * @return The ResultValue of the expression
      */
-    ResultValue expr(Status iExecMode) throws Exception {
+    ResultValue expr(Status iExecMode, Object... varArgs) throws Exception {
+
+        boolean isFunctionCall = false;
+
+        if(varArgs.length == 1) {
+            isFunctionCall = (boolean) varArgs[0];
+        }
+
+        boolean expectOperand = true;
+        boolean expectOperator = false;
+
+        int numberOfLeftParentheses = 0;
+        int numberOfRightParentheses = 0;
+
         saveLocationForRange();
         int funcDepth = 0;
         // First we'll handle if `iExecMode` == Status.EXECUTE
@@ -2243,6 +2277,15 @@ public class Parser {
         Stack<Token> out = new Stack<>();
         Stack<Token> stack = new Stack<>();
         boolean foundLParen = false;
+
+        // Evaluate starting from currentToken. Converts results from things like array references or variables into a Token
+        Token t = scan.currentToken;
+
+        if(t.tokenStr.startsWith("-")) {
+            expectOperand = true;
+            expectOperator = false;
+        }
+
         infix_to_postfix_loop:
         while((continuesExpr(scan.currentToken) && !scan.currentToken.tokenStr.equals("~")) || (funcDepth != 0 && scan.currentToken.tokenStr.equals(","))) {
             if(scan.currentToken.tokenStr.equals(",")) {
@@ -2250,7 +2293,22 @@ public class Parser {
             }
 
             // Evaluate starting from currentToken. Converts results from things like array references or variables into a Token
-            Token t = scan.currentToken;
+            t = scan.currentToken;
+
+            if(t.primClassif == Classif.OPERAND && expectOperand) {
+                expectOperand = false;
+                expectOperator = true;
+
+            } else if(t.primClassif == Classif.OPERATOR && expectOperator) {
+                expectOperand = true;
+                expectOperator = false;
+
+            } else if(t.primClassif == Classif.OPERAND && expectOperator) {
+                errorWithCurrent("expected operator, found '%s'", t.tokenStr);
+
+            } else if(t.primClassif == Classif.OPERATOR && expectOperand) {
+                errorWithCurrent("expected operand, found '%s'", t.tokenStr);
+            }
 
             // If array, call expr() on it and use the ResultValue as Token t, leaving currentToken on the ']' since
             // we call scan.getNext() at the end of the while
@@ -2323,6 +2381,11 @@ public class Parser {
                         t.dclType = SubClassif.STRING;
                     } else {
                         PickleArray arr = ((PickleArray) getVariableValue(variableName).value);
+
+                        if(index > arr.arrayList.size()) {
+                            errorWithCurrent("Reference to array, '%s[%s]', which has not been populated", variableName, index);
+                        }
+
                         ResultValue value = arr.get(index);
 
                         if (((Numeric) indexResult.value).intValue > arr.highestPopulatedValue) {
@@ -2376,6 +2439,10 @@ public class Parser {
                     t = scan.currentToken;
             }
 
+            /*if(t.tokenStr.equals("-") && !expectOperand) {
+                expectOperand = true;
+            }*/
+
             switch(t.primClassif) {
                 case FUNCTION:
                     stack.push(t);
@@ -2398,9 +2465,14 @@ public class Parser {
                 case SEPARATOR:
                     switch(t.tokenStr) {
                         case "(":
+                            numberOfLeftParentheses += 1;
                             stack.push(t);
                             break;
                         case ")":
+                            if(scan.nextToken.tokenStr.equals(";") && isFunctionCall) {
+                                break infix_to_postfix_loop;
+                            }
+                            numberOfRightParentheses += 1;
                             foundLParen = false;
                             while(!stack.isEmpty()) {
                                 Token popped = stack.pop();
@@ -2412,8 +2484,9 @@ public class Parser {
                             }
                             if(!stack.isEmpty() && stack.peek().primClassif == Classif.FUNCTION)
                                 out.push(stack.pop());
-                            if(!foundLParen)
+                            if(!foundLParen) {
                                 break infix_to_postfix_loop;
+                            }
                             break;
                         default:
                             error("Token %s, a separator, must either be a '(' or ')'", t.tokenStr);
@@ -2423,6 +2496,16 @@ public class Parser {
                     errorWithCurrent("Couldn't classify %s to add to the stack", t.tokenStr);
             }
             scan.getNext();
+        }
+
+        if(t.primClassif == Classif.OPERATOR) {
+            errorWithCurrent("expected operand, found '%s'", scan.currentToken.tokenStr);
+        }
+
+        if( (numberOfLeftParentheses - numberOfRightParentheses) > 0) {
+            errorWithCurrent("Missing ')'");
+        } else if( (numberOfLeftParentheses - numberOfRightParentheses) < 0) {
+            errorWithCurrent("Missing '('");
         }
 
         while(!stack.isEmpty())
