@@ -2703,7 +2703,7 @@ public class Parser {
             }
             // Float f = 5;, 5 is an integer,m but needs to be stored as a float
             else if (value.iDatatype == SubClassif.INTEGER || value.iDatatype == SubClassif.FLOAT) {
-                value = new ResultValue(stEntry.dclType, new Numeric(String.valueOf(value.value), stEntry.dclType));
+                value = new ResultValue(stEntry.dclType, new Numeric(String.valueOf(value.value), value.iDatatype));
             }
             else if(stEntry.dclType == SubClassif.DATE && value.iDatatype == SubClassif.STRING) {
                 value = new ResultValue(SubClassif.DATE, new PickleDate(String.valueOf(value.value)));
