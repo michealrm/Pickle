@@ -2428,7 +2428,10 @@ public class Parser {
         while(!stack.isEmpty())
             out.push(stack.pop());
         try {
-            return getOperand(out);
+            ResultValue rv = getOperand(out);
+            if(out.size() > 0)
+                errorWithRange("In expr", ", Missing operator, so operands were left on the stack while evaluating expr");
+            return rv;
         } catch(EmptyStackException e) {
             errorWithRange("Interpreter error: Expression ", " had an empty stack in postfix evaluation " +
                     "when trying to grab an operand");
@@ -2441,7 +2444,7 @@ public class Parser {
         ResultValue operand1 = null;
         ResultValue operand2 = null;
         if(out.isEmpty())
-            return new ResultValue(SubClassif.EMPTY, "");
+            error("Tried grabbing operand in an empty stack for expr");
         if(out.peek().primClassif == Classif.OPERAND)
             return tokenToResultValue(out.pop());
         else if(out.peek().primClassif == Classif.OPERATOR) {
@@ -2510,9 +2513,7 @@ public class Parser {
                     case "SPACES":
                         // parms will be a string
                         strRV = parms.get(0);
-                        if(strRV.iDatatype != SubClassif.STRING)
-                            error("Function SPACES only takes in one string.");
-                        str = ((String)strRV.value);
+                        str = (String.valueOf(strRV.value));
                         return funcSPACES(str);
                     case "dateDiff":
                     case "dateAge":
@@ -2897,6 +2898,7 @@ public class Parser {
         scan.goTo(savedRangeStartLine, savedRangeStartCol);
         while(scan.iSourceLineNr <= iEndLine && scan.iColPos <= iEndCol) {
             sb.append(scan.currentToken.tokenStr);
+            sb.append(" ");
             scan.getNext();
         }
         error("%s%s%s", before, sb.toString(), after);

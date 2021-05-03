@@ -15,6 +15,14 @@ public class Numeric {
         }
     }
 
+    public Numeric(String value) throws NotNumericException {
+        if(value.contains("."))
+            type = SubClassif.FLOAT;
+        else
+            type = SubClassif.INTEGER;
+        convertToNumber(value);
+    }
+
     public Numeric(String value, SubClassif iDataType) throws NotNumericException {
         stringValue = value;
         type = iDataType;

@@ -280,7 +280,7 @@ public class ResultValue
 			else if (rightOperand.iDatatype == SubClassif.STRING)
 			{
 				Numeric tempRightOperand = 
-					new Numeric(((StringBuilder) rightOperand.value).toString(), rightOperand.iDatatype);
+					new Numeric(String.valueOf(rightOperand.value));
 
 				switch (operation) {
 					case "+":
@@ -463,16 +463,16 @@ public class ResultValue
 					break;
 				}
 				case "-": {
-					Numeric leftOp = new Numeric(value.toString(), SubClassif.STRING);
-					Numeric rightOp = new Numeric(rightOperand.value.toString(), SubClassif.STRING);
+					Numeric leftOp = new Numeric(value.toString());
+					Numeric rightOp = new Numeric(rightOperand.value.toString());
 
 					result = leftOp.subtract(rightOp);
 					resultType = leftOp.type;
 					break;
 				}
 				case "*": {
-					Numeric leftOp = new Numeric(value.toString(), SubClassif.STRING);
-					Numeric rightOp = new Numeric(rightOperand.value.toString(), SubClassif.STRING);
+					Numeric leftOp = new Numeric(value.toString());
+					Numeric rightOp = new Numeric(rightOperand.value.toString());
 
 					result = leftOp.multiply(rightOp);
 					resultType = leftOp.type;
