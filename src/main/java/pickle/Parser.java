@@ -252,6 +252,11 @@ public class Parser {
                 declareStmt();
             }
             else if (scan.currentToken.dclType == SubClassif.IDENTIFIER) {
+
+                if(scan.symbolTable.peek().getSymbol(scan.currentToken.tokenStr) == null) {
+                    errorWithCurrent("Reference to undeclared variable/function");
+                }
+
                 return assignmentStmt();
             }
             else if(scan.currentToken.primClassif == Classif.FUNCTION) {
@@ -896,14 +901,18 @@ public class Parser {
 
                     int endIndex = var.length;
                     expr = expr(Status.EXECUTE);
-                    if (expr.iDatatype == SubClassif.EMPTY)
+                    if (expr.iDatatype == SubClassif.EMPTY) {
                         endIndex = var.length;
-                    else if (expr.iDatatype == SubClassif.INTEGER)
+                    }
+                    else if (expr.iDatatype == SubClassif.INTEGER) {
                         endIndex = ((Numeric) expr.value).intValue;
+
+                        if(endIndex != 1) {
+                            endIndex -= 1;
+                        }
+                    }
                     else
                         error("Expected string slice ending index to evaluate to an integer");
-
-                    endIndex -= 1;
 
                     if (!scan.currentToken.tokenStr.equals("]"))
                         errorWithCurrent("Expected string slice to end with a ']'");
@@ -925,6 +934,10 @@ public class Parser {
                             if(!var.arrayList.get(i).isNull)
                                 var.highestPopulatedValue = i;
                         }
+                    }
+
+                    if(var.highestPopulatedValue == 0) {
+                        var.highestPopulatedValue += 1;
                     }
 
                     return resultValue;
@@ -1861,14 +1874,18 @@ public class Parser {
                 case DATEARR:
                     PickleArray arr = ((PickleArray)msgPart.value);
                     StringBuilder sb = new StringBuilder();
+                    int arrLength = arr.arrayList.size();
                     if(arr.highestPopulatedValue != 0 && !arr.arrayList.get(0).isNull)
                         sb.append(arr.get(0));
                     for(int i = 1; i <= arr.highestPopulatedValue; i++) {
                         //System.out.println(arr.arrayList.get(i).isNull);
-                        if(arr.arrayList.get(i).isNull)
-                            continue;
-                        sb.append(" ");
-                        sb.append(arr.get(i));
+                        if(i < arrLength) {
+                            if (arr.arrayList.get(i).isNull)
+                                continue;
+
+                            sb.append(" ");
+                            sb.append(arr.get(i));
+                        }
                     }
                     msg.append(sb.toString());
                     break;

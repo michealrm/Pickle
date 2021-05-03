@@ -1,0 +1,13 @@
+String count = "1,2,3,4,5";
+
+Int i = 0;
+
+for c from count by ",":
+
+	print(c);
+	
+	if i == 0:
+		break;
+	endif;
+	
+endfor;

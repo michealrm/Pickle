@@ -1,0 +1,14 @@
+String t = "Test";
+
+Int i = 0;
+
+for c in t:
+	
+	if i == 0:
+		i = i + 1;
+		continue;
+	endif;
+
+	print(c);
+	
+endfor;

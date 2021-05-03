@@ -1,0 +1,13 @@
+Int arr[5] = 1, 2, 3, 4, 5;
+
+arr = arr[0~5];
+
+print(arr);
+
+arr = arr[1~];
+
+print(arr);
+
+arr1 = arr[0~2]; // Error
+
+print(arr1);

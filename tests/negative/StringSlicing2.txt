@@ -1,0 +1,13 @@
+String test = "Test String";
+
+String a = test[0~4];
+String b = test[4~8];
+
+print(a);
+print(b);
+
+test[5~9] = "Case";
+print(test);
+
+test[9~11] = "";
+print(test);

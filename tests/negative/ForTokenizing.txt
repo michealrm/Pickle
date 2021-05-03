@@ -1,0 +1,10 @@
+String count = "1,2,3";
+String str = "apple,orange,clark";
+
+for fruit from count by ",":
+	print(fruit);
+	
+	for value from str by ",":
+		print(value);
+	endfor;
+endfor;

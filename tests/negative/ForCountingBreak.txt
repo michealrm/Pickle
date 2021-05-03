@@ -1,0 +1,11 @@
+Int i;
+
+for i = 0 to 5 by 1:
+
+	print(i);
+	
+	if i == 0:
+		break;
+	endif;
+
+endfor;

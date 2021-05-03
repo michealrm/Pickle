@@ -1,0 +1,4 @@
+String test = "Test Str";
+
+test[5~8] = "String";
+print(test);
