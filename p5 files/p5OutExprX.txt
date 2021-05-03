@@ -1,0 +1,192 @@
+p5ExprX.txt
+This file contains many errors within expressions.
+as you capture each error comment it out.
+OK1 32
+OK2 33
+OK3 -1
+OK4 2 SPACES(-2)= F
+OK5 99
+OK6 36
+OK7 38
+OK8 3 5.0
+Line 29 Col 16 In expr1 * i1 i2 , Missing operator, so operands were left on the stack while evaluating expr, File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:2883)
+	at pickle.Parser.errorWithRange(Parser.java:2904)
+	at pickle.Parser.expr(Parser.java:2433)
+	at pickle.Parser.assignmentStmt(Parser.java:1000)
+	at pickle.Parser.executeStmt(Parser.java:260)
+	at pickle.Parser.executeStatements(Parser.java:57)
+	at pickle.Pickle.main(Pickle.java:49)
+
+Line 30 Col 18 In expr( 2 + i1 ) i2 , Missing operator, so operands were left on the stack while evaluating expr, File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:2883)
+	at pickle.Parser.errorWithRange(Parser.java:2904)
+	at pickle.Parser.expr(Parser.java:2433)
+	at pickle.Parser.assignmentStmt(Parser.java:1000)
+	at pickle.Parser.executeStmt(Parser.java:260)
+	at pickle.Parser.executeStatements(Parser.java:57)
+	at pickle.Pickle.main(Pickle.java:49)
+
+Line 31 Col 24 In expr3 + i1 ( i2 + f5 ) , Missing operator, so operands were left on the stack while evaluating expr, File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:2883)
+	at pickle.Parser.errorWithRange(Parser.java:2904)
+	at pickle.Parser.expr(Parser.java:2433)
+	at pickle.Parser.assignmentStmt(Parser.java:1000)
+	at pickle.Parser.executeStmt(Parser.java:260)
+	at pickle.Parser.executeStatements(Parser.java:57)
+	at pickle.Pickle.main(Pickle.java:49)
+
+Line 32 Col 23 In expri1 + ( f5 * f6 ) f7 , Missing operator, so operands were left on the stack while evaluating expr, File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:2883)
+	at pickle.Parser.errorWithRange(Parser.java:2904)
+	at pickle.Parser.expr(Parser.java:2433)
+	at pickle.Parser.assignmentStmt(Parser.java:1000)
+	at pickle.Parser.executeStmt(Parser.java:260)
+	at pickle.Parser.executeStatements(Parser.java:57)
+	at pickle.Pickle.main(Pickle.java:49)
+
+Line 34 Col 10 Tried grabbing operand in an empty stack for expr, File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:2877)
+	at pickle.Parser.getOperand(Parser.java:2447)
+	at pickle.Parser.getOperand(Parser.java:2457)
+	at pickle.Parser.expr(Parser.java:2431)
+	at pickle.Parser.assignmentStmt(Parser.java:1000)
+	at pickle.Parser.executeStmt(Parser.java:260)
+	at pickle.Parser.executeStatements(Parser.java:57)
+	at pickle.Pickle.main(Pickle.java:49)
+
+Line 35 Col 18 Tried grabbing operand in an empty stack for expr, File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:2877)
+	at pickle.Parser.getOperand(Parser.java:2447)
+	at pickle.Parser.getOperand(Parser.java:2457)
+	at pickle.Parser.expr(Parser.java:2431)
+	at pickle.Parser.assignmentStmt(Parser.java:1000)
+	at pickle.Parser.executeStmt(Parser.java:260)
+	at pickle.Parser.executeStatements(Parser.java:57)
+	at pickle.Pickle.main(Pickle.java:49)
+
+Line 36 Col 9 Tried grabbing operand in an empty stack for expr, File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:2877)
+	at pickle.Parser.getOperand(Parser.java:2447)
+	at pickle.Parser.getOperand(Parser.java:2457)
+	at pickle.Parser.expr(Parser.java:2431)
+	at pickle.Parser.printFunc(Parser.java:1870)
+	at pickle.Parser.callBuiltInFunc(Parser.java:1841)
+	at pickle.Parser.executeStmt(Parser.java:263)
+	at pickle.Parser.executeStatements(Parser.java:57)
+	at pickle.Pickle.main(Pickle.java:49)
+
+Line 37 Col 16 Tried grabbing operand in an empty stack for expr, File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:2877)
+	at pickle.Parser.getOperand(Parser.java:2447)
+	at pickle.Parser.getOperand(Parser.java:2457)
+	at pickle.Parser.expr(Parser.java:2431)
+	at pickle.Parser.printFunc(Parser.java:1870)
+	at pickle.Parser.callBuiltInFunc(Parser.java:1841)
+	at pickle.Parser.executeStmt(Parser.java:263)
+	at pickle.Parser.executeStatements(Parser.java:57)
+	at pickle.Pickle.main(Pickle.java:49)
+
+Bracket OK1 6
+Bracket OK2 9
+Bracket OK3 8
+Bracket OK4 8
+Line 47 Col 11 Tried grabbing operand in an empty stack for expr, File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:2877)
+	at pickle.Parser.getOperand(Parser.java:2447)
+	at pickle.Parser.getOperand(Parser.java:2457)
+	at pickle.Parser.expr(Parser.java:2431)
+	at pickle.Parser.expr(Parser.java:2270)
+	at pickle.Parser.printFunc(Parser.java:1870)
+	at pickle.Parser.callBuiltInFunc(Parser.java:1841)
+	at pickle.Parser.executeStmt(Parser.java:263)
+	at pickle.Parser.executeStatements(Parser.java:57)
+	at pickle.Pickle.main(Pickle.java:49)
+
+Line 48 Col 15 Tried grabbing operand in an empty stack for expr, File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:2877)
+	at pickle.Parser.getOperand(Parser.java:2447)
+	at pickle.Parser.getOperand(Parser.java:2457)
+	at pickle.Parser.expr(Parser.java:2431)
+	at pickle.Parser.expr(Parser.java:2270)
+	at pickle.Parser.printFunc(Parser.java:1870)
+	at pickle.Parser.callBuiltInFunc(Parser.java:1841)
+	at pickle.Parser.executeStmt(Parser.java:263)
+	at pickle.Parser.executeStatements(Parser.java:57)
+	at pickle.Pickle.main(Pickle.java:49)
+
+java.lang.ArrayIndexOutOfBoundsException: Index 6 is bigger than the max index 4 (length=5)
+	at pickle.PickleArray.get(PickleArray.java:61)
+	at pickle.Parser.expr(Parser.java:2326)
+	at pickle.Parser.printFunc(Parser.java:1870)
+	at pickle.Parser.callBuiltInFunc(Parser.java:1841)
+	at pickle.Parser.executeStmt(Parser.java:263)
+	at pickle.Parser.executeStatements(Parser.java:57)
+	at pickle.Pickle.main(Pickle.java:49)
+
+Paren OK1 15
+Line 56 Col 16 Read ")", Expected a ';' to terminate assignment, File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:2883)
+	at pickle.Parser.errorWithCurrent(Parser.java:2912)
+	at pickle.Parser.assignmentStmt(Parser.java:1017)
+	at pickle.Parser.executeStmt(Parser.java:260)
+	at pickle.Parser.executeStatements(Parser.java:57)
+	at pickle.Pickle.main(Pickle.java:49)
+
+Line 57 Col 20 Token ( cannot be evaluated in an expression, File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:2883)
+	at pickle.Parser.getOperand(Parser.java:2477)
+	at pickle.Parser.expr(Parser.java:2431)
+	at pickle.Parser.assignmentStmt(Parser.java:1000)
+	at pickle.Parser.executeStmt(Parser.java:260)
+	at pickle.Parser.executeStatements(Parser.java:57)
+	at pickle.Pickle.main(Pickle.java:49)
+
+Coerce OK1 60
+Coerce OK2 60
+Coerce OK3 60.0
+Coerce OK4 - true
+java.lang.NumberFormatException: For input string: "1A"
+	at java.base/java.lang.NumberFormatException.forInputString(NumberFormatException.java:65)
+	at java.base/java.lang.Integer.parseInt(Integer.java:652)
+	at java.base/java.lang.Integer.parseInt(Integer.java:770)
+	at pickle.Numeric.convertToNumber(Numeric.java:159)
+	at pickle.Numeric.<init>(Numeric.java:23)
+	at pickle.ResultValue.executeOperation(ResultValue.java:283)
+	at pickle.Parser.getOperand(Parser.java:2458)
+	at pickle.Parser.expr(Parser.java:2431)
+	at pickle.Parser.printFunc(Parser.java:1870)
+	at pickle.Parser.callBuiltInFunc(Parser.java:1841)
+	at pickle.Parser.executeStmt(Parser.java:263)
+	at pickle.Parser.executeStatements(Parser.java:57)
+	at pickle.Pickle.main(Pickle.java:49)
+
+java.lang.NumberFormatException: For input string: "1.A"
+	at java.base/jdk.internal.math.FloatingDecimal.readJavaFormatString(FloatingDecimal.java:2054)
+	at java.base/jdk.internal.math.FloatingDecimal.parseFloat(FloatingDecimal.java:122)
+	at java.base/java.lang.Float.parseFloat(Float.java:455)
+	at pickle.Numeric.convertToNumber(Numeric.java:163)
+	at pickle.Numeric.<init>(Numeric.java:23)
+	at pickle.ResultValue.executeOperation(ResultValue.java:283)
+	at pickle.Parser.getOperand(Parser.java:2458)
+	at pickle.Parser.expr(Parser.java:2431)
+	at pickle.Parser.printFunc(Parser.java:1870)
+	at pickle.Parser.callBuiltInFunc(Parser.java:1841)
+	at pickle.Parser.executeStmt(Parser.java:263)
+	at pickle.Parser.executeStatements(Parser.java:57)
+	at pickle.Pickle.main(Pickle.java:49)
+
+java.lang.NumberFormatException: For input string: "A"
+	at java.base/java.lang.NumberFormatException.forInputString(NumberFormatException.java:65)
+	at java.base/java.lang.Integer.parseInt(Integer.java:652)
+	at java.base/java.lang.Integer.parseInt(Integer.java:770)
+	at pickle.Numeric.convertToNumber(Numeric.java:159)
+	at pickle.Numeric.<init>(Numeric.java:23)
+	at pickle.ResultValue.executeOperation(ResultValue.java:283)
+	at pickle.Parser.getOperand(Parser.java:2458)
+	at pickle.Parser.expr(Parser.java:2431)
+	at pickle.Parser.evalCond(Parser.java:2585)
+	at pickle.Parser.ifStmt(Parser.java:1033)
+	at pickle.Parser.executeStmt(Parser.java:226)
+	at pickle.Parser.executeStatements(Parser.java:57)
+	at pickle.Pickle.main(Pickle.java:49)
