@@ -22,8 +22,8 @@ public class Parser {
     public static int currentForLine;
     public static boolean onStmtLine = false;
     public static int currentForStmtDepth = 0;
-    public static boolean expectOperand = true;
-    public static boolean expectOperator = false;
+    //public static boolean expectOperand = true;
+    //public static boolean expectOperator = false;
 
     // Useful in functions like expr() to print all tokens in a range in error messages
     public static int savedRangeStartLine = 0;
@@ -2251,6 +2251,10 @@ public class Parser {
      * @return The ResultValue of the expression
      */
     ResultValue expr(Status iExecMode) throws Exception {
+
+        boolean expectOperand = true;
+        boolean expectOperator = false;
+
         saveLocationForRange();
         int funcDepth = 0;
         // First we'll handle if `iExecMode` == Status.EXECUTE
@@ -2368,6 +2372,7 @@ public class Parser {
                         t.dclType = SubClassif.STRING;
                     } else {
                         PickleArray arr = ((PickleArray) getVariableValue(variableName).value);
+
                         ResultValue value = arr.get(index);
 
                         if (((Numeric) indexResult.value).intValue > arr.highestPopulatedValue) {
