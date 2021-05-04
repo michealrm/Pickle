@@ -2545,6 +2545,9 @@ public class Parser {
             errorWithRange("Interpreter error: Expression ", " had an empty stack in postfix evaluation " +
                     "when trying to grab an operand");
             return null;
+        } catch(NumberFormatException e) {
+            errorWithRange("Error with expr ", " converting to a number");
+            return null;
         }
     }
 
@@ -2631,7 +2634,6 @@ public class Parser {
                     case "SPACES":
                         // parms will be a string
                         strRV = parms.get(0);
-
                         /*if(strRV.iDatatype == SubClassif.INTEGER) {
                             error("Function SPACES does not accept integers as an argument");
 
@@ -2645,7 +2647,6 @@ public class Parser {
                             || strRV.iDatatype == SubClassif.DATEARR) {
 
                             error("Function SPACES does not accept arrays as an argument");
-
                         } /*else if(strRV.iDatatype != SubClassif.STRING) {
                             error("Unsupported argument type '%s' for SPACES function", strRV.iDatatype.toString());
                         }*/
