@@ -2300,6 +2300,11 @@ public class Parser {
             // Evaluate starting from currentToken. Converts results from things like array references or variables into a Token
             t = scan.currentToken;
 
+            if(t.tokenStr.equals("not")) {
+                expectOperand = false;
+                expectOperator = true;
+            }
+
             if(t.primClassif == Classif.OPERAND && expectOperand) {
                 expectOperand = false;
                 expectOperator = true;
