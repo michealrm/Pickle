@@ -1,0 +1,9 @@
+1 2 3 4 5
+2 3 4 5
+Line 12 Col 14 End index for a slice must be less than / equal to the length of , File: tests/negative/ArraySlicing.txt
+	at pickle.Parser.error(Parser.java:3027)
+	at pickle.Parser.expr(Parser.java:2364)
+	at pickle.Parser.assignmentStmt(Parser.java:1026)
+	at pickle.Parser.executeStmt(Parser.java:281)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Pickle.main(Pickle.java:49)

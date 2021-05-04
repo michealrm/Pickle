@@ -1,0 +1,388 @@
+p5ExprX.txt 
+This file contains many errors within expressions. 
+as you capture each error comment it out. 
+OK1 32 
+OK2 33 
+OK3 -1 
+OK4 2 SPACES(-2)= F 
+OK5 99 
+OK6 36 
+OK7 38 
+OK8 3 5.0 
+Line 29 Col 14 expected operator, found 'i2', File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:3036)
+	at pickle.Parser.errorWithCurrent(Parser.java:3069)
+	at pickle.Parser.expr(Parser.java:2320)
+	at pickle.Parser.assignmentStmt(Parser.java:1026)
+	at pickle.Parser.executeStmt(Parser.java:281)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Pickle.main(Pickle.java:49)
+	
+p5ExprX.txt 
+This file contains many errors within expressions. 
+as you capture each error comment it out. 
+OK1 32 
+OK2 33 
+OK3 -1 
+OK4 2 SPACES(-2)= F 
+OK5 99 
+OK6 36 
+OK7 38 
+OK8 3 5.0 
+Line 30 Col 16 expected operator, found 'i2', File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:3036)
+	at pickle.Parser.errorWithCurrent(Parser.java:3069)
+	at pickle.Parser.expr(Parser.java:2320)
+	at pickle.Parser.assignmentStmt(Parser.java:1026)
+	at pickle.Parser.executeStmt(Parser.java:281)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Pickle.main(Pickle.java:49)
+	
+p5ExprX.txt 
+This file contains many errors within expressions. 
+as you capture each error comment it out. 
+OK1 32 
+OK2 33 
+OK3 -1 
+OK4 2 SPACES(-2)= F 
+OK5 99 
+OK6 36 
+OK7 38 
+OK8 3 5.0 
+Line 31 Col 16 expected operator, found 'i2', File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:3036)
+	at pickle.Parser.errorWithCurrent(Parser.java:3069)
+	at pickle.Parser.expr(Parser.java:2320)
+	at pickle.Parser.assignmentStmt(Parser.java:1026)
+	at pickle.Parser.executeStmt(Parser.java:281)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Pickle.main(Pickle.java:49)
+
+p5ExprX.txt 
+This file contains many errors within expressions. 
+as you capture each error comment it out. 
+OK1 32 
+OK2 33 
+OK3 -1 
+OK4 2 SPACES(-2)= F 
+OK5 99 
+OK6 36 
+OK7 38 
+OK8 3 5.0 
+Line 32 Col 21 expected operator, found 'f7', File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:3036)
+	at pickle.Parser.errorWithCurrent(Parser.java:3069)
+	at pickle.Parser.expr(Parser.java:2320)
+	at pickle.Parser.assignmentStmt(Parser.java:1026)
+	at pickle.Parser.executeStmt(Parser.java:281)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Pickle.main(Pickle.java:49)
+
+p5ExprX.txt 
+This file contains many errors within expressions. 
+as you capture each error comment it out. 
+OK1 32 
+OK2 33 
+OK3 -1 
+OK4 2 SPACES(-2)= F 
+OK5 99 
+OK6 36 
+OK7 38 
+OK8 3 5.0 
+Line 34 Col 10 expected operand, found ';', File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:3036)
+	at pickle.Parser.errorWithCurrent(Parser.java:3069)
+	at pickle.Parser.expr(Parser.java:2528)
+	at pickle.Parser.assignmentStmt(Parser.java:1026)
+	at pickle.Parser.executeStmt(Parser.java:281)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Pickle.main(Pickle.java:49)
+
+p5ExprX.txt 
+This file contains many errors within expressions. 
+as you capture each error comment it out. 
+OK1 32 
+OK2 33 
+OK3 -1 
+OK4 2 SPACES(-2)= F 
+OK5 99 
+OK6 36 
+OK7 38 
+OK8 3 5.0 
+Line 35 Col 13 expected operand, found '*', File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:3036)
+	at pickle.Parser.errorWithCurrent(Parser.java:3069)
+	at pickle.Parser.expr(Parser.java:2323)
+	at pickle.Parser.assignmentStmt(Parser.java:1026)
+	at pickle.Parser.executeStmt(Parser.java:281)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Pickle.main(Pickle.java:49)
+
+p5ExprX.txt 
+This file contains many errors within expressions. 
+as you capture each error comment it out. 
+OK1 32 
+OK2 33 
+OK3 -1 
+OK4 2 SPACES(-2)= F 
+OK5 99 
+OK6 36 
+OK7 38 
+OK8 3 5.0 
+Line 36 Col 9 expected operand, found ',', File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:3036)
+	at pickle.Parser.errorWithCurrent(Parser.java:3069)
+	at pickle.Parser.expr(Parser.java:2528)
+	at pickle.Parser.printFunc(Parser.java:1896)
+	at pickle.Parser.callBuiltInFunc(Parser.java:1867)
+	at pickle.Parser.executeStmt(Parser.java:284)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Pickle.main(Pickle.java:49)
+
+p5ExprX.txt 
+This file contains many errors within expressions. 
+as you capture each error comment it out. 
+OK1 32 
+OK2 33 
+OK3 -1 
+OK4 2 SPACES(-2)= F 
+OK5 99 
+OK6 36 
+OK7 38 
+OK8 3 5.0 
+Line 37 Col 13 expected operand, found '*', File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:3036)
+	at pickle.Parser.errorWithCurrent(Parser.java:3069)
+	at pickle.Parser.expr(Parser.java:2323)
+	at pickle.Parser.printFunc(Parser.java:1896)
+	at pickle.Parser.callBuiltInFunc(Parser.java:1867)
+	at pickle.Parser.executeStmt(Parser.java:284)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Pickle.main(Pickle.java:49)
+
+p5ExprX.txt 
+This file contains many errors within expressions. 
+as you capture each error comment it out. 
+OK1 32 
+OK2 33 
+OK3 -1 
+OK4 2 SPACES(-2)= F 
+OK5 99 
+OK6 36 
+OK7 38 
+OK8 3 5.0 
+Bracket OK1 6 
+Bracket OK2 9 
+Bracket OK3 8 
+Bracket OK4 8 
+Line 47 Col 9 expected operand, found '+', File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:3036)
+	at pickle.Parser.errorWithCurrent(Parser.java:3069)
+	at pickle.Parser.expr(Parser.java:2323)
+	at pickle.Parser.expr(Parser.java:2345)
+	at pickle.Parser.printFunc(Parser.java:1896)
+	at pickle.Parser.callBuiltInFunc(Parser.java:1867)
+	at pickle.Parser.executeStmt(Parser.java:284)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Pickle.main(Pickle.java:49)
+
+p5ExprX.txt 
+This file contains many errors within expressions. 
+as you capture each error comment it out. 
+OK1 32 
+OK2 33 
+OK3 -1 
+OK4 2 SPACES(-2)= F 
+OK5 99 
+OK6 36 
+OK7 38 
+OK8 3 5.0 
+Bracket OK1 6 
+Bracket OK2 9 
+Bracket OK3 8 
+Bracket OK4 8 
+Line 48 Col 15 expected operand, found ']', File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:3036)
+	at pickle.Parser.errorWithCurrent(Parser.java:3069)
+	at pickle.Parser.expr(Parser.java:2528)
+	at pickle.Parser.expr(Parser.java:2345)
+	at pickle.Parser.printFunc(Parser.java:1896)
+	at pickle.Parser.callBuiltInFunc(Parser.java:1867)
+	at pickle.Parser.executeStmt(Parser.java:284)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Pickle.main(Pickle.java:49)
+	
+p5ExprX.txt 
+This file contains many errors within expressions. 
+as you capture each error comment it out. 
+OK1 32 
+OK2 33 
+OK3 -1 
+OK4 2 SPACES(-2)= F 
+OK5 99 
+OK6 36 
+OK7 38 
+OK8 3 5.0 
+Bracket OK1 6 
+Bracket OK2 9 
+Bracket OK3 8 
+Bracket OK4 8 
+Line 49 Col 18 Reference to array, 'aM[6]', which has not been populated, File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:3036)
+	at pickle.Parser.errorWithCurrent(Parser.java:3069)
+	at pickle.Parser.expr(Parser.java:2408)
+	at pickle.Parser.printFunc(Parser.java:1896)
+	at pickle.Parser.callBuiltInFunc(Parser.java:1867)
+	at pickle.Parser.executeStmt(Parser.java:284)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Pickle.main(Pickle.java:49)
+
+p5ExprX.txt 
+This file contains many errors within expressions. 
+as you capture each error comment it out. 
+OK1 32 
+OK2 33 
+OK3 -1 
+OK4 2 SPACES(-2)= F 
+OK5 99 
+OK6 36 
+OK7 38 
+OK8 3 5.0 
+Bracket OK1 6 
+Bracket OK2 9 
+Bracket OK3 8 
+Bracket OK4 8 
+Paren OK1 15 
+Line 56 Col 16 Read ")", Missing '(', File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:3036)
+	at pickle.Parser.errorWithCurrent(Parser.java:3065)
+	at pickle.Parser.expr(Parser.java:2534)
+	at pickle.Parser.assignmentStmt(Parser.java:1026)
+	at pickle.Parser.executeStmt(Parser.java:281)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Pickle.main(Pickle.java:49)
+	
+p5ExprX.txt 
+This file contains many errors within expressions. 
+as you capture each error comment it out. 
+OK1 32 
+OK2 33 
+OK3 -1 
+OK4 2 SPACES(-2)= F 
+OK5 99 
+OK6 36 
+OK7 38 
+OK8 3 5.0 
+Bracket OK1 6 
+Bracket OK2 9 
+Bracket OK3 8 
+Bracket OK4 8 
+Paren OK1 15 
+Line 57 Col 20 Read ";", Missing ')', File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:3036)
+	at pickle.Parser.errorWithCurrent(Parser.java:3065)
+	at pickle.Parser.expr(Parser.java:2532)
+	at pickle.Parser.assignmentStmt(Parser.java:1026)
+	at pickle.Parser.executeStmt(Parser.java:281)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Pickle.main(Pickle.java:49)
+
+p5ExprX.txt 
+This file contains many errors within expressions. 
+as you capture each error comment it out. 
+OK1 32 
+OK2 33 
+OK3 -1 
+OK4 2 SPACES(-2)= F 
+OK5 99 
+OK6 36 
+OK7 38 
+OK8 3 5.0 
+Bracket OK1 6 
+Bracket OK2 9 
+Bracket OK3 8 
+Bracket OK4 8 
+Paren OK1 15 
+Coerce OK1 60 
+Coerce OK2 60 
+Coerce OK3 60.0 
+Coerce OK4 - true 
+java.lang.NumberFormatException: For input string: "1A"
+	at java.base/java.lang.NumberFormatException.forInputString(NumberFormatException.java:65)
+	at java.base/java.lang.Integer.parseInt(Integer.java:652)
+	at java.base/java.lang.Integer.parseInt(Integer.java:770)
+	at pickle.Numeric.convertToNumber(Numeric.java:159)
+	at pickle.Numeric.<init>(Numeric.java:23)
+	at pickle.ResultValue.executeOperation(ResultValue.java:283)
+	at pickle.Parser.getOperand(Parser.java:2567)
+	at pickle.Parser.expr(Parser.java:2540)
+	at pickle.Parser.printFunc(Parser.java:1896)
+	at pickle.Parser.callBuiltInFunc(Parser.java:1867)
+	at pickle.Parser.executeStmt(Parser.java:284)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Pickle.main(Pickle.java:49)
+	
+p5ExprX.txt 
+This file contains many errors within expressions. 
+as you capture each error comment it out. 
+OK1 32 
+OK2 33 
+OK3 -1 
+OK4 2 SPACES(-2)= F 
+OK5 99 
+OK6 36 
+OK7 38 
+OK8 3 5.0 
+Bracket OK1 6 
+Bracket OK2 9 
+Bracket OK3 8 
+Bracket OK4 8 
+Paren OK1 15 
+Coerce OK1 60 
+Coerce OK2 60 
+Coerce OK3 60.0 
+Coerce OK4 - true 
+Line 75 Col 22 Read ")", Missing ')', File: tests/negative/p5ExprX.txt
+	at pickle.Parser.error(Parser.java:3036)
+	at pickle.Parser.errorWithCurrent(Parser.java:3065)
+	at pickle.Parser.expr(Parser.java:2532)
+	at pickle.Parser.printFunc(Parser.java:1896)
+	at pickle.Parser.callBuiltInFunc(Parser.java:1867)
+	at pickle.Parser.executeStmt(Parser.java:284)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Pickle.main(Pickle.java:49)
+
+p5ExprX.txt 
+This file contains many errors within expressions. 
+as you capture each error comment it out. 
+OK1 32 
+OK2 33 
+OK3 -1 
+OK4 2 SPACES(-2)= F 
+OK5 99 
+OK6 36 
+OK7 38 
+OK8 3 5.0 
+Bracket OK1 6 
+Bracket OK2 9 
+Bracket OK3 8 
+Bracket OK4 8 
+Paren OK1 15 
+Coerce OK1 60 
+Coerce OK2 60 
+Coerce OK3 60.0 
+Coerce OK4 - true 
+java.lang.NumberFormatException: For input string: "A"
+	at java.base/java.lang.NumberFormatException.forInputString(NumberFormatException.java:65)
+	at java.base/java.lang.Integer.parseInt(Integer.java:652)
+	at java.base/java.lang.Integer.parseInt(Integer.java:770)
+	at pickle.Numeric.convertToNumber(Numeric.java:159)
+	at pickle.Numeric.<init>(Numeric.java:23)
+	at pickle.ResultValue.executeOperation(ResultValue.java:283)
+	at pickle.Parser.getOperand(Parser.java:2567)
+	at pickle.Parser.expr(Parser.java:2540)
+	at pickle.Parser.evalCond(Parser.java:2733)
+	at pickle.Parser.ifStmt(Parser.java:1059)
+	at pickle.Parser.executeStmt(Parser.java:228)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Pickle.main(Pickle.java:49)

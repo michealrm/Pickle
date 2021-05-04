@@ -8,6 +8,7 @@ arr = arr[1~];
 
 print(arr);
 
-arr1 = arr[0~2]; // Error
+Int arr1[6];
+arr1 = arr[0~6]; // Error
 
 print(arr1);
