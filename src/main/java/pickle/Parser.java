@@ -2295,6 +2295,9 @@ public class Parser {
         while((continuesExpr(scan.currentToken) && !scan.currentToken.tokenStr.equals("~")) || (funcDepth != 0 && scan.currentToken.tokenStr.equals(","))) {
             if(scan.currentToken.tokenStr.equals(",")) {
                 scan.getNext();
+
+                expectOperand = true;
+                expectOperator = false;
             }
 
             // Evaluate starting from currentToken. Converts results from things like array references or variables into a Token
