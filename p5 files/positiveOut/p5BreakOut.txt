@@ -1,0 +1,41 @@
+p5Break.txt 
+i= 1 
+it is a fruit 
+i is <= 2 
+inside while, after first inner if 
+it is pike 
+i= 2 
+it is a fruit 
+i is <= 2 
+inside while, after first inner if 
+it is pike 
+i= 3 
+it is a fruit 
+i is greater than 2 
+after while loop i= 3 
+Unsorted array 
+	 60 
+	 30 
+	 20 
+	 10 
+	 5 
+	 50 
+	 70 
+	 25 
+	 35 
+	 45 
+	 15 
+Nested for loops, sorting the array 
+	ready to leave, i= 8 
+sorted array 
+	 5 
+	 10 
+	 15 
+	 20 
+	 25 
+	 30 
+	 35 
+	 45 
+	 50 
+	 60 
+	 70 
