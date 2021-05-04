@@ -1029,11 +1029,11 @@ public class Parser {
                     res = assign(variableName, exprToAssign);
                     break;
                 case "-=":
-                    assign(variableName, getVariableValue(variableName).executeOperation(exprToAssign, "-"));
+                    res = assign(variableName, getVariableValue(variableName).executeOperation(exprToAssign, "-"));
                     // TODO: Add line, col number, and parameter num in executeOperation's exception handling (like Parser.error())
                     break;
                 case "+=":
-                    assign(variableName, getVariableValue(variableName).executeOperation(exprToAssign, "+"));
+                    res = assign(variableName, getVariableValue(variableName).executeOperation(exprToAssign, "+"));
                     break;
                 default:
                     error("Expected assignment operator for assignment statement");
@@ -2831,6 +2831,11 @@ public class Parser {
 
     private ResultValue assign(String variableName, ResultValue value) throws Exception {
         STEntry stEntry = scan.symbolTable.peek().getSymbol(variableName);
+
+        if(stEntry == null) {
+            scan.symbolTable.peek().putSymbol(variableName, new STEntry(variableName,value.iPrimClassif, value.iDatatype));
+        }
+
         // Arrays
         if(value != null && stEntry != null && value.iDatatype != stEntry.dclType) {
             if(stEntry.dclType == SubClassif.INTEGERARR
