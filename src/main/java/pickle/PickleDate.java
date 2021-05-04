@@ -2,12 +2,19 @@ package pickle;
 
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
+import org.joda.time.Period;
+import org.joda.time.Years;
 import pickle.exception.DateFormatException;
 
 public class PickleDate {
 
     public LocalDate date;
     public String strDate;
+
+    public static int age(PickleDate pd1, PickleDate pd2) {
+        int x = Years.yearsBetween(pd1.date, pd2.date).getYears();
+        return x;
+    }
 
     public static int diff(PickleDate pd1, PickleDate pd2) {
         return Days.daysBetween(pd1.date, pd2.date).getDays();
