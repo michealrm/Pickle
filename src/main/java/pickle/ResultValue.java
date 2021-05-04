@@ -360,14 +360,14 @@ public class ResultValue
 						arr = (PickleArray)rightOperand.value;
 						for(ResultValue element : arr.arrayList)
 							if(String.valueOf(element.value).equals(String.valueOf(this.value)))
-								return new ResultValue(SubClassif.BOOLEAN, "T");
-						return new ResultValue(SubClassif.BOOLEAN, "F");
+								return new ResultValue(SubClassif.BOOLEAN, true);
+						return new ResultValue(SubClassif.BOOLEAN, false);
 					case "notin":
 						arr = (PickleArray)rightOperand.value;
 						for(ResultValue element : arr.arrayList)
 							if(String.valueOf(element.value).equals(String.valueOf(this.value)))
-								return new ResultValue(SubClassif.BOOLEAN, "F");
-						return new ResultValue(SubClassif.BOOLEAN, "T");
+								return new ResultValue(SubClassif.BOOLEAN, false);
+						return new ResultValue(SubClassif.BOOLEAN, true);
 				}
 			}
 			else

@@ -1,4 +1,18 @@
 Int a[] = 1, 2, 3, 4, 5;
 Int b = 5;
+
+if(b in a):
+	print("b is in a");
+else:
+	print("b is not in a");
+endif;
+
+if(b notin a):
+	print("b is not in a");
+else:
+	print("b is in a");
+endif;
+
 print(b in a);
+
 print(b notin a);
