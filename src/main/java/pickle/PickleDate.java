@@ -6,8 +6,6 @@ import org.joda.time.Period;
 import org.joda.time.Years;
 import pickle.exception.DateFormatException;
 
-import java.time.Period;
-
 public class PickleDate {
 
     public LocalDate date;

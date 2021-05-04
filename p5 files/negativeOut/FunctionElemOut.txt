@@ -1,0 +1,10 @@
+Line 7 Col 15 Function ELEM only takes in arrays., File: tests/negative/FunctionElem.txt
+	at pickle.Parser.error(Parser.java:3041)
+	at pickle.Parser.callFunction(Parser.java:2603)
+	at pickle.Parser.getOperand(Parser.java:2584)
+	at pickle.Parser.expr(Parser.java:2540)
+	at pickle.Parser.printFunc(Parser.java:1896)
+	at pickle.Parser.callBuiltInFunc(Parser.java:1867)
+	at pickle.Parser.executeStmt(Parser.java:284)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Pickle.main(Pickle.java:49)
