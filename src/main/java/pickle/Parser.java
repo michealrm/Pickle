@@ -2650,7 +2650,6 @@ public class Parser {
                         str = (String.valueOf(strRV.value));
                         return funcSPACES(str);
                     case "dateDiff":
-                    case "dateAge":
                         PickleDate pd1, pd2;
                         if(parms.get(0).iDatatype == SubClassif.STRING)
                             pd1 = new PickleDate(String.valueOf(parms.get(0).value));
