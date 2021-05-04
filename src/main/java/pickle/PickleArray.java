@@ -61,6 +61,13 @@ public class PickleArray {
         }
     }
 
+    public PickleArray slice(int begin, int end) throws Exception {
+        PickleArray ret = new PickleArray(this.type, this.length);
+        for(int i = begin; i < end; i++)
+            ret.set(i - begin, this.get(i));
+        return ret;
+    }
+
     public ResultValue get(int index) {
         if(length != 0 && index >= length)
             throw new ArrayIndexOutOfBoundsException("Index " + index + " is bigger than the max index " + (length - 1) +
