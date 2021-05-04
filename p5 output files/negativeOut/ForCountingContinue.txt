@@ -1,0 +1,19 @@
+0
+0
+end of for loop
+1
+Line 10 Col 8 isNotAVariable was classified as IDENTIFIER but was not found in the symbol table, File: tests/negative/ForCountingContinue.txt
+	at pickle.Parser.error(Parser.java:3047)
+	at pickle.Parser.errorWithCurrent(Parser.java:3080)
+	at pickle.Parser.expr(Parser.java:2446)
+	at pickle.Parser.printFunc(Parser.java:1896)
+	at pickle.Parser.callBuiltInFunc(Parser.java:1867)
+	at pickle.Parser.executeStmt(Parser.java:284)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Parser.ifStmt(Parser.java:1095)
+	at pickle.Parser.executeStmt(Parser.java:228)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Parser.forStmt(Parser.java:1359)
+	at pickle.Parser.executeStmt(Parser.java:199)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Pickle.main(Pickle.java:49)

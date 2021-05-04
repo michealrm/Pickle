@@ -1,7 +1,0 @@
-Line 3 Col 10 Array reference 'arr[4]' is out of bounds for size 4, File: tests/negative/Arrays.txt
-	at pickle.Parser.error(Parser.java:3027)
-	at pickle.Parser.errorWithCurrent(Parser.java:3060)
-	at pickle.Parser.assignmentStmt(Parser.java:1006)
-	at pickle.Parser.executeStmt(Parser.java:281)
-	at pickle.Parser.executeStatements(Parser.java:59)
-	at pickle.Pickle.main(Pickle.java:49)

@@ -1,7 +1,0 @@
-Line 4 Col 15 Read "isNotAVariable", Reference to undeclared variable, File: tests/negative/ForTokenizing.txt
-	at pickle.Parser.error(Parser.java:3047)
-	at pickle.Parser.errorWithCurrent(Parser.java:3076)
-	at pickle.Parser.forTokenizingStmt(Parser.java:1719)
-	at pickle.Parser.executeStmt(Parser.java:217)
-	at pickle.Parser.executeStatements(Parser.java:59)
-	at pickle.Pickle.main(Pickle.java:49)

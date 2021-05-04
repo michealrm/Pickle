@@ -1,0 +1,13 @@
+1,2,3
+Line 16 Col 7 isNotAString with type INTEGER cannot be subscripted because it is not an array or string, File: tests/negative/ForTokenizingContinueInvalidStringSlicingType.txt
+	at pickle.Parser.error(Parser.java:3047)
+	at pickle.Parser.errorWithCurrent(Parser.java:3080)
+	at pickle.Parser.expr(Parser.java:2336)
+	at pickle.Parser.printFunc(Parser.java:1896)
+	at pickle.Parser.callBuiltInFunc(Parser.java:1867)
+	at pickle.Parser.executeStmt(Parser.java:284)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Parser.forTokenizingStmt(Parser.java:1796)
+	at pickle.Parser.executeStmt(Parser.java:217)
+	at pickle.Parser.executeStatements(Parser.java:59)
+	at pickle.Pickle.main(Pickle.java:49)

@@ -1,7 +1,0 @@
-Line 5 Col 14 Read "in", Expected ':' to end 'for' statement), File: tests/negative/ForEachArraysBreak.txt
-	at pickle.Parser.error(Parser.java:3047)
-	at pickle.Parser.errorWithCurrent(Parser.java:3076)
-	at pickle.Parser.forEachStmt(Parser.java:1532)
-	at pickle.Parser.executeStmt(Parser.java:208)
-	at pickle.Parser.executeStatements(Parser.java:59)
-	at pickle.Pickle.main(Pickle.java:49)

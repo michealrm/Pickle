@@ -1,7 +1,0 @@
-Line 5 Col 20 Variable isNotAString with subclassification INTEGER can not convert assignment value I'm a String in assign statement, File: tests/negative/InvalidAssignmentType.txt
-	at pickle.Parser.error(Parser.java:3047)
-	at pickle.Parser.assign(Parser.java:2902)
-	at pickle.Parser.assignmentStmt(Parser.java:1029)
-	at pickle.Parser.executeStmt(Parser.java:281)
-	at pickle.Parser.executeStatements(Parser.java:59)
-	at pickle.Pickle.main(Pickle.java:49)
