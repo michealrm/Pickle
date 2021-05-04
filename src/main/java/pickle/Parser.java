@@ -2634,16 +2634,22 @@ public class Parser {
                     case "SPACES":
                         // parms will be a string
                         strRV = parms.get(0);
+                        /*if(strRV.iDatatype == SubClassif.INTEGER) {
+                            error("Function SPACES does not accept integers as an argument");
 
-                        if( strRV.iDatatype == SubClassif.INTEGERARR
+                        } else if(strRV.iDatatype == SubClassif.FLOAT) {
+                            error("Function SPACES does not accept floats as an argument");
+
+                        } else*/ if( strRV.iDatatype == SubClassif.INTEGERARR
                             || strRV.iDatatype == SubClassif.FLOATARR
                             || strRV.iDatatype == SubClassif.BOOLEANARR
                             || strRV.iDatatype == SubClassif.STRINGARR
                             || strRV.iDatatype == SubClassif.DATEARR) {
 
                             error("Function SPACES does not accept arrays as an argument");
-
-                        }
+                        } /*else if(strRV.iDatatype != SubClassif.STRING) {
+                            error("Unsupported argument type '%s' for SPACES function", strRV.iDatatype.toString());
+                        }*/
 
                         str = (String.valueOf(strRV.value));
                         return funcSPACES(str);

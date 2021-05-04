@@ -9,7 +9,7 @@ Float f6 = 6.0;
 Float f7 = 7.0;
 Int iAns;
 Float fAns;
-Float gradeM[10] = 100, 99, 70.5;
+Float gradeM[10] = 100, 99, 70.5; 
 
 // Not errors (do not comment out these as you go)
 iAns = i1* i2 + (f5 * f6);
@@ -69,8 +69,9 @@ if i2*10 > s1#s2:
      print("Coerce OK4 - true");
 else:
      print("Coerce Error 4 - false");
-endif;
+endif; 
 // Data type issues
+<<<<<<< HEAD
 print( 5 * (s1#sA));         // error x14, Line 74 Invalid non-numeric data for 2nd operand in '*' operation, value: 1A
 print(5.0 + (s1#'.'#sA);     // error x15, Line 75 Invalid non-numeric data for 2nd operand in '+' operation, value: 1.A
 if (i2*10 > sA):               // error x16, Line 76 Invalid non-numeric data for 2nd operand in '>' operation, value: A
@@ -78,6 +79,16 @@ if (i2*10 > sA):               // error x16, Line 76 Invalid non-numeric data fo
 else:
      print("Should not do this - false");
 endif;
+=======
+//print( 5 * (s1#sA));         // error x14, Line 74 Invalid non-numeric data for 2nd operand in '*' operation, value: 1A
+//print(5.0 + (s1#'.'#sA);     // error x15, Line 75 Invalid non-numeric data for 2nd operand in '+' operation, value: 1.A
+//if (i2*10 > sA):               // error x16, Line 76 Invalid non-numeric data for 2nd operand in '>' operation, value: A
+     //print("Should not do this - true");
+//else:
+     //print("Should not do this - false");
+//endif;
+
+>>>>>>> 2aa840905858ca5301e65d4950b7489a5887f7cc
 
 
 
