@@ -32,15 +32,3 @@ a -= c;	// a = -3
 if a != b:
 	print("Of course it's not equal!");
 endif;
-
-a *= c;	// a = -30
-
-print("a became ", a);
-
-b /= 2;
-	
-print("b became ", b);
-
-c = a # b;
-
-print("Now let's fuse them to have ", c);
