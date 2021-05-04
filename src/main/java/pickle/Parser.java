@@ -2524,7 +2524,7 @@ public class Parser {
             scan.getNext();
         }
 
-        if(t.primClassif == Classif.OPERATOR) {
+        if(t.primClassif == Classif.OPERATOR && !t.tokenStr.equals("~")) {
             errorWithCurrent("expected operand, found '%s'", scan.currentToken.tokenStr);
         }
 

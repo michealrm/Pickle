@@ -1,0 +1,15 @@
+Int i = 0;
+
+while i < 5:
+	if i == 0:
+		print(i);
+		i = i + 1;
+		print(i);
+		continue;
+	endif;
+
+	print("test");
+	print(i);
+	
+	i = i + 1;
+endwhile;
