@@ -2653,7 +2653,6 @@ public class Parser {
                         str = (String.valueOf(strRV.value));
                         return funcSPACES(str);
                     case "dateDiff":
-                    case "dateAge":
                         PickleDate pd1, pd2;
                         if(parms.get(0).iDatatype == SubClassif.STRING)
                             pd1 = new PickleDate(String.valueOf(parms.get(0).value));
@@ -2667,6 +2666,18 @@ public class Parser {
 
                         int diff = PickleDate.diff(pd1, pd2);
                         return new ResultValue(SubClassif.INTEGER, new Numeric(String.valueOf(diff), SubClassif.INTEGER));
+                    case "dateAge":
+                        if(parms.get(0).iDatatype == SubClassif.STRING)
+                            pd1 = new PickleDate(String.valueOf(parms.get(0).value));
+                        else
+                            pd1 = (PickleDate) parms.get(0).value;
+
+                        if(parms.get(1).iDatatype == SubClassif.STRING)
+                            pd2 = new PickleDate(String.valueOf(parms.get(1).value));
+                        else
+                            pd2 = (PickleDate) parms.get(1).value;
+                        int age = PickleDate.age(pd1, pd2);
+                        return new ResultValue(SubClassif.INTEGER, new Numeric(String.valueOf(age), SubClassif.INTEGER));
                     case "dateAdj":
                         PickleDate pd = (PickleDate) parms.get(1).value;
                         ResultValue by = parms.get(0);
