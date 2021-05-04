@@ -2,6 +2,8 @@ Int arr[5] = 1, 2, 3, 4;
 
 Int uArr[unbound] = 1, 2, 3, 4, 5;
 
-print(MAXELEM(arr));
+String str = "12345";
 
-print(MAXELEM(uArr));
+print(ELEM(str));
+
+print(ELEM(uArr));

@@ -1,0 +1,7 @@
+Int arr[5] = 1, 2, 3, 4;
+
+Int uArr[unbound] = 1, 2, 3, 4, 5;
+
+print(ELEM(arr));
+
+print(ELEM(uArr));

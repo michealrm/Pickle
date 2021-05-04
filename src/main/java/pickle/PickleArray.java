@@ -26,8 +26,13 @@ public class PickleArray {
     }
 
     public ResultValue getMaxElem() throws Exception {
-        return new ResultValue(SubClassif.INTEGER
-            , new Numeric(Integer.toString(this.length), SubClassif.INTEGER));
+        if(length == 0) {
+            return new ResultValue(SubClassif.STRING
+                    , "unbound");
+        } else {
+            return new ResultValue(SubClassif.INTEGER
+                    , new Numeric(Integer.toString(this.length), SubClassif.INTEGER));
+        }
     }
 
     public ResultValue getElem() throws Exception{

@@ -1,0 +1,3 @@
+String str = "12345";
+
+print(LENGTH(str));

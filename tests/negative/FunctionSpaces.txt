@@ -2,6 +2,10 @@ String populatedString = "12345";
 String spacesString = "     ";
 String emptyString = "";
 
+Int arr[] = 1, 2, 3, 4, 5;
+
+print(SPACES(arr));
+
 print(SPACES(populatedString));
 
 print(SPACES(spacesString));
