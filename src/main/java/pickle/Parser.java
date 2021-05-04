@@ -1029,11 +1029,11 @@ public class Parser {
                     res = assign(variableName, exprToAssign);
                     break;
                 case "-=":
-                    assign(variableName, getVariableValue(variableName).executeOperation(exprToAssign, "-"));
+                    res = assign(variableName, getVariableValue(variableName).executeOperation(exprToAssign, "-"));
                     // TODO: Add line, col number, and parameter num in executeOperation's exception handling (like Parser.error())
                     break;
                 case "+=":
-                    assign(variableName, getVariableValue(variableName).executeOperation(exprToAssign, "+"));
+                    res = assign(variableName, getVariableValue(variableName).executeOperation(exprToAssign, "+"));
                     break;
                 default:
                     error("Expected assignment operator for assignment statement");
@@ -2295,6 +2295,9 @@ public class Parser {
         while((continuesExpr(scan.currentToken) && !scan.currentToken.tokenStr.equals("~")) || (funcDepth != 0 && scan.currentToken.tokenStr.equals(","))) {
             if(scan.currentToken.tokenStr.equals(",")) {
                 scan.getNext();
+
+                expectOperand = true;
+                expectOperator = false;
             }
 
             // Evaluate starting from currentToken. Converts results from things like array references or variables into a Token
@@ -2663,6 +2666,18 @@ public class Parser {
 
                         int diff = PickleDate.diff(pd1, pd2);
                         return new ResultValue(SubClassif.INTEGER, new Numeric(String.valueOf(diff), SubClassif.INTEGER));
+                    case "dateAge":
+                        if(parms.get(0).iDatatype == SubClassif.STRING)
+                            pd1 = new PickleDate(String.valueOf(parms.get(0).value));
+                        else
+                            pd1 = (PickleDate) parms.get(0).value;
+
+                        if(parms.get(1).iDatatype == SubClassif.STRING)
+                            pd2 = new PickleDate(String.valueOf(parms.get(1).value));
+                        else
+                            pd2 = (PickleDate) parms.get(1).value;
+                        int age = PickleDate.age(pd1, pd2);
+                        return new ResultValue(SubClassif.INTEGER, new Numeric(String.valueOf(age), SubClassif.INTEGER));
                     case "dateAdj":
                         PickleDate pd = (PickleDate) parms.get(1).value;
                         ResultValue by = parms.get(0);
@@ -2850,6 +2865,11 @@ public class Parser {
 
     private ResultValue assign(String variableName, ResultValue value) throws Exception {
         STEntry stEntry = scan.symbolTable.peek().getSymbol(variableName);
+
+        if(stEntry == null) {
+            scan.symbolTable.peek().putSymbol(variableName, new STEntry(variableName,value.iPrimClassif, value.iDatatype));
+        }
+
         // Arrays
         if(value != null && stEntry != null && value.iDatatype != stEntry.dclType) {
             if(stEntry.dclType == SubClassif.INTEGERARR

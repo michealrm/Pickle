@@ -1,0 +1,19 @@
+Bool b = F;
+
+Int n;
+
+n = -5;
+
+print(n);
+
+if not b:
+	print("not b");
+endif;
+
+b = T;
+
+if not b:
+	print("not b");
+else:
+	print("b");
+endif;

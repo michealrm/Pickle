@@ -1,11 +1,11 @@
 Int i;
 
 for i = 0 to 5 by 1:
+	
+	if i == 0:
+		continue;
+	endif;
 
 	print(i);
 	
-	if i == 3:
-		break;
-	endif;
-
 endfor;

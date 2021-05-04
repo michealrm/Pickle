@@ -1,0 +1,9 @@
+p5Date.txt 
+date1 = 2017-04-01 date2 = 2015-04-01 diff = 731 
+date = 2017-04-01 adjusted by 1 = 2017-04-02 
+date = 2017-04-01 adjusted by -40 = 2017-02-20 
+date = 2017-04-01 adjusted by -365 = 2016-04-01 
+date = 2017-04-01 adjusted by -731 = 2015-04-01 
+date1 = 2017-02-01 date2 = 2015-02-01 age = 2 
+date1 = 2017-02-01 date2 = 1957-12-04 age = 59 
+date1 = 2017-02-01 date2 = 1953-12-12 age = 63 
